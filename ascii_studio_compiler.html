@@ -1,0 +1,2578 @@
+<!DOCTYPE html>
+<html lang="vi" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ASCII Color Studio & GIF Compiler — 60 FPS Ultra HD Engine</title>
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Google Fonts: Inter cho giao diện & JetBrains Mono cho ký tự ASCII sắc nét -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['"JetBrains Mono"', 'Consolas', 'Monaco', 'monospace'],
+                    }
+                }
+            }
+        };
+    </script>
+
+    <style>
+        /* Thanh cuộn tinh gọn phong cách Terminal nền tối sâu #07090d */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #07090d;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #1f2738;
+            border-radius: 9999px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #33415c;
+        }
+
+        /* Thanh trượt range hiện đại */
+        input[type="range"] {
+            -webkit-appearance: none;
+            appearance: none;
+            background: #1a2130;
+            height: 5px;
+            border-radius: 999px;
+            outline: none;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: #10b981;
+            cursor: pointer;
+            border: 2px solid #07090d;
+            box-shadow: 0 0 8px rgba(16, 185, 129, 0.6);
+            transition: transform 0.12s ease, background-color 0.12s ease;
+        }
+        input[type="range"]::-webkit-slider-thumb:hover {
+            transform: scale(1.18);
+            background: #34d399;
+        }
+
+        /* Vùng Zoom & Pan GPU-accelerated */
+        #viewportContainer {
+            touch-action: none;
+            background-color: #05070a;
+            background-image:
+                radial-gradient(circle at 50% 50%, rgba(16, 185, 129, 0.03) 0%, transparent 65%),
+                linear-gradient(rgba(255, 255, 255, 0.015) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.015) 1px, transparent 1px);
+            background-size: 100% 100%, 24px 24px, 24px 24px;
+        }
+
+        #canvasStage {
+            transform-origin: 0 0;
+            will-change: transform;
+        }
+
+        #asciiCanvas {
+            image-rendering: pixelated;
+            image-rendering: crisp-edges;
+        }
+
+        @keyframes pulseDot {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.35; transform: scale(0.85); }
+        }
+        .animate-pulse-dot {
+            animation: pulseDot 1.4s infinite ease-in-out;
+        }
+    </style>
+</head>
+<body class="bg-[#07090d] text-slate-200 font-sans antialiased min-h-screen flex flex-col selection:bg-emerald-500/30 selection:text-emerald-200 overflow-x-hidden">
+
+    <!-- THANH TIÊU ĐỀ TRÊN CÙNG -->
+    <header class="border-b border-[#192030] bg-[#0a0d14]/95 backdrop-blur-md sticky top-0 z-30">
+        <div class="max-w-[1980px] mx-auto px-3 sm:px-4 py-2 flex flex-wrap items-center justify-between gap-2.5">
+            <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-500/20 to-cyan-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400 font-mono font-bold text-sm shadow-inner">
+                    &gt;_
+                </div>
+                <div>
+                    <h1 class="text-sm sm:text-base font-bold tracking-tight text-white flex items-center gap-2 flex-wrap">
+                        ASCII Color Studio &amp; GIF Compiler
+                        <span class="text-[10px] font-mono font-semibold px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
+                            60 FPS BLITTER • 360 COL ULTRA HD
+                        </span>
+                    </h1>
+                    <p class="text-[11px] text-slate-400">Bộ máy kết xuất Glyph Bitmap siêu mượt • Ảnh tĩnh, GIF động &amp; Video</p>
+                </div>
+            </div>
+
+            <!-- Nút xuất nhanh đa định dạng -->
+            <div class="flex flex-wrap items-center gap-1.5">
+                <button id="btnQuickGif" type="button"
+                    class="px-3 py-1.5 rounded-xl text-xs font-semibold bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 active:scale-[0.98] text-white transition flex items-center gap-1.5 shadow-lg shadow-emerald-950/60">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M7 4v16M17 4v16M3 8h4m10 0h4M3 12h18M3 16h4m10 0h4M4 20h16a1 1 0 001-1V5a1 1 0 00-1-1H4a1 1 0 00-1 1v14a1 1 0 001 1z"/></svg>
+                    <span>Xuất GIF</span>
+                </button>
+                <button id="btnExportPng" type="button"
+                    class="px-2.5 py-1.5 rounded-xl text-xs font-medium bg-[#121722] hover:bg-[#1a2232] border border-[#232c40] text-slate-200 transition flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-emerald-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    <span>PNG</span>
+                </button>
+                <button id="btnExportHtml" type="button"
+                    class="px-2.5 py-1.5 rounded-xl text-xs font-medium bg-[#121722] hover:bg-[#1a2232] border border-[#232c40] text-slate-200 transition flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-sky-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                    <span>HTML</span>
+                </button>
+                <button id="btnCopyAnsi" type="button"
+                    class="px-2.5 py-1.5 rounded-xl text-xs font-medium bg-[#121722] hover:bg-[#1a2232] border border-[#232c40] text-slate-200 transition flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-amber-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                    <span>ANSI</span>
+                </button>
+                <button id="btnCopyPlain" type="button"
+                    class="px-2.5 py-1.5 rounded-xl text-xs font-medium bg-[#121722] hover:bg-[#1a2232] border border-[#232c40] text-slate-200 transition flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                    <span>Text</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- BỐ CỤC 2 CỘT: Bảng điều khiển gọn bên trái + Khu vực xem trước rộng tối đa bên phải -->
+    <main class="flex-1 max-w-[1980px] w-full mx-auto p-2.5 sm:p-3 grid grid-cols-1 lg:grid-cols-12 gap-3 items-start">
+
+        <!-- SIDEBAR TRÁI (CUỘN ĐỘC LẬP) -->
+        <aside class="lg:col-span-3 xl:col-span-3 bg-[#0c1018] border border-[#192030] rounded-2xl p-3.5 space-y-4 shadow-2xl lg:h-[calc(100vh-4.6rem)] lg:overflow-y-auto">
+
+            <!-- 1. NGUỒN MEDIA -->
+            <section class="space-y-2">
+                <div class="flex items-center justify-between">
+                    <h2 class="text-[11px] font-semibold uppercase tracking-wider text-slate-400">1. Nguồn Ảnh / GIF / Video</h2>
+                    <button id="btnUseSample" type="button"
+                        class="text-[11px] font-medium text-emerald-400 hover:text-emerald-300 transition px-2 py-0.5 rounded-lg hover:bg-emerald-500/10">
+                        ✨ Cây thông mẫu
+                    </button>
+                </div>
+
+                <div id="dropZone"
+                    class="border-2 border-dashed border-[#242e42] hover:border-emerald-500/60 bg-[#07090d] rounded-xl p-2.5 cursor-pointer transition-all">
+                    <input id="fileInput" type="file" accept="image/png,image/jpeg,image/webp,image/gif,image/bmp,video/mp4,video/webm" class="hidden">
+                    <div class="flex items-center gap-2.5">
+                        <div class="w-12 h-12 rounded-lg bg-[#05070a] border border-[#1f2738] overflow-hidden shrink-0 flex items-center justify-center relative">
+                            <img id="sourcePreview" alt="Xem trước nguồn" class="w-full h-full object-contain">
+                            <span id="mediaTypeBadge" class="absolute bottom-0.5 right-0.5 text-[8px] font-mono font-bold px-1 rounded bg-emerald-600/90 text-white">DEMO</span>
+                        </div>
+                        <div class="min-w-0 flex-1">
+                            <p id="fileNameLabel" class="text-xs font-semibold text-slate-200 truncate">christmas_tree_hd.py</p>
+                            <p class="text-[11px] text-slate-400">Kéo thả hoặc <span class="text-emerald-400 underline">chọn tệp</span></p>
+                            <p class="text-[10px] text-slate-500">PNG, JPG, WEBP, GIF động, MP4/WEBM</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <hr class="border-[#192030]">
+
+            <!-- 2. MA TRẬN ASCII KÍCH THƯỚC LỚN & SIÊU CHI TIẾT -->
+            <section class="space-y-3">
+                <div class="flex items-center justify-between">
+                    <h2 class="text-[11px] font-semibold uppercase tracking-wider text-emerald-400">2. Ma Trận &amp; Chi Tiết</h2>
+                    <span id="matrixSummaryTag" class="text-[10px] font-mono text-slate-400">180 × 100</span>
+                </div>
+
+                <!-- Độ rộng ma trận (40 -> 360 cột) -->
+                <div class="space-y-1.5">
+                    <div class="flex items-center justify-between text-xs">
+                        <label for="resolutionSlider" class="text-slate-300 font-medium">Độ rộng ma trận (Cột)</label>
+                        <span id="resolutionVal" class="font-mono text-emerald-400 font-bold bg-emerald-500/10 px-2 py-0.5 rounded-md">180</span>
+                    </div>
+                    <input id="resolutionSlider" type="range" min="40" max="360" value="180" step="2" class="w-full">
+
+                    <!-- Các nút chọn nhanh độ phân giải ma trận -->
+                    <div class="grid grid-cols-4 gap-1.5 pt-0.5" id="resPresetGroup">
+                        <button type="button" data-cols="100"
+                            class="res-preset-btn py-1.5 px-1 rounded-lg text-[10px] font-mono border bg-[#07090d] border-[#232c40] text-slate-400 hover:text-white transition text-center">
+                            <div class="font-bold text-[11px]">100</div>
+                            <div class="text-[9px] opacity-75">Nhẹ</div>
+                        </button>
+                        <button type="button" data-cols="180"
+                            class="res-preset-btn py-1.5 px-1 rounded-lg text-[10px] font-mono border bg-emerald-500/20 border-emerald-500/60 text-emerald-300 transition text-center">
+                            <div class="font-bold text-[11px]">180</div>
+                            <div class="text-[9px] opacity-85">Chi tiết</div>
+                        </button>
+                        <button type="button" data-cols="260"
+                            class="res-preset-btn py-1.5 px-1 rounded-lg text-[10px] font-mono border bg-[#07090d] border-[#232c40] text-slate-400 hover:text-white transition text-center">
+                            <div class="font-bold text-[11px]">260</div>
+                            <div class="text-[9px] opacity-75">Siêu nét</div>
+                        </button>
+                        <button type="button" data-cols="360"
+                            class="res-preset-btn py-1.5 px-1 rounded-lg text-[10px] font-mono border bg-[#07090d] border-[#232c40] text-slate-400 hover:text-white transition text-center">
+                            <div class="font-bold text-[11px]">360</div>
+                            <div class="text-[9px] opacity-75">Ultra HD</div>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Cỡ ô ký tự (Glyph Scale: 4px -> 14px) -->
+                <div class="space-y-1">
+                    <div class="flex items-center justify-between text-xs">
+                        <label for="glyphScaleSlider" class="text-slate-300">Cỡ ô ký tự (Glyph Scale)</label>
+                        <span id="glyphScaleVal" class="font-mono text-sky-400 font-semibold">8px</span>
+                    </div>
+                    <input id="glyphScaleSlider" type="range" min="4" max="14" value="8" step="1" class="w-full">
+                </div>
+
+                <!-- Bộ ký tự (5 chế độ) -->
+                <div class="space-y-1.5">
+                    <label for="charsetSelect" class="block text-xs text-slate-300 font-medium">Bộ ký tự (Charset)</label>
+                    <select id="charsetSelect"
+                        class="w-full bg-[#07090d] border border-[#232c40] focus:border-emerald-500 rounded-xl px-2.5 py-2 text-xs text-slate-200 outline-none transition">
+                        <option value="ultra" selected>Siêu chi tiết (70 ký tự — Tối ưu Ultra HD)</option>
+                        <option value="detailed">Chi tiết (20 ký tự cân bằng)</option>
+                        <option value="basic">Cơ bản ( .:-=+*#%@)</option>
+                        <option value="blocks">Khối Unicode ( ░▒▓█)</option>
+                        <option value="custom">Tùy chỉnh ký tự riêng...</option>
+                    </select>
+                    <div id="customCharsetWrapper" class="hidden">
+                        <input id="customCharsetInput" type="text" value=" .:-=+*#%@"
+                            placeholder="Nhập ký tự từ tối đến sáng..."
+                            class="w-full bg-[#07090d] border border-[#232c40] focus:border-emerald-500 rounded-xl px-2.5 py-1.5 text-xs font-mono text-emerald-300 outline-none">
+                    </div>
+                </div>
+            </section>
+
+            <hr class="border-[#192030]">
+
+            <!-- 3. MÀU SẮC, SẮC NÉT & ÁNH SÁNG -->
+            <section class="space-y-3">
+                <div class="flex items-center justify-between">
+                    <h2 class="text-[11px] font-semibold uppercase tracking-wider text-slate-400">3. Màu Sắc &amp; Độ Nét</h2>
+                    <button id="btnResetSettings" type="button" class="text-[11px] text-slate-400 hover:text-white transition">Đặt lại</button>
+                </div>
+
+                <!-- 4 chế độ màu -->
+                <div class="grid grid-cols-2 gap-1.5" id="colorModeGroup">
+                    <button type="button" data-mode="truecolor"
+                        class="color-mode-btn px-2.5 py-1.5 rounded-xl text-xs font-medium border transition text-left flex items-center gap-2 bg-emerald-500/15 border-emerald-500/50 text-emerald-300">
+                        <span class="w-2.5 h-2.5 rounded-full bg-gradient-to-tr from-rose-500 via-amber-400 to-cyan-400 shrink-0"></span>
+                        Màu gốc
+                    </button>
+                    <button type="button" data-mode="vivid"
+                        class="color-mode-btn px-2.5 py-1.5 rounded-xl text-xs font-medium border transition text-left flex items-center gap-2 bg-[#07090d] border-[#232c40] text-slate-300 hover:border-slate-500">
+                        <span class="w-2.5 h-2.5 rounded-full bg-gradient-to-tr from-fuchsia-500 via-yellow-300 to-emerald-400 shrink-0"></span>
+                        Rực rỡ (Vivid)
+                    </button>
+                    <button type="button" data-mode="matrix"
+                        class="color-mode-btn px-2.5 py-1.5 rounded-xl text-xs font-medium border transition text-left flex items-center gap-2 bg-[#07090d] border-[#232c40] text-slate-300 hover:border-slate-500">
+                        <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 shrink-0"></span>
+                        Matrix
+                    </button>
+                    <button type="button" data-mode="mono"
+                        class="color-mode-btn px-2.5 py-1.5 rounded-xl text-xs font-medium border transition text-left flex items-center gap-2 bg-[#07090d] border-[#232c40] text-slate-300 hover:border-slate-500">
+                        <span class="w-2.5 h-2.5 rounded-full bg-slate-200 shrink-0"></span>
+                        Đơn sắc (Mono)
+                    </button>
+                </div>
+
+                <!-- Độ sắc nét (Sharpen) & Độ bão hòa (Saturation) -->
+                <div class="grid grid-cols-2 gap-2.5">
+                    <div class="space-y-1">
+                        <div class="flex items-center justify-between text-[11px]">
+                            <label for="sharpenSlider" class="text-slate-300">Sắc nét</label>
+                            <span id="sharpenVal" class="font-mono text-emerald-400">35%</span>
+                        </div>
+                        <input id="sharpenSlider" type="range" min="0" max="100" value="35" step="5" class="w-full">
+                    </div>
+                    <div class="space-y-1">
+                        <div class="flex items-center justify-between text-[11px]">
+                            <label for="saturationSlider" class="text-slate-300">Bão hòa</label>
+                            <span id="saturationVal" class="font-mono text-emerald-400">115%</span>
+                        </div>
+                        <input id="saturationSlider" type="range" min="0" max="220" value="115" step="5" class="w-full">
+                    </div>
+                </div>
+
+                <!-- Độ sáng & Tương phản -->
+                <div class="grid grid-cols-2 gap-2.5">
+                    <div class="space-y-1">
+                        <div class="flex items-center justify-between text-[11px]">
+                            <label for="brightnessSlider" class="text-slate-300">Độ sáng</label>
+                            <span id="brightnessVal" class="font-mono text-slate-300">0</span>
+                        </div>
+                        <input id="brightnessSlider" type="range" min="-100" max="100" value="0" step="1" class="w-full">
+                    </div>
+                    <div class="space-y-1">
+                        <div class="flex items-center justify-between text-[11px]">
+                            <label for="contrastSlider" class="text-slate-300">Tương phản</label>
+                            <span id="contrastVal" class="font-mono text-slate-300">+18</span>
+                        </div>
+                        <input id="contrastSlider" type="range" min="-100" max="100" value="18" step="1" class="w-full">
+                    </div>
+                </div>
+
+                <!-- Các nút gạt hiển thị -->
+                <div class="space-y-1.5 pt-0.5">
+                    <label class="flex items-center justify-between cursor-pointer select-none px-2.5 py-1.5 rounded-xl bg-[#07090d] border border-[#192030] hover:border-[#2a354d] transition">
+                        <span class="text-xs text-slate-200">Phát sáng CRT (Fast Bloom)</span>
+                        <div class="relative">
+                            <input id="glowToggle" type="checkbox" checked class="sr-only peer">
+                            <div class="w-8 h-4.5 bg-[#232c40] rounded-full peer peer-checked:bg-emerald-500 transition-colors h-[18px] w-[34px]"></div>
+                            <div class="absolute left-0.5 top-0.5 w-3.5 h-3.5 bg-white rounded-full transition-transform peer-checked:translate-x-4"></div>
+                        </div>
+                    </label>
+
+                    <label class="flex items-center justify-between cursor-pointer select-none px-2.5 py-1.5 rounded-xl bg-[#07090d] border border-[#192030] hover:border-[#2a354d] transition">
+                        <span class="text-xs text-slate-200">Hiển thị HUD Terminal</span>
+                        <div class="relative">
+                            <input id="hudToggle" type="checkbox" checked class="sr-only peer">
+                            <div class="bg-[#232c40] rounded-full peer peer-checked:bg-emerald-500 transition-colors h-[18px] w-[34px]"></div>
+                            <div class="absolute left-0.5 top-0.5 w-3.5 h-3.5 bg-white rounded-full transition-transform peer-checked:translate-x-4"></div>
+                        </div>
+                    </label>
+
+                    <label class="flex items-center justify-between cursor-pointer select-none px-2.5 py-1.5 rounded-xl bg-[#07090d] border border-[#192030] hover:border-[#2a354d] transition">
+                        <span class="text-xs text-slate-200">Đảo ngược sáng (Invert)</span>
+                        <div class="relative">
+                            <input id="invertToggle" type="checkbox" class="sr-only peer">
+                            <div class="bg-[#232c40] rounded-full peer peer-checked:bg-emerald-500 transition-colors h-[18px] w-[34px]"></div>
+                            <div class="absolute left-0.5 top-0.5 w-3.5 h-3.5 bg-white rounded-full transition-transform peer-checked:translate-x-4"></div>
+                        </div>
+                    </label>
+                </div>
+            </section>
+
+            <hr class="border-[#192030]">
+
+            <!-- 4. ĐIỀU KHIỂN ANIMATION 60 FPS -->
+            <section class="space-y-3">
+                <div class="flex items-center justify-between">
+                    <h2 class="text-[11px] font-semibold uppercase tracking-wider text-slate-400">4. Animation Thời Gian Thực</h2>
+                    <button id="btnPlayPause" type="button"
+                        class="px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-300 border border-emerald-500/35 transition flex items-center gap-1">
+                        <span id="playPauseIcon">⏸</span>
+                        <span id="playPauseText">Đang chạy</span>
+                    </button>
+                </div>
+
+                <select id="animModeSelect"
+                    class="w-full bg-[#07090d] border border-[#232c40] focus:border-emerald-500 rounded-xl px-2.5 py-2 text-xs text-slate-200 outline-none transition">
+                    <option value="twinkle" selected>✨ Lấp lánh &amp; Tuyết rơi (Terminal Noel)</option>
+                    <option value="rotate3d">🌀 Xoay 3D trục Y (3D Perspective)</option>
+                    <option value="wave">🌊 Sóng động (Sine Wave Ripple)</option>
+                    <option value="glitch">⚡ Glitch / Hacker (RGB Shift)</option>
+                    <option value="matrixRain">🟢 Mưa Matrix (Ký tự rơi)</option>
+                    <option value="neonPulse">🌈 Nhịp thở Neon (Hue Shift)</option>
+                    <option value="none">⏹ Không hiệu ứng (Tĩnh / Phát gốc)</option>
+                </select>
+
+                <!-- FPS Mục tiêu (5 -> 60) -->
+                <div class="space-y-1">
+                    <div class="flex items-center justify-between text-xs">
+                        <label for="fpsSlider" class="text-slate-300">FPS mục tiêu</label>
+                        <span id="fpsVal" class="font-mono text-amber-400 font-semibold">60 fps</span>
+                    </div>
+                    <input id="fpsSlider" type="range" min="5" max="60" value="60" step="1" class="w-full">
+                </div>
+
+                <div class="grid grid-cols-2 gap-2.5">
+                    <div class="space-y-1">
+                        <div class="flex items-center justify-between text-[11px]">
+                            <label for="animIntensitySlider" class="text-slate-400">Cường độ</label>
+                            <span id="animIntensityVal" class="font-mono text-slate-300">65%</span>
+                        </div>
+                        <input id="animIntensitySlider" type="range" min="10" max="100" value="65" step="5" class="w-full">
+                    </div>
+                    <div class="space-y-1">
+                        <div class="flex items-center justify-between text-[11px]">
+                            <label for="animSpeedSlider" class="text-slate-400">Tốc độ</label>
+                            <span id="animSpeedVal" class="font-mono text-slate-300">1.0x</span>
+                        </div>
+                        <input id="animSpeedSlider" type="range" min="0.2" max="3.0" value="1.0" step="0.1" class="w-full">
+                    </div>
+                </div>
+            </section>
+
+            <hr class="border-[#192030]">
+
+            <!-- 5. XUẤT TỆP GIF ĐỘNG (PURE JS GIF89a ENCODER) -->
+            <section class="space-y-2.5 bg-[#090d14] border border-emerald-500/25 rounded-xl p-3">
+                <div class="flex items-center justify-between">
+                    <h2 class="text-[11px] font-semibold uppercase tracking-wider text-emerald-400 flex items-center gap-1.5">
+                        <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+                        5. Xuất Tệp GIF (.gif)
+                    </h2>
+                    <span class="text-[10px] font-mono text-slate-500">GIF89a LZW</span>
+                </div>
+
+                <div class="grid grid-cols-2 gap-2.5">
+                    <div class="space-y-1">
+                        <div class="flex items-center justify-between text-[11px]">
+                            <label for="gifDurationSlider" class="text-slate-300">Thời lượng</label>
+                            <span id="gifDurationVal" class="font-mono text-emerald-400">2.5s</span>
+                        </div>
+                        <input id="gifDurationSlider" type="range" min="1" max="5" value="2.5" step="0.5" class="w-full">
+                    </div>
+                    <div class="space-y-1">
+                        <div class="flex items-center justify-between text-[11px]">
+                            <label for="gifFpsSlider" class="text-slate-300">FPS xuất</label>
+                            <span id="gifFpsVal" class="font-mono text-emerald-400">15</span>
+                        </div>
+                        <input id="gifFpsSlider" type="range" min="8" max="24" value="15" step="1" class="w-full">
+                    </div>
+                </div>
+
+                <div class="flex items-center justify-between gap-2 text-[11px]">
+                    <span class="text-slate-300">Tỷ lệ xuất:</span>
+                    <div class="flex items-center gap-1" id="gifScaleGroup">
+                        <button type="button" data-scale="0.5" class="gif-scale-btn px-2 py-1 rounded-lg font-mono border bg-[#0c1018] border-[#232c40] text-slate-400 hover:text-white transition">0.5x</button>
+                        <button type="button" data-scale="0.75" class="gif-scale-btn px-2 py-1 rounded-lg font-mono border bg-emerald-500/20 border-emerald-500/50 text-emerald-300 transition">0.75x</button>
+                        <button type="button" data-scale="1" class="gif-scale-btn px-2 py-1 rounded-lg font-mono border bg-[#0c1018] border-[#232c40] text-slate-400 hover:text-white transition">1x</button>
+                    </div>
+                </div>
+
+                <button id="btnExportGif" type="button"
+                    class="w-full py-2 px-3 rounded-xl text-xs font-semibold bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 disabled:opacity-50 disabled:cursor-not-allowed text-white transition flex items-center justify-center gap-2 shadow-lg shadow-emerald-950/60">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    <span id="btnExportGifText">Xuất tệp GIF (.gif)</span>
+                </button>
+
+                <div id="gifProgressWrap" class="hidden space-y-1">
+                    <div class="flex items-center justify-between text-[10px] font-mono">
+                        <span id="gifProgressLabel" class="text-emerald-300">Đang mã hóa 0/0...</span>
+                        <span id="gifProgressPct" class="text-slate-300">0%</span>
+                    </div>
+                    <div class="w-full h-1.5 bg-[#161c2a] rounded-full overflow-hidden">
+                        <div id="gifProgressBar" class="h-full bg-gradient-to-r from-emerald-500 to-cyan-400 transition-all duration-100" style="width: 0%"></div>
+                    </div>
+                </div>
+            </section>
+        </aside>
+
+        <!-- KHUNG XEM TRƯỚC TERMINAL RỘNG TỐI ĐA (PHẢI) -->
+        <section class="lg:col-span-9 xl:col-span-9 flex flex-col bg-[#05070a] border border-[#192030] rounded-2xl overflow-hidden shadow-2xl min-h-[68vh] lg:h-[calc(100vh-4.6rem)]">
+
+            <!-- Thanh tiêu đề cửa sổ Terminal + Công cụ Zoom & Pan -->
+            <div class="bg-[#0a0d14] border-b border-[#192030] px-3.5 py-2 flex flex-wrap items-center justify-between gap-2 shrink-0">
+                <div class="flex items-center gap-2 min-w-0">
+                    <span class="w-2.5 h-2.5 rounded-full bg-rose-500/80 shrink-0"></span>
+                    <span class="w-2.5 h-2.5 rounded-full bg-amber-400/80 shrink-0"></span>
+                    <span class="w-2.5 h-2.5 rounded-full bg-emerald-500/80 shrink-0"></span>
+                    <span id="terminalTitle" class="ml-1.5 text-xs font-mono text-slate-400 truncate">
+                        christmas_tree_hd.py — 60 FPS Blitter
+                    </span>
+                </div>
+
+                <!-- Bộ điều khiển Zoom & Pan nhanh -->
+                <div class="flex items-center gap-1.5 text-[11px] font-mono shrink-0">
+                    <span id="gifFrameIndicator" class="hidden px-2 py-0.5 rounded-md bg-cyan-500/10 text-cyan-300 border border-cyan-500/25">GIF 1/1</span>
+
+                    <div class="flex items-center bg-[#07090d] border border-[#1f2738] rounded-lg p-0.5 gap-0.5">
+                        <button id="btnZoomOut" type="button" title="Thu nhỏ (-)"
+                            class="px-2 py-0.5 rounded hover:bg-[#192030] text-slate-300 hover:text-white transition font-bold">−</button>
+                        <span id="zoomPctLabel" class="px-1.5 text-emerald-400 min-w-[46px] text-center">100%</span>
+                        <button id="btnZoomIn" type="button" title="Phóng to (+)"
+                            class="px-2 py-0.5 rounded hover:bg-[#192030] text-slate-300 hover:text-white transition font-bold">+</button>
+                        <div class="w-px h-3.5 bg-[#1f2738] mx-0.5"></div>
+                        <button id="btnZoom100" type="button" title="Tỷ lệ 1:1 (Soi từng pixel)"
+                            class="px-2 py-0.5 rounded hover:bg-[#192030] text-slate-300 hover:text-white transition">100%</button>
+                        <button id="btnZoomFit" type="button" title="Vừa khung nhìn"
+                            class="px-2 py-0.5 rounded bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-300 transition">Vừa khung</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Vùng Canvas tương tác Zoom (cuộn chuột) & Pan (kéo chuột) -->
+            <div id="viewportContainer" class="flex-1 overflow-hidden relative cursor-grab active:cursor-grabbing select-none">
+                <div id="canvasStage" class="inline-block">
+                    <canvas id="asciiCanvas" class="block rounded-md shadow-2xl"></canvas>
+                </div>
+
+                <!-- Gợi ý thao tác Zoom/Pan góc dưới trái -->
+                <div class="pointer-events-none absolute bottom-3 left-3 px-2.5 py-1 rounded-lg bg-[#0a0d14]/80 border border-[#1f2738] text-[10px] font-mono text-slate-400 backdrop-blur-sm hidden sm:block">
+                    Cuộn chuột: Zoom • Kéo chuột: Di chuyển soi chi tiết
+                </div>
+            </div>
+
+            <!-- Thanh trạng thái hiệu năng thực tế -->
+            <footer class="bg-[#0a0d14] border-t border-[#192030] px-3.5 py-1.5 flex flex-wrap items-center justify-between gap-2 text-[11px] font-mono text-slate-400 shrink-0">
+                <div class="flex flex-wrap items-center gap-x-4 gap-y-1">
+                    <span>Ma trận: <strong id="statMatrix" class="text-slate-100">180 × 100 = 18,000 ký tự</strong></span>
+                    <span>Render: <strong id="statTime" class="text-emerald-400">0.0 ms</strong></span>
+                    <span>Độ phân giải canvas: <strong id="statCanvasDim" class="text-sky-400">0×0</strong></span>
+                </div>
+                <div class="flex items-center gap-2 text-amber-400">
+                    <span id="statusDot" class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse-dot"></span>
+                    <span id="statusLiveText">running • 60 fps</span>
+                </div>
+            </footer>
+        </section>
+    </main>
+
+    <!-- Toast thông báo (không dùng alert()) -->
+    <div id="toastContainer" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+    <!-- Phần tử ẩn xử lý dữ liệu -->
+    <canvas id="sampleCanvas" class="hidden"></canvas>
+    <canvas id="bloomCanvas" class="hidden"></canvas>
+    <video id="hiddenVideo" class="hidden" muted loop playsinline crossorigin="anonymous"></video>
+
+    <script>
+        /**
+         * ============================================================================
+         * ASCII COLOR STUDIO & GIF COMPILER — 60 FPS GLYPH BITMAP BLITTER ENGINE
+         * ============================================================================
+         * Kiến trúc tối ưu hiệu năng cao:
+         * 1. GlyphBitmapCache: Vẽ trước từng ký tự lên offscreen canvas nhỏ, trích xuất
+         *    tọa độ pixel sáng (dx, dy, alpha) vào TypedArrays.
+         * 2. Direct Uint32Array Blitter: Ghi trực tiếp màu RGB pha alpha lên ImageData,
+         *    không gọi ctx.fillText() trong vòng lặp ký tự -> 50.000+ ký tự chỉ mất vài ms.
+         * 3. Fast Post-Process Bloom: Vẽ bản thu nhỏ 1/4 + blur(5px) + lighter blend.
+         * 4. Sharpen (Unsharp Mask 5-tap) & Saturation boost tăng chi tiết ảnh cực nét.
+         * 5. Zoom & Pan GPU-accelerated soi từng ký tự ở độ phân giải 360 cột.
+         * 6. Pure JS GIF89a (LZW) Encoder bất đồng bộ không làm đơ UI.
+         */
+
+        // ============================================================================
+        // 1. KIỂM TRA ENDIANNESS ĐỂ GHI UINT32ARRAY CHÍNH XÁC TRÊN MỌI CPU
+        // ============================================================================
+        const IS_LITTLE_ENDIAN = (() => {
+            const buf = new ArrayBuffer(4);
+            new Uint32Array(buf)[0] = 0x0A0B0C0D;
+            return new Uint8Array(buf)[0] === 0x0D;
+        })();
+
+        function packRGBA(r, g, b) {
+            return IS_LITTLE_ENDIAN
+                ? ((255 << 24) | (b << 16) | (g << 8) | r) >>> 0
+                : ((r << 24) | (g << 16) | (b << 8) | 255) >>> 0;
+        }
+
+        const BG_R = 5, BG_G = 7, BG_B = 10;
+        const BG_U32 = packRGBA(BG_R, BG_G, BG_B);
+
+        // ============================================================================
+        // 2. BỘ NHỚ ĐỆM BITMAP KÝ TỰ (GLYPH BITMAP CACHE)
+        // ============================================================================
+        class GlyphBitmapCache {
+            constructor() {
+                this.cellW = 5;
+                this.cellH = 9;
+                this.fontSize = 8;
+                this.charset = '';
+                this.charsetGlyphs = []; // Mảng truy cập O(1) theo chỉ số ký tự
+                this.extraMap = new Map(); // Map cho ký tự phụ (tuyết, mưa Matrix)
+                this.scratchCanvas = document.createElement('canvas');
+                this.scratchCtx = this.scratchCanvas.getContext('2d', { willReadFrequently: true });
+            }
+
+            rasterizeChar(ch) {
+                if (ch === ' ') {
+                    return { len: 0, dx: new Uint8Array(0), dy: new Uint8Array(0), alpha: new Uint8Array(0) };
+                }
+                const w = this.cellW;
+                const h = this.cellH;
+                const ctx = this.scratchCtx;
+                ctx.clearRect(0, 0, w, h);
+                ctx.fillStyle = '#ffffff';
+                ctx.font = `600 ${this.fontSize}px "JetBrains Mono", Consolas, monospace`;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(ch, w * 0.5, h * 0.52);
+
+                const data = ctx.getImageData(0, 0, w, h).data;
+                const tmpDx = [];
+                const tmpDy = [];
+                const tmpAlpha = [];
+
+                for (let y = 0; y < h; y++) {
+                    const rowOff = y * w * 4;
+                    for (let x = 0; x < w; x++) {
+                        const a = data[rowOff + x * 4 + 3];
+                        if (a > 14) {
+                            tmpDx.push(x);
+                            tmpDy.push(y);
+                            // Tăng nhẹ độ đậm nét cho font kích thước nhỏ (4-6px)
+                            tmpAlpha.push(this.fontSize <= 6 ? Math.min(255, (a * 1.25) | 0) : a);
+                        }
+                    }
+                }
+
+                return {
+                    len: tmpDx.length,
+                    dx: new Uint8Array(tmpDx),
+                    dy: new Uint8Array(tmpDy),
+                    alpha: new Uint8Array(tmpAlpha)
+                };
+            }
+
+            rebuild(charset, fontSize) {
+                if (this.charset === charset && this.fontSize === fontSize) return;
+                this.charset = charset;
+                this.fontSize = fontSize;
+                this.cellW = Math.max(3, Math.round(fontSize * 0.62));
+                this.cellH = Math.max(5, Math.round(fontSize * 1.15));
+
+                this.scratchCanvas.width = this.cellW;
+                this.scratchCanvas.height = this.cellH;
+
+                this.charsetGlyphs = new Array(charset.length);
+                this.extraMap.clear();
+
+                for (let i = 0; i < charset.length; i++) {
+                    const g = this.rasterizeChar(charset[i]);
+                    this.charsetGlyphs[i] = g;
+                    this.extraMap.set(charset[i], g);
+                }
+
+                // Cache sẵn các ký tự dùng cho hiệu ứng tuyết rơi & mưa Matrix
+                const extras = '*+.01#$%@アイウエオカキクケコ';
+                for (let i = 0; i < extras.length; i++) {
+                    const ch = extras[i];
+                    if (!this.extraMap.has(ch)) {
+                        this.extraMap.set(ch, this.rasterizeChar(ch));
+                    }
+                }
+            }
+
+            getByChar(ch) {
+                let g = this.extraMap.get(ch);
+                if (!g) {
+                    g = this.rasterizeChar(ch);
+                    this.extraMap.set(ch, g);
+                }
+                return g;
+            }
+        }
+
+        // ============================================================================
+        // 3. BỘ MÃ HÓA GIF89a THUẦN JAVASCRIPT (ZERO EXTERNAL DEPENDENCIES)
+        // ============================================================================
+        class PureGifEncoder {
+            constructor(width, height, delayCs = 7) {
+                this.width = width;
+                this.height = height;
+                this.delayCs = Math.max(2, Math.round(delayCs));
+                this.chunks = [];
+                this.initPalette();
+            }
+
+            initPalette() {
+                if (PureGifEncoder._cachedPalette) {
+                    this.palette = PureGifEncoder._cachedPalette;
+                    this.rgb555Lut = PureGifEncoder._cachedLut;
+                    return;
+                }
+                const pal = new Uint8Array(256 * 3);
+                pal[0] = BG_R; pal[1] = BG_G; pal[2] = BG_B;
+                let idx = 1;
+
+                const levels = [0, 51, 102, 153, 204, 255];
+                for (let r = 0; r < 6; r++) {
+                    for (let g = 0; g < 6; g++) {
+                        for (let b = 0; b < 6; b++) {
+                            if (idx < 217) {
+                                pal[idx * 3] = levels[r];
+                                pal[idx * 3 + 1] = levels[g];
+                                pal[idx * 3 + 2] = levels[b];
+                                idx++;
+                            }
+                        }
+                    }
+                }
+                for (let i = 0; i < 32; i++) {
+                    const v = Math.round((i / 31) * 248);
+                    pal[idx * 3] = v; pal[idx * 3 + 1] = v; pal[idx * 3 + 2] = v;
+                    idx++;
+                }
+                const accents = [
+                    [16, 185, 129], [250, 204, 21], [239, 68, 68],
+                    [56, 189, 248], [232, 121, 249], [34, 197, 94], [255, 140, 40]
+                ];
+                for (let i = 0; i < accents.length && idx < 256; i++) {
+                    pal[idx * 3] = accents[i][0];
+                    pal[idx * 3 + 1] = accents[i][1];
+                    pal[idx * 3 + 2] = accents[i][2];
+                    idx++;
+                }
+
+                const lut = new Uint8Array(32768);
+                for (let r5 = 0; r5 < 32; r5++) {
+                    const r = (r5 << 3) | (r5 >> 2);
+                    for (let g5 = 0; g5 < 32; g5++) {
+                        const g = (g5 << 3) | (g5 >> 2);
+                        for (let b5 = 0; b5 < 32; b5++) {
+                            const b = (b5 << 3) | (b5 >> 2);
+                            let bestIdx = 0;
+                            let bestDist = Infinity;
+                            for (let p = 0; p < 256; p++) {
+                                const dr = r - pal[p * 3];
+                                const dg = g - pal[p * 3 + 1];
+                                const db = b - pal[p * 3 + 2];
+                                const dist = dr * dr * 2 + dg * dg * 4 + db * db;
+                                if (dist < bestDist) {
+                                    bestDist = dist;
+                                    bestIdx = p;
+                                    if (dist === 0) break;
+                                }
+                            }
+                            lut[(r5 << 10) | (g5 << 5) | b5] = bestIdx;
+                        }
+                    }
+                }
+                PureGifEncoder._cachedPalette = pal;
+                PureGifEncoder._cachedLut = lut;
+                this.palette = pal;
+                this.rgb555Lut = lut;
+            }
+
+            writeHeader() {
+                this.chunks.push(new Uint8Array([
+                    0x47, 0x49, 0x46, 0x38, 0x39, 0x61,
+                    this.width & 0xFF, (this.width >> 8) & 0xFF,
+                    this.height & 0xFF, (this.height >> 8) & 0xFF,
+                    0xF7, 0x00, 0x00
+                ]));
+                this.chunks.push(this.palette);
+                this.chunks.push(new Uint8Array([
+                    0x21, 0xFF, 0x0B,
+                    0x4E, 0x45, 0x54, 0x53, 0x43, 0x41, 0x50, 0x45, 0x32, 0x2E, 0x30,
+                    0x03, 0x01, 0x00, 0x00, 0x00
+                ]));
+            }
+
+            addFrame(rgbaData, customDelayCs = null) {
+                const pixelCount = this.width * this.height;
+                const indexed = new Uint8Array(pixelCount);
+                const lut = this.rgb555Lut;
+
+                for (let i = 0, p = 0; i < pixelCount; i++, p += 4) {
+                    const r = rgbaData[p];
+                    const g = rgbaData[p + 1];
+                    const b = rgbaData[p + 2];
+                    if (r <= 8 && g <= 10 && b <= 14) {
+                        indexed[i] = 0;
+                    } else {
+                        indexed[i] = lut[((r >> 3) << 10) | ((g >> 3) << 5) | (b >> 3)];
+                    }
+                }
+
+                const delay = customDelayCs !== null ? Math.max(2, Math.round(customDelayCs)) : this.delayCs;
+                this.chunks.push(new Uint8Array([
+                    0x21, 0xF9, 0x04, 0x04,
+                    delay & 0xFF, (delay >> 8) & 0xFF,
+                    0x00, 0x00, 0x2C,
+                    0x00, 0x00, 0x00, 0x00,
+                    this.width & 0xFF, (this.width >> 8) & 0xFF,
+                    this.height & 0xFF, (this.height >> 8) & 0xFF,
+                    0x00
+                ]));
+                this.chunks.push(this.lzwEncode(indexed));
+            }
+
+            lzwEncode(pixels) {
+                const minCodeSize = 8;
+                const clearCode = 1 << minCodeSize;
+                const eoiCode = clearCode + 1;
+
+                const out = [minCodeSize];
+                const subBlock = new Uint8Array(255);
+                let subLen = 0;
+                let bitBuf = 0;
+                let bitCount = 0;
+
+                const flushSubBlock = () => {
+                    if (subLen > 0) {
+                        out.push(subLen);
+                        for (let i = 0; i < subLen; i++) out.push(subBlock[i]);
+                        subLen = 0;
+                    }
+                };
+                const emitCode = (code, codeSize) => {
+                    bitBuf |= (code << bitCount);
+                    bitCount += codeSize;
+                    while (bitCount >= 8) {
+                        subBlock[subLen++] = bitBuf & 0xFF;
+                        bitBuf >>= 8;
+                        bitCount -= 8;
+                        if (subLen === 255) flushSubBlock();
+                    }
+                };
+
+                const HASH_SIZE = 5003;
+                const hashKeys = new Int32Array(HASH_SIZE).fill(-1);
+                const hashVals = new Int16Array(HASH_SIZE);
+
+                let codeSize = minCodeSize + 1;
+                let nextCode = eoiCode + 1;
+                emitCode(clearCode, codeSize);
+
+                let ent = pixels[0];
+                for (let i = 1; i < pixels.length; i++) {
+                    const k = pixels[i];
+                    const key = (ent << 8) | k;
+                    let h = ((k << 4) ^ ent) % HASH_SIZE;
+                    if (h < 0) h += HASH_SIZE;
+
+                    let found = -1;
+                    while (hashKeys[h] !== -1) {
+                        if (hashKeys[h] === key) { found = hashVals[h]; break; }
+                        if (++h >= HASH_SIZE) h = 0;
+                    }
+                    if (found !== -1) {
+                        ent = found;
+                    } else {
+                        emitCode(ent, codeSize);
+                        if (nextCode < 4096) {
+                            hashKeys[h] = key;
+                            hashVals[h] = nextCode++;
+                            if (nextCode > (1 << codeSize) && codeSize < 12) codeSize++;
+                        } else {
+                            emitCode(clearCode, codeSize);
+                            hashKeys.fill(-1);
+                            nextCode = eoiCode + 1;
+                            codeSize = minCodeSize + 1;
+                        }
+                        ent = k;
+                    }
+                }
+
+                emitCode(ent, codeSize);
+                emitCode(eoiCode, codeSize);
+                if (bitCount > 0) subBlock[subLen++] = bitBuf & 0xFF;
+                flushSubBlock();
+                out.push(0x00);
+                return new Uint8Array(out);
+            }
+
+            finish() {
+                this.chunks.push(new Uint8Array([0x3B]));
+                return new Blob(this.chunks, { type: 'image/gif' });
+            }
+        }
+
+        // ============================================================================
+        // 4. TRẠNG THÁI ỨNG DỤNG & BỘ NHỚ ĐỆM TÁI SỬ DỤNG (ZERO GC OVERHEAD)
+        // ============================================================================
+        const CHARSETS = {
+            ultra: " .'`^\",:;Il!i><~+_-?][}{1)(|\\/tfjrxnuvczXYUJCLQ0OZmwqpdbkhao*#MW&8%B@$",
+            detailed: ' .,:;i1tfLCG08@#MW&%',
+            basic: ' .:-=+*#%@',
+            blocks: ' ░▒▓█'
+        };
+
+        const glyphCache = new GlyphBitmapCache();
+
+        const state = {
+            mediaType: 'demo',       // demo | image | gif | video
+            sourceImage: null,
+            gifFrames: [],           // [{ canvas, delayMs, cachedCols, cachedRows, cachedPixels }]
+            gifTotalDurMs: 1,
+            gifFrameIdx: 0,
+            fileName: 'christmas_tree_hd.py',
+
+            // Ma trận & ký tự (mặc định 180 cột cho độ nét cao ngay khi mở)
+            cols: 180,
+            glyphScale: 8,
+            charsetType: 'ultra',
+            customCharset: ' .:-=+*#%@',
+
+            // Màu sắc & độ nét
+            colorMode: 'truecolor',  // truecolor | vivid | matrix | mono
+            sharpen: 0.35,           // 0 .. 1
+            saturation: 1.15,        // 0 .. 2.2
+            brightness: 0,
+            contrast: 18,
+            invert: false,
+            glow: true,
+            showHud: true,
+
+            // Animation 60 FPS
+            isPlaying: true,
+            animMode: 'twinkle',
+            targetFps: 60,
+            actualFps: 60,
+            animIntensity: 0.65,
+            animSpeed: 1.0,
+            elapsedSec: 0,
+            lastFrameTs: 0,
+            fpsCounterFrames: 0,
+            fpsCounterLastTs: 0,
+
+            // Xuất GIF
+            gifDuration: 2.5,
+            gifExportFps: 15,
+            gifExportScale: 0.75,
+            isExportingGif: false,
+
+            // Trạng thái Zoom & Pan khung xem trước
+            view: {
+                scale: 1,
+                tx: 0,
+                ty: 0,
+                isDragging: false,
+                lastX: 0,
+                lastY: 0
+            },
+
+            // Bộ đệm tái sử dụng cho Blitter (tránh tạo mảng mới mỗi khung hình)
+            gridCols: 0,
+            gridRows: 0,
+            cellChars: null,         // Array of single chars (cho xuất HTML/ANSI/Text)
+            cellGlyphs: null,        // Array of Glyph objects (cho Blitter siêu nhanh)
+            cellR: null,
+            cellG: null,
+            cellB: null,
+            sharpBuf: null,
+
+            // Buffer ImageData của canvas chính
+            mainImgData: null,
+            mainBuf32: null,
+            mainW: 0,
+            mainH: 0,
+
+            // Cache dữ liệu pixel nguồn tĩnh khi không đổi độ phân giải
+            staticCacheKey: '',
+            staticPixels: null,
+
+            // Hạt hiệu ứng thủ tục
+            snowParticles: [],
+            matrixDrops: []
+        };
+
+        const dom = {
+            dropZone: document.getElementById('dropZone'),
+            fileInput: document.getElementById('fileInput'),
+            sourcePreview: document.getElementById('sourcePreview'),
+            mediaTypeBadge: document.getElementById('mediaTypeBadge'),
+            fileNameLabel: document.getElementById('fileNameLabel'),
+            btnUseSample: document.getElementById('btnUseSample'),
+
+            resolutionSlider: document.getElementById('resolutionSlider'),
+            resolutionVal: document.getElementById('resolutionVal'),
+            matrixSummaryTag: document.getElementById('matrixSummaryTag'),
+            resPresetButtons: document.querySelectorAll('.res-preset-btn'),
+            glyphScaleSlider: document.getElementById('glyphScaleSlider'),
+            glyphScaleVal: document.getElementById('glyphScaleVal'),
+            charsetSelect: document.getElementById('charsetSelect'),
+            customCharsetWrapper: document.getElementById('customCharsetWrapper'),
+            customCharsetInput: document.getElementById('customCharsetInput'),
+
+            colorModeButtons: document.querySelectorAll('.color-mode-btn'),
+            sharpenSlider: document.getElementById('sharpenSlider'),
+            sharpenVal: document.getElementById('sharpenVal'),
+            saturationSlider: document.getElementById('saturationSlider'),
+            saturationVal: document.getElementById('saturationVal'),
+            brightnessSlider: document.getElementById('brightnessSlider'),
+            brightnessVal: document.getElementById('brightnessVal'),
+            contrastSlider: document.getElementById('contrastSlider'),
+            contrastVal: document.getElementById('contrastVal'),
+            glowToggle: document.getElementById('glowToggle'),
+            hudToggle: document.getElementById('hudToggle'),
+            invertToggle: document.getElementById('invertToggle'),
+            btnResetSettings: document.getElementById('btnResetSettings'),
+
+            btnPlayPause: document.getElementById('btnPlayPause'),
+            playPauseIcon: document.getElementById('playPauseIcon'),
+            playPauseText: document.getElementById('playPauseText'),
+            animModeSelect: document.getElementById('animModeSelect'),
+            fpsSlider: document.getElementById('fpsSlider'),
+            fpsVal: document.getElementById('fpsVal'),
+            animIntensitySlider: document.getElementById('animIntensitySlider'),
+            animIntensityVal: document.getElementById('animIntensityVal'),
+            animSpeedSlider: document.getElementById('animSpeedSlider'),
+            animSpeedVal: document.getElementById('animSpeedVal'),
+
+            gifDurationSlider: document.getElementById('gifDurationSlider'),
+            gifDurationVal: document.getElementById('gifDurationVal'),
+            gifFpsSlider: document.getElementById('gifFpsSlider'),
+            gifFpsVal: document.getElementById('gifFpsVal'),
+            gifScaleButtons: document.querySelectorAll('.gif-scale-btn'),
+            btnExportGif: document.getElementById('btnExportGif'),
+            btnExportGifText: document.getElementById('btnExportGifText'),
+            btnQuickGif: document.getElementById('btnQuickGif'),
+            gifProgressWrap: document.getElementById('gifProgressWrap'),
+            gifProgressLabel: document.getElementById('gifProgressLabel'),
+            gifProgressPct: document.getElementById('gifProgressPct'),
+            gifProgressBar: document.getElementById('gifProgressBar'),
+
+            viewportContainer: document.getElementById('viewportContainer'),
+            canvasStage: document.getElementById('canvasStage'),
+            asciiCanvas: document.getElementById('asciiCanvas'),
+            sampleCanvas: document.getElementById('sampleCanvas'),
+            bloomCanvas: document.getElementById('bloomCanvas'),
+            hiddenVideo: document.getElementById('hiddenVideo'),
+
+            btnZoomOut: document.getElementById('btnZoomOut'),
+            btnZoomIn: document.getElementById('btnZoomIn'),
+            btnZoom100: document.getElementById('btnZoom100'),
+            btnZoomFit: document.getElementById('btnZoomFit'),
+            zoomPctLabel: document.getElementById('zoomPctLabel'),
+
+            terminalTitle: document.getElementById('terminalTitle'),
+            gifFrameIndicator: document.getElementById('gifFrameIndicator'),
+            statMatrix: document.getElementById('statMatrix'),
+            statTime: document.getElementById('statTime'),
+            statCanvasDim: document.getElementById('statCanvasDim'),
+            statusDot: document.getElementById('statusDot'),
+            statusLiveText: document.getElementById('statusLiveText'),
+
+            btnExportPng: document.getElementById('btnExportPng'),
+            btnExportHtml: document.getElementById('btnExportHtml'),
+            btnCopyAnsi: document.getElementById('btnCopyAnsi'),
+            btnCopyPlain: document.getElementById('btnCopyPlain'),
+            toastContainer: document.getElementById('toastContainer')
+        };
+
+        const sampleCtx = dom.sampleCanvas.getContext('2d', { willReadFrequently: true });
+        const mainCtx = dom.asciiCanvas.getContext('2d', { alpha: false });
+        const bloomCtx = dom.bloomCanvas.getContext('2d');
+
+        // ============================================================================
+        // 5. THÔNG BÁO TOAST (KHÔNG DÙNG ALERT)
+        // ============================================================================
+        function showToast(message, type = 'success') {
+            const toast = document.createElement('div');
+            const palette = {
+                success: 'bg-[#0e1915] border-emerald-500/40 text-emerald-300',
+                error: 'bg-[#1c1014] border-rose-500/40 text-rose-300',
+                info: 'bg-[#0e1624] border-sky-500/40 text-sky-300'
+            };
+            const dot = type === 'error' ? 'bg-rose-400' : type === 'info' ? 'bg-sky-400' : 'bg-emerald-400';
+            toast.className = `pointer-events-auto flex items-center gap-2 px-3.5 py-2 rounded-xl border shadow-2xl text-xs font-medium transition-all duration-300 translate-y-3 opacity-0 ${palette[type] || palette.info}`;
+            toast.innerHTML = `<span class="w-2 h-2 rounded-full ${dot} shrink-0"></span><span>${message}</span>`;
+            dom.toastContainer.appendChild(toast);
+            requestAnimationFrame(() => toast.classList.remove('translate-y-3', 'opacity-0'));
+            setTimeout(() => {
+                toast.classList.add('translate-y-2', 'opacity-0');
+                setTimeout(() => toast.remove(), 300);
+            }, 2800);
+        }
+
+        // ============================================================================
+        // 6. CẢNH DEMO ĐỘ PHÂN GIẢI CAO: CÂY THÔNG NOEL PHÁT SÁNG TRÊN BẦU TRỜI SAO
+        // ============================================================================
+        function createHighResChristmasTreeCanvas() {
+            const canvas = document.createElement('canvas');
+            const w = 800;
+            const h = 960;
+            canvas.width = w;
+            canvas.height = h;
+            const ctx = canvas.getContext('2d');
+
+            // Bầu trời đêm sâu
+            const bgGrad = ctx.createLinearGradient(0, 0, 0, h);
+            bgGrad.addColorStop(0, '#010308');
+            bgGrad.addColorStop(0.65, '#040812');
+            bgGrad.addColorStop(1, '#0b101d');
+            ctx.fillStyle = bgGrad;
+            ctx.fillRect(0, 0, w, h);
+
+            // Cực quang nhẹ phía sau cây thông
+            const aurora = ctx.createRadialGradient(w * 0.5, h * 0.35, 30, w * 0.5, h * 0.35, 420);
+            aurora.addColorStop(0, 'rgba(16, 185, 129, 0.16)');
+            aurora.addColorStop(0.5, 'rgba(56, 189, 248, 0.08)');
+            aurora.addColorStop(1, 'rgba(0, 0, 0, 0)');
+            ctx.fillStyle = aurora;
+            ctx.fillRect(0, 0, w, h);
+
+            // Bầu trời đầy sao sắc nét
+            let seed = 1337;
+            const rand = () => {
+                seed = (seed * 1664525 + 1013904223) % 4294967296;
+                return seed / 4294967296;
+            };
+            for (let i = 0; i < 260; i++) {
+                const sx = rand() * w;
+                const sy = rand() * (h * 0.72);
+                const sr = 0.9 + rand() * 2.6;
+                const alpha = 0.45 + rand() * 0.55;
+                ctx.fillStyle = rand() > 0.75 ? `rgba(255, 232, 150, ${alpha})` : `rgba(200, 230, 255, ${alpha})`;
+                ctx.beginPath();
+                ctx.arc(sx, sy, sr, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            // Mặt đất tuyết phản chiếu ánh đèn
+            const snowGlow = ctx.createRadialGradient(w / 2, 810, 25, w / 2, 810, 390);
+            snowGlow.addColorStop(0, 'rgba(110, 150, 200, 0.38)');
+            snowGlow.addColorStop(0.6, 'rgba(40, 70, 110, 0.15)');
+            snowGlow.addColorStop(1, 'rgba(5, 7, 12, 0)');
+            ctx.fillStyle = snowGlow;
+            ctx.fillRect(0, 680, w, 280);
+
+            // Thân cây gỗ
+            ctx.fillStyle = '#5c3317';
+            ctx.fillRect(w / 2 - 28, 725, 56, 85);
+
+            // 5 tầng tán cây thông chi tiết + viền sáng & dây đèn
+            const layers = [
+                { topY: 145, botY: 310, halfW: 105 },
+                { topY: 235, botY: 425, halfW: 165 },
+                { topY: 340, botY: 545, halfW: 225 },
+                { topY: 455, botY: 660, halfW: 278 },
+                { topY: 565, botY: 760, halfW: 325 }
+            ];
+
+            layers.forEach((layer, idx) => {
+                const grad = ctx.createLinearGradient(w / 2 - layer.halfW, layer.topY, w / 2 + layer.halfW, layer.botY);
+                grad.addColorStop(0, '#0a5e2c');
+                grad.addColorStop(0.35, '#19c25b');
+                grad.addColorStop(0.6, '#2be070');
+                grad.addColorStop(0.88, '#0f8c3f');
+                grad.addColorStop(1, '#063d1b');
+
+                ctx.fillStyle = grad;
+                ctx.beginPath();
+                ctx.moveTo(w / 2, layer.topY);
+                ctx.lineTo(w / 2 + layer.halfW, layer.botY);
+                ctx.lineTo(w / 2 - layer.halfW, layer.botY);
+                ctx.closePath();
+                ctx.fill();
+
+                // Dây đèn vàng lượn sóng
+                ctx.strokeStyle = '#ffd54f';
+                ctx.lineWidth = 10 + idx * 1.4;
+                ctx.lineCap = 'round';
+                ctx.beginPath();
+                const sx = w / 2 - layer.halfW * 0.72;
+                const ex = w / 2 + layer.halfW * 0.74;
+                const y1 = layer.topY + (layer.botY - layer.topY) * 0.56;
+                const y2 = layer.topY + (layer.botY - layer.topY) * 0.84;
+                ctx.moveTo(sx, y1);
+                ctx.quadraticCurveTo(w / 2, y2 + 28, ex, y2 - 14);
+                ctx.stroke();
+            });
+
+            // 70 quả châu & đèn LED nhiều màu phát sáng
+            const bulbColors = ['#ff3b3b', '#ffdf40', '#38bdf8', '#f472b6', '#ffffff', '#ff7b29', '#a78bfa'];
+            for (let i = 0; i < 72; i++) {
+                const t = rand();
+                const oy = 185 + t * 550;
+                const maxHalfW = 28 + t * 265;
+                const ox = w / 2 + (rand() * 2 - 1) * maxHalfW * 0.86;
+                const color = bulbColors[Math.floor(rand() * bulbColors.length)];
+                const radius = 7 + rand() * 8;
+
+                const glow = ctx.createRadialGradient(ox, oy, 1, ox, oy, radius * 2.4);
+                glow.addColorStop(0, color);
+                glow.addColorStop(1, 'rgba(0,0,0,0)');
+                ctx.fillStyle = glow;
+                ctx.beginPath();
+                ctx.arc(ox, oy, radius * 2.4, 0, Math.PI * 2);
+                ctx.fill();
+
+                ctx.fillStyle = color;
+                ctx.beginPath();
+                ctx.arc(ox, oy, radius, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            // Hào quang + Ngôi sao vàng 5 cánh đỉnh cây
+            const starGlow = ctx.createRadialGradient(w / 2, 122, 8, w / 2, 122, 115);
+            starGlow.addColorStop(0, 'rgba(255, 244, 120, 1)');
+            starGlow.addColorStop(0.4, 'rgba(255, 195, 45, 0.45)');
+            starGlow.addColorStop(1, 'rgba(255, 180, 0, 0)');
+            ctx.fillStyle = starGlow;
+            ctx.beginPath();
+            ctx.arc(w / 2, 122, 115, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.save();
+            ctx.translate(w / 2, 122);
+            ctx.fillStyle = '#fff066';
+            ctx.beginPath();
+            for (let i = 0; i < 5; i++) {
+                const outer = (i * 72 - 90) * Math.PI / 180;
+                const inner = (i * 72 + 36 - 90) * Math.PI / 180;
+                const ox = Math.cos(outer) * 44;
+                const oy = Math.sin(outer) * 44;
+                const ix = Math.cos(inner) * 18;
+                const iy = Math.sin(inner) * 18;
+                if (i === 0) ctx.moveTo(ox, oy);
+                else ctx.lineTo(ox, oy);
+                ctx.lineTo(ix, iy);
+            }
+            ctx.closePath();
+            ctx.fill();
+            ctx.restore();
+
+            // Hộp quà nhiều màu dưới gốc
+            const gifts = [
+                { x: 145, y: 725, gw: 118, gh: 92, body: '#2563eb', ribbon: '#93c5fd' },
+                { x: 278, y: 742, gw: 132, gh: 100, body: '#ef4444', ribbon: '#fde047' },
+                { x: 425, y: 735, gw: 112, gh: 94, body: '#10b981', ribbon: '#fef08a' },
+                { x: 548, y: 728, gw: 122, gh: 98, body: '#dc2626', ribbon: '#ffffff' }
+            ];
+            gifts.forEach(g => {
+                ctx.fillStyle = g.body;
+                ctx.fillRect(g.x, g.y, g.gw, g.gh);
+                ctx.fillStyle = g.ribbon;
+                ctx.fillRect(g.x + g.gw / 2 - 8, g.y, 16, g.gh);
+                ctx.fillRect(g.x, g.y + g.gh / 2 - 8, g.gw, 16);
+            });
+
+            // Chữ MERRY CHRISTMAS rực rỡ
+            ctx.font = 'bold 40px "JetBrains Mono", monospace';
+            ctx.textAlign = 'center';
+            const textGrad = ctx.createLinearGradient(200, 900, 600, 900);
+            textGrad.addColorStop(0, '#ef4444');
+            textGrad.addColorStop(0.5, '#facc15');
+            textGrad.addColorStop(1, '#22c55e');
+            ctx.fillStyle = textGrad;
+            ctx.fillText('MERRY CHRISTMAS', w / 2, 905);
+
+            return canvas;
+        }
+
+        function loadSampleDemo() {
+            stopVideoIfPlaying();
+            const sample = createHighResChristmasTreeCanvas();
+            state.mediaType = 'demo';
+            state.sourceImage = sample;
+            state.gifFrames = [];
+            state.staticCacheKey = '';
+            state.fileName = 'christmas_tree_hd.py';
+            state.elapsedSec = 0;
+
+            dom.sourcePreview.src = sample.toDataURL('image/png');
+            dom.mediaTypeBadge.textContent = 'DEMO';
+            dom.mediaTypeBadge.className = 'absolute bottom-0.5 right-0.5 text-[8px] font-mono font-bold px-1 rounded bg-emerald-600/90 text-white';
+            dom.fileNameLabel.textContent = state.fileName;
+            dom.terminalTitle.textContent = `${state.fileName} — 60 FPS Blitter`;
+            dom.gifFrameIndicator.classList.add('hidden');
+
+            state.animMode = 'twinkle';
+            dom.animModeSelect.value = 'twinkle';
+
+            renderSingleFrame(0);
+            fitCanvasToViewport();
+        }
+
+        // ============================================================================
+        // 7. NHẬP ẢNH TĨNH, GIF ĐỘNG (ImageDecoder + PIXEL CACHE) & VIDEO
+        // ============================================================================
+        function stopVideoIfPlaying() {
+            if (!dom.hiddenVideo.paused) dom.hiddenVideo.pause();
+            if (dom.hiddenVideo.src && dom.hiddenVideo.src.startsWith('blob:')) {
+                URL.revokeObjectURL(dom.hiddenVideo.src);
+            }
+            dom.hiddenVideo.removeAttribute('src');
+        }
+
+        async function decodeAnimatedGif(file) {
+            if (typeof ImageDecoder === 'undefined') return null;
+            try {
+                const buffer = await file.arrayBuffer();
+                const decoder = new ImageDecoder({ data: buffer, type: 'image/gif' });
+                await decoder.tracks.ready;
+                const track = decoder.tracks.selectedTrack;
+                const frameCount = Math.min(track.frameCount || 1, 180);
+                if (frameCount <= 1) {
+                    decoder.close();
+                    return null;
+                }
+                const frames = [];
+                let totalDur = 0;
+                for (let i = 0; i < frameCount; i++) {
+                    const res = await decoder.decode({ frameIndex: i });
+                    const vf = res.image;
+                    const c = document.createElement('canvas');
+                    c.width = vf.displayWidth;
+                    c.height = vf.displayHeight;
+                    c.getContext('2d').drawImage(vf, 0, 0);
+                    const delayMs = Math.max(20, Math.round((vf.duration || 80000) / 1000));
+                    totalDur += delayMs;
+                    frames.push({
+                        canvas: c,
+                        delayMs,
+                        cachedCols: 0,
+                        cachedRows: 0,
+                        cachedPixels: null
+                    });
+                    vf.close();
+                }
+                decoder.close();
+                return { frames, totalDur };
+            } catch (err) {
+                console.warn('ImageDecoder fallback:', err);
+                return null;
+            }
+        }
+
+        async function handleUploadedFile(file) {
+            if (!file) return;
+            const isVideo = file.type.startsWith('video/');
+            const isGif = file.type === 'image/gif' || file.name.toLowerCase().endsWith('.gif');
+            const isImage = file.type.startsWith('image/');
+
+            if (!isImage && !isVideo) {
+                showToast('Vui lòng chọn ảnh (PNG, JPG, WEBP), GIF hoặc video (MP4, WEBM).', 'error');
+                return;
+            }
+
+            stopVideoIfPlaying();
+            state.fileName = file.name;
+            state.elapsedSec = 0;
+            state.staticCacheKey = '';
+            dom.fileNameLabel.textContent = file.name;
+            dom.terminalTitle.textContent = `${file.name} — 60 FPS Blitter`;
+
+            if (isVideo) {
+                const url = URL.createObjectURL(file);
+                dom.hiddenVideo.src = url;
+                dom.hiddenVideo.onloadeddata = () => {
+                    dom.hiddenVideo.play().catch(() => {});
+                    state.mediaType = 'video';
+                    state.gifFrames = [];
+                    state.sourceImage = null;
+
+                    const thumb = document.createElement('canvas');
+                    thumb.width = dom.hiddenVideo.videoWidth || 320;
+                    thumb.height = dom.hiddenVideo.videoHeight || 240;
+                    thumb.getContext('2d').drawImage(dom.hiddenVideo, 0, 0, thumb.width, thumb.height);
+                    dom.sourcePreview.src = thumb.toDataURL('image/jpeg', 0.7);
+
+                    dom.mediaTypeBadge.textContent = 'VIDEO';
+                    dom.mediaTypeBadge.className = 'absolute bottom-0.5 right-0.5 text-[8px] font-mono font-bold px-1 rounded bg-purple-600/90 text-white';
+                    dom.gifFrameIndicator.classList.add('hidden');
+
+                    state.animMode = 'none';
+                    dom.animModeSelect.value = 'none';
+                    setPlaying(true);
+
+                    renderSingleFrame(0);
+                    fitCanvasToViewport();
+                    showToast(`Đang phát video "${file.name}" ở 60 FPS Blitter!`, 'success');
+                };
+                dom.hiddenVideo.onerror = () => showToast('Không thể phát định dạng video này.', 'error');
+                return;
+            }
+
+            if (isGif) {
+                showToast('Đang giải mã & cache khung hình GIF...', 'info');
+                const decoded = await decodeAnimatedGif(file);
+                if (decoded && decoded.frames.length > 1) {
+                    state.mediaType = 'gif';
+                    state.gifFrames = decoded.frames;
+                    state.gifTotalDurMs = decoded.totalDur;
+                    state.gifFrameIdx = 0;
+                    state.sourceImage = decoded.frames[0].canvas;
+
+                    dom.sourcePreview.src = decoded.frames[0].canvas.toDataURL('image/png');
+                    dom.mediaTypeBadge.textContent = `GIF ${decoded.frames.length}f`;
+                    dom.mediaTypeBadge.className = 'absolute bottom-0.5 right-0.5 text-[8px] font-mono font-bold px-1 rounded bg-cyan-600/90 text-white';
+                    dom.gifFrameIndicator.classList.remove('hidden');
+                    dom.gifFrameIndicator.textContent = `GIF 1/${decoded.frames.length}`;
+
+                    state.animMode = 'none';
+                    dom.animModeSelect.value = 'none';
+                    setPlaying(true);
+
+                    renderSingleFrame(0);
+                    fitCanvasToViewport();
+                    showToast(`Đã tải GIF động (${decoded.frames.length} khung hình, đã cache mượt)!`, 'success');
+                    return;
+                }
+            }
+
+            // Ảnh tĩnh
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const img = new Image();
+                img.onload = () => {
+                    state.mediaType = 'image';
+                    state.sourceImage = img;
+                    state.gifFrames = [];
+                    state.staticCacheKey = '';
+
+                    dom.sourcePreview.src = e.target.result;
+                    dom.mediaTypeBadge.textContent = 'IMG';
+                    dom.mediaTypeBadge.className = 'absolute bottom-0.5 right-0.5 text-[8px] font-mono font-bold px-1 rounded bg-sky-600/90 text-white';
+                    dom.gifFrameIndicator.classList.add('hidden');
+
+                    renderSingleFrame(0);
+                    fitCanvasToViewport();
+                    showToast(`Đã tải "${file.name}" ở độ phân giải ${state.cols} cột!`, 'success');
+                };
+                img.onerror = () => showToast('Không thể đọc tệp hình ảnh này.', 'error');
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // ============================================================================
+        // 8. BỘ BIÊN DỊCH PIXEL -> ASCII + SHARPEN + SATURATION + ANIMATION
+        // ============================================================================
+        function getActiveCharset() {
+            if (state.charsetType === 'custom') {
+                return state.customCharset && state.customCharset.length >= 2 ? state.customCharset : CHARSETS.basic;
+            }
+            return CHARSETS[state.charsetType] || CHARSETS.ultra;
+        }
+
+        function clamp255(v) {
+            return v < 0 ? 0 : (v > 255 ? 255 : v | 0);
+        }
+
+        function ensureGridBuffers(cols, rows) {
+            const total = cols * rows;
+            if (state.gridCols !== cols || state.gridRows !== rows) {
+                state.gridCols = cols;
+                state.gridRows = rows;
+                state.cellChars = new Array(total);
+                state.cellGlyphs = new Array(total);
+                state.cellR = new Uint8Array(total);
+                state.cellG = new Uint8Array(total);
+                state.cellB = new Uint8Array(total);
+                state.sharpBuf = new Uint8ClampedArray(total * 4);
+            }
+            if (state.snowParticles.length !== 85) {
+                state.snowParticles = Array.from({ length: 85 }, (_, i) => ({
+                    x: ((i * 37.3) % 100) / 100,
+                    y: ((i * 71.7) % 100) / 100,
+                    speed: 0.11 + ((i * 19) % 10) * 0.022,
+                    drift: (i % 2 === 0 ? 1 : -1) * (0.015 + (i % 5) * 0.007),
+                    char: i % 3 === 0 ? '*' : (i % 3 === 1 ? '+' : '.')
+                }));
+            }
+            if (state.matrixDrops.length !== cols) {
+                state.matrixDrops = Array.from({ length: cols }, (_, i) => ({
+                    phase: ((i * 17.3) % 100) / 100,
+                    speed: 0.35 + ((i * 29) % 10) * 0.08,
+                    length: 6 + (i % 12)
+                }));
+            }
+        }
+
+        /**
+         * Lấy mảng pixel RGBA đã lấy mẫu theo kích thước (cols × rows).
+         * Có cache sẵn cho ảnh tĩnh và từng khung GIF để tránh drawImage lặp lại tốn CPU!
+         */
+        function getSampledPixels(timeSec) {
+            const charset = getActiveCharset();
+            glyphCache.rebuild(charset, state.glyphScale);
+
+            const charAspect = glyphCache.cellW / glyphCache.cellH;
+            const cols = state.cols;
+
+            if (state.mediaType === 'video' && dom.hiddenVideo.readyState >= 2) {
+                const srcW = dom.hiddenVideo.videoWidth;
+                const srcH = dom.hiddenVideo.videoHeight;
+                if (!srcW || !srcH) return null;
+                const rows = Math.max(1, Math.round((srcH / srcW) * cols * charAspect));
+                dom.sampleCanvas.width = cols;
+                dom.sampleCanvas.height = rows;
+                sampleCtx.drawImage(dom.hiddenVideo, 0, 0, cols, rows);
+                return { cols, rows, pixels: sampleCtx.getImageData(0, 0, cols, rows).data };
+            }
+
+            if (state.mediaType === 'gif' && state.gifFrames.length > 0) {
+                const totalDur = state.gifTotalDurMs || 1000;
+                const tMs = ((timeSec * 1000 * state.animSpeed) % totalDur + totalDur) % totalDur;
+                let acc = 0;
+                let chosenIdx = 0;
+                for (let i = 0; i < state.gifFrames.length; i++) {
+                    acc += state.gifFrames[i].delayMs;
+                    if (tMs <= acc) { chosenIdx = i; break; }
+                }
+                state.gifFrameIdx = chosenIdx;
+                dom.gifFrameIndicator.textContent = `GIF ${chosenIdx + 1}/${state.gifFrames.length}`;
+
+                const frame = state.gifFrames[chosenIdx];
+                const srcW = frame.canvas.width;
+                const srcH = frame.canvas.height;
+                const rows = Math.max(1, Math.round((srcH / srcW) * cols * charAspect));
+
+                if (frame.cachedCols !== cols || frame.cachedRows !== rows || !frame.cachedPixels) {
+                    dom.sampleCanvas.width = cols;
+                    dom.sampleCanvas.height = rows;
+                    sampleCtx.clearRect(0, 0, cols, rows);
+                    sampleCtx.drawImage(frame.canvas, 0, 0, cols, rows);
+                    frame.cachedPixels = sampleCtx.getImageData(0, 0, cols, rows).data;
+                    frame.cachedCols = cols;
+                    frame.cachedRows = rows;
+                }
+                return { cols, rows, pixels: frame.cachedPixels };
+            }
+
+            const src = state.sourceImage;
+            if (!src) return null;
+            const srcW = src.naturalWidth || src.width;
+            const srcH = src.naturalHeight || src.height;
+            if (!srcW || !srcH) return null;
+            const rows = Math.max(1, Math.round((srcH / srcW) * cols * charAspect));
+
+            const cacheKey = `${cols}x${rows}_${srcW}x${srcH}`;
+            if (state.staticCacheKey !== cacheKey || !state.staticPixels) {
+                dom.sampleCanvas.width = cols;
+                dom.sampleCanvas.height = rows;
+                sampleCtx.clearRect(0, 0, cols, rows);
+                sampleCtx.imageSmoothingEnabled = true;
+                sampleCtx.imageSmoothingQuality = 'high';
+                sampleCtx.drawImage(src, 0, 0, cols, rows);
+                state.staticPixels = sampleCtx.getImageData(0, 0, cols, rows).data;
+                state.staticCacheKey = cacheKey;
+            }
+            return { cols, rows, pixels: state.staticPixels };
+        }
+
+        /**
+         * Bộ lọc làm sắc nét Unsharp Mask 5 điểm cực nhanh trên lưới pixel đã lấy mẫu.
+         */
+        function applyFastSharpen(src, dst, cols, rows, amount) {
+            const s = amount * 0.65;
+            const centerW = 1 + 4 * s;
+            for (let y = 0; y < rows; y++) {
+                const yUp = y > 0 ? y - 1 : 0;
+                const yDn = y < rows - 1 ? y + 1 : rows - 1;
+                for (let x = 0; x < cols; x++) {
+                    const xLt = x > 0 ? x - 1 : 0;
+                    const xRt = x < cols - 1 ? x + 1 : cols - 1;
+
+                    const i = (y * cols + x) * 4;
+                    const iU = (yUp * cols + x) * 4;
+                    const iD = (yDn * cols + x) * 4;
+                    const iL = (y * cols + xLt) * 4;
+                    const iR = (y * cols + xRt) * 4;
+
+                    dst[i]     = src[i] * centerW - s * (src[iU] + src[iD] + src[iL] + src[iR]);
+                    dst[i + 1] = src[i + 1] * centerW - s * (src[iU + 1] + src[iD + 1] + src[iL + 1] + src[iR + 1]);
+                    dst[i + 2] = src[i + 2] * centerW - s * (src[iU + 2] + src[iD + 2] + src[iL + 2] + src[iR + 2]);
+                    dst[i + 3] = src[i + 3];
+                }
+            }
+            return dst;
+        }
+
+        // Xoay sắc độ (Hue Shift) cho hiệu ứng Nhịp thở Neon
+        function rotateHueRGB(r, g, b, cosA, sinA) {
+            const k = 0.3333333;
+            const sq = 0.5773503;
+            const oneMinus = 1 - cosA;
+            const m00 = cosA + oneMinus * k;
+            const m01 = k * oneMinus - sq * sinA;
+            const m02 = k * oneMinus + sq * sinA;
+            const m10 = k * oneMinus + sq * sinA;
+            const m11 = cosA + k * oneMinus;
+            const m12 = k * oneMinus - sq * sinA;
+            const m20 = k * oneMinus - sq * sinA;
+            const m21 = k * oneMinus + sq * sinA;
+            const m22 = cosA + k * oneMinus;
+            return [
+                clamp255(r * m00 + g * m01 + b * m02),
+                clamp255(r * m10 + g * m11 + b * m12),
+                clamp255(r * m20 + g * m21 + b * m22)
+            ];
+        }
+
+        function compileAsciiFrame(timeSec) {
+            const sampled = getSampledPixels(timeSec);
+            if (!sampled) return false;
+
+            const { cols, rows } = sampled;
+            ensureGridBuffers(cols, rows);
+
+            const imgData = state.sharpen > 0.01
+                ? applyFastSharpen(sampled.pixels, state.sharpBuf, cols, rows, state.sharpen)
+                : sampled.pixels;
+
+            const charset = getActiveCharset();
+            const charLen = charset.length;
+            const glyphs = glyphCache.charsetGlyphs;
+            const spaceGlyph = glyphCache.getByChar(' ');
+
+            const brightness = state.brightness;
+            const contrastFactor = (259 * (state.contrast + 255)) / (255 * (259 - state.contrast));
+            const satFactor = state.colorMode === 'vivid' ? state.saturation * 1.45 : state.saturation;
+            const colorMode = state.colorMode;
+            const invert = state.invert;
+
+            const mode = state.animMode;
+            const t = timeSec * state.animSpeed;
+            const inten = state.animIntensity;
+
+            const rotAngle = (t * 1.35) % (Math.PI * 2);
+            const cosRot = Math.cos(rotAngle);
+            const sinRot = Math.sin(rotAngle);
+            const absCosRot = Math.max(0.08, Math.abs(cosRot));
+            const glitchTrigger = mode === 'glitch' && Math.sin(t * 9.5) > (0.55 - inten * 0.45);
+            const glitchShift = glitchTrigger ? Math.round(Math.sin(t * 47) * 6 * inten) : 0;
+            const hueCos = mode === 'neonPulse' ? Math.cos(t * 1.8 * inten) : 1;
+            const hueSin = mode === 'neonPulse' ? Math.sin(t * 1.8 * inten) : 0;
+            const neonPulseScale = mode === 'neonPulse' ? (0.86 + 0.24 * Math.sin(t * 4.0) * inten) : 1;
+
+            const cellChars = state.cellChars;
+            const cellGlyphs = state.cellGlyphs;
+            const cellR = state.cellR;
+            const cellG = state.cellG;
+            const cellB = state.cellB;
+
+            const halfCols = cols * 0.5;
+            const halfRows = rows * 0.5;
+            const matrixChars = '01アイウエオカキクケコ#$%@*';
+
+            for (let y = 0; y < rows; y++) {
+                const rowWave = mode === 'wave' ? Math.sin(y * 0.24 - t * 4.0) * (4.2 * inten) : 0;
+                const rowGlitch = (glitchTrigger && ((y + ((t * 25) | 0)) % 7 < 2)) ? glitchShift : 0;
+                const rowOff = y * cols;
+
+                for (let x = 0; x < cols; x++) {
+                    const outIdx = rowOff + x;
+                    let sx = x;
+                    let sy = y;
+                    let depthShade = 1.0;
+
+                    if (mode === 'rotate3d') {
+                        const nx = (x - halfCols) / halfCols;
+                        const mappedX = nx / absCosRot;
+                        if (mappedX < -1 || mappedX > 1) {
+                            cellChars[outIdx] = ' ';
+                            cellGlyphs[outIdx] = spaceGlyph;
+                            continue;
+                        }
+                        const persp = 1 + mappedX * sinRot * 0.12 * inten;
+                        sx = (((cosRot >= 0 ? mappedX : -mappedX) * 0.5 + 0.5) * (cols - 1)) | 0;
+                        sy = (((y - halfRows) / persp) + halfRows) | 0;
+                        if (sy < 0 || sy >= rows) {
+                            cellChars[outIdx] = ' ';
+                            cellGlyphs[outIdx] = spaceGlyph;
+                            continue;
+                        }
+                        depthShade = 0.55 + 0.45 * absCosRot;
+                    } else if (mode === 'wave') {
+                        sx = (x + rowWave) | 0;
+                        sy = (y + Math.cos(x * 0.14 - t * 3.1) * (1.6 * inten)) | 0;
+                        if (sx < 0 || sx >= cols || sy < 0 || sy >= rows) {
+                            cellChars[outIdx] = ' ';
+                            cellGlyphs[outIdx] = spaceGlyph;
+                            continue;
+                        }
+                    } else if (mode === 'glitch') {
+                        sx = x + rowGlitch;
+                        if (sx < 0) sx = 0;
+                        else if (sx >= cols) sx = cols - 1;
+                    }
+
+                    const pIdx = (sy * cols + sx) * 4;
+                    const a = imgData[pIdx + 3] * 0.00392157; // / 255
+                    let r = imgData[pIdx] * a;
+                    let g = imgData[pIdx + 1] * a;
+                    let b = imgData[pIdx + 2] * a;
+
+                    if (mode === 'glitch' && glitchTrigger) {
+                        const shift = Math.max(1, (2.5 * inten) | 0);
+                        const rX = sx - shift < 0 ? 0 : sx - shift;
+                        const bX = sx + shift >= cols ? cols - 1 : sx + shift;
+                        r = imgData[(sy * cols + rX) * 4] * a;
+                        b = imgData[(sy * cols + bX) * 4 + 2] * a;
+                    }
+
+                    // Brightness, Contrast & Depth Shading
+                    r = (contrastFactor * (r + brightness - 128) + 128) * depthShade;
+                    g = (contrastFactor * (g + brightness - 128) + 128) * depthShade;
+                    b = (contrastFactor * (b + brightness - 128) + 128) * depthShade;
+
+                    // Saturation boost
+                    if (satFactor !== 1.0 && colorMode !== 'mono' && colorMode !== 'matrix') {
+                        const gray = 0.299 * r + 0.587 * g + 0.114 * b;
+                        r = gray + (r - gray) * satFactor;
+                        g = gray + (g - gray) * satFactor;
+                        b = gray + (b - gray) * satFactor;
+                    }
+
+                    r = clamp255(r);
+                    g = clamp255(g);
+                    b = clamp255(b);
+
+                    let lum = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+
+                    // Hiệu ứng Lấp lánh đèn (Twinkle)
+                    if (mode === 'twinkle' && lum > 72) {
+                        const h = Math.sin(x * 12.9898 + y * 78.233) * 43758.5453;
+                        const frac = h - Math.floor(h);
+                        if (frac > (0.945 - inten * 0.11)) {
+                            const pulse = 0.5 + 0.5 * Math.sin(t * 7.5 + frac * 40);
+                            const boost = pulse * 115 * inten;
+                            r = clamp255(r + boost);
+                            g = clamp255(g + boost * 0.95);
+                            b = clamp255(b + boost * 0.75);
+                            lum = lum + boost > 255 ? 255 : lum + boost;
+                        }
+                    }
+
+                    // Hiệu ứng Nhịp thở Neon
+                    if (mode === 'neonPulse' && lum > 14) {
+                        const rot = rotateHueRGB(r, g, b, hueCos, hueSin);
+                        r = clamp255(rot[0] * neonPulseScale);
+                        g = clamp255(rot[1] * neonPulseScale);
+                        b = clamp255(rot[2] * neonPulseScale);
+                    }
+
+                    const mappedLum = invert ? (255 - lum) : lum;
+                    let charIdx = ((mappedLum / 255) * charLen) | 0;
+                    if (charIdx >= charLen) charIdx = charLen - 1;
+                    if (charIdx < 0) charIdx = 0;
+
+                    let ch = charset[charIdx];
+                    let gl = glyphs[charIdx];
+
+                    if (mode === 'glitch' && rowGlitch !== 0 && lum > 24) {
+                        const rnd = Math.abs((Math.sin(x * 19.1 + y * 31.7 + t * 60) * 100) | 0);
+                        if ((rnd & 3) === 0) {
+                            const gi = rnd % charLen;
+                            ch = charset[gi];
+                            gl = glyphs[gi];
+                        }
+                    }
+
+                    let outR = r, outG = g, outB = b;
+                    if (colorMode === 'matrix') {
+                        const m = mappedLum | 0;
+                        outR = (m * 0.1) | 0;
+                        outG = clamp255(m * 1.2 + 18);
+                        outB = (m * 0.22) | 0;
+                    } else if (colorMode === 'mono') {
+                        const gr = mappedLum | 0;
+                        outR = gr; outG = gr; outB = gr;
+                    } else if (invert) {
+                        outR = 255 - r; outG = 255 - g; outB = 255 - b;
+                    }
+
+                    // Hiệu ứng Mưa Matrix hòa trộn trực tiếp
+                    if (mode === 'matrixRain') {
+                        const drop = state.matrixDrops[x];
+                        const headY = ((drop.phase + t * drop.speed * 0.35) % 1.35) * rows;
+                        const dist = headY - y;
+                        if (dist >= 0 && dist < drop.length) {
+                            const tail = (1 - dist / drop.length) * inten;
+                            if (dist < 1.1) {
+                                ch = matrixChars[(x + ((t * 20) | 0)) % matrixChars.length];
+                                gl = glyphCache.getByChar(ch);
+                                outR = clamp255(outR * 0.3 + 190 * inten);
+                                outG = 255;
+                                outB = clamp255(outB * 0.3 + 210 * inten);
+                            } else if (ch === ' ' || tail > 0.35) {
+                                if (ch === ' ') {
+                                    ch = matrixChars[(x + y + ((t * 10) | 0)) % matrixChars.length];
+                                    gl = glyphCache.getByChar(ch);
+                                }
+                                outG = clamp255(Math.max(outG, 185 * tail));
+                                outR = clamp255(outR * (1 - tail * 0.4));
+                                outB = clamp255(outB * (1 - tail * 0.3));
+                            }
+                        }
+                    }
+
+                    cellChars[outIdx] = ch;
+                    cellGlyphs[outIdx] = gl;
+                    cellR[outIdx] = outR;
+                    cellG[outIdx] = outG;
+                    cellB[outIdx] = outB;
+                }
+            }
+
+            // Phủ hạt tuyết rơi cho hiệu ứng Lấp lánh & Tuyết rơi
+            if (mode === 'twinkle') {
+                const count = (state.snowParticles.length * inten) | 0;
+                const total = cols * rows;
+                for (let i = 0; i < count; i++) {
+                    const p = state.snowParticles[i];
+                    const px = ((((p.x + t * p.drift) % 1) + 1) % 1 * cols) | 0;
+                    const py = ((((p.y + t * p.speed) % 1) + 1) % 1 * rows) | 0;
+                    const idx = py * cols + px;
+                    if (idx >= 0 && idx < total && cellChars[idx] === ' ') {
+                        cellChars[idx] = p.char;
+                        cellGlyphs[idx] = glyphCache.getByChar(p.char);
+                        const sp = 180 + ((68 * Math.sin(t * 5 + i)) | 0);
+                        cellR[idx] = sp;
+                        cellG[idx] = sp + 8 > 255 ? 255 : sp + 8;
+                        cellB[idx] = 255;
+                    }
+                }
+            }
+
+            return true;
+        }
+
+        // ============================================================================
+        // 9. BỘ MÁY KẾT XUẤT SIÊU MƯỢT (60 FPS GLYPH BITMAP BLITTER + FAST BLOOM)
+        // ============================================================================
+        function blitAsciiToCanvas(targetCanvas, targetCtx, timeSec, enableGlow, reuseMainBuffer = true) {
+            const cols = state.gridCols;
+            const rows = state.gridRows;
+            if (!cols || !rows) return;
+
+            const cellW = glyphCache.cellW;
+            const cellH = glyphCache.cellH;
+            const padX = Math.max(12, cellW * 2);
+            const hudTop = state.showHud ? Math.max(24, cellH * 2 + 6) : Math.max(10, cellH);
+            const hudBottom = state.showHud ? Math.max(28, cellH * 2 + 10) : Math.max(10, cellH);
+
+            const W = cols * cellW + padX * 2;
+            const H = rows * cellH + hudTop + hudBottom;
+
+            let imgData, buf32;
+            if (reuseMainBuffer) {
+                if (state.mainW !== W || state.mainH !== H || !state.mainImgData) {
+                    targetCanvas.width = W;
+                    targetCanvas.height = H;
+                    state.mainW = W;
+                    state.mainH = H;
+                    state.mainImgData = targetCtx.createImageData(W, H);
+                    state.mainBuf32 = new Uint32Array(state.mainImgData.data.buffer);
+                }
+                imgData = state.mainImgData;
+                buf32 = state.mainBuf32;
+            } else {
+                if (targetCanvas.width !== W || targetCanvas.height !== H) {
+                    targetCanvas.width = W;
+                    targetCanvas.height = H;
+                }
+                imgData = targetCtx.createImageData(W, H);
+                buf32 = new Uint32Array(imgData.data.buffer);
+            }
+
+            // 1. Xóa nền cực nhanh bằng native TypedArray.fill (#05070a)
+            buf32.fill(BG_U32);
+
+            // 2. Blit trực tiếp từng Glyph Bitmap vào Uint32Array (KHÔNG DÙNG fillText!)
+            const cellGlyphs = state.cellGlyphs;
+            const cellR = state.cellR;
+            const cellG = state.cellG;
+            const cellB = state.cellB;
+            const littleEndian = IS_LITTLE_ENDIAN;
+
+            let idx = 0;
+            for (let y = 0; y < rows; y++) {
+                const baseY = hudTop + y * cellH;
+                for (let x = 0; x < cols; x++, idx++) {
+                    const gl = cellGlyphs[idx];
+                    const len = gl.len;
+                    if (len === 0) continue;
+
+                    const baseX = padX + x * cellW;
+                    const r = cellR[idx];
+                    const g = cellG[idx];
+                    const b = cellB[idx];
+                    const dr = r - BG_R;
+                    const dg = g - BG_G;
+                    const db = b - BG_B;
+
+                    const gDx = gl.dx;
+                    const gDy = gl.dy;
+                    const gAlpha = gl.alpha;
+
+                    if (littleEndian) {
+                        for (let k = 0; k < len; k++) {
+                            const a = gAlpha[k];
+                            const pr = BG_R + ((dr * a) >> 8);
+                            const pg = BG_G + ((dg * a) >> 8);
+                            const pb = BG_B + ((db * a) >> 8);
+                            buf32[(baseY + gDy[k]) * W + (baseX + gDx[k])] =
+                                (0xFF000000 | (pb << 16) | (pg << 8) | pr) >>> 0;
+                        }
+                    } else {
+                        for (let k = 0; k < len; k++) {
+                            const a = gAlpha[k];
+                            const pr = BG_R + ((dr * a) >> 8);
+                            const pg = BG_G + ((dg * a) >> 8);
+                            const pb = BG_B + ((db * a) >> 8);
+                            buf32[(baseY + gDy[k]) * W + (baseX + gDx[k])] =
+                                ((pr << 24) | (pg << 16) | (pb << 8) | 0xFF) >>> 0;
+                        }
+                    }
+                }
+            }
+
+            // Đẩy toàn bộ khung hình lên canvas trong 1 lệnh duy nhất
+            targetCtx.putImageData(imgData, 0, 0);
+
+            // 3. Hiệu ứng Phát sáng CRT bằng Fast Post-Process Bloom (1/4 kích thước + blur(5px) + lighter)
+            if (enableGlow) {
+                const bw = Math.max(1, (W * 0.25) | 0);
+                const bh = Math.max(1, (H * 0.25) | 0);
+                if (dom.bloomCanvas.width !== bw || dom.bloomCanvas.height !== bh) {
+                    dom.bloomCanvas.width = bw;
+                    dom.bloomCanvas.height = bh;
+                }
+                bloomCtx.clearRect(0, 0, bw, bh);
+                bloomCtx.filter = 'blur(5px)';
+                bloomCtx.drawImage(targetCanvas, 0, 0, bw, bh);
+                bloomCtx.filter = 'none';
+
+                targetCtx.save();
+                targetCtx.globalCompositeOperation = 'lighter';
+                targetCtx.globalAlpha = 0.65;
+                targetCtx.drawImage(dom.bloomCanvas, 0, 0, W, H);
+                targetCtx.restore();
+            }
+
+            // 4. Vẽ HUD Terminal sắc nét (chỉ 3 lệnh vẽ chữ cho toàn khung hình)
+            if (state.showHud) {
+                const hudFont = Math.max(10, Math.min(14, Math.round(W * 0.011)));
+                targetCtx.font = `600 ${hudFont}px "JetBrains Mono", Consolas, monospace`;
+
+                targetCtx.fillStyle = '#eab308';
+                targetCtx.textAlign = 'right';
+                targetCtx.textBaseline = 'top';
+                targetCtx.fillText(`t ${timeSec.toFixed(2)}s`, W - padX, Math.max(6, (hudTop - hudFont) * 0.45));
+
+                targetCtx.textAlign = 'left';
+                targetCtx.textBaseline = 'bottom';
+                const totalChars = (cols * rows).toLocaleString('en-US');
+                targetCtx.fillStyle = '#64748b';
+                targetCtx.fillText(`${cols}×${rows} (${totalChars} chars)  •  ${state.fileName}`, padX, H - Math.max(6, (hudBottom - hudFont) * 0.4));
+
+                targetCtx.textAlign = 'right';
+                targetCtx.fillStyle = state.isPlaying ? '#eab308' : '#94a3b8';
+                const fpsShow = state.isPlaying ? `running • ${state.actualFps} fps` : 'paused';
+                targetCtx.fillText(fpsShow, W - padX, H - Math.max(6, (hudBottom - hudFont) * 0.4));
+            }
+        }
+
+        function renderSingleFrame(timeSec) {
+            const t0 = performance.now();
+            const ok = compileAsciiFrame(timeSec);
+            if (!ok) return;
+
+            blitAsciiToCanvas(dom.asciiCanvas, mainCtx, timeSec, state.glow, true);
+            const ms = performance.now() - t0;
+
+            const total = state.gridCols * state.gridRows;
+            dom.matrixSummaryTag.textContent = `${state.gridCols} × ${state.gridRows}`;
+            dom.statMatrix.textContent = `${state.gridCols} × ${state.gridRows} = ${total.toLocaleString('vi-VN')} ký tự`;
+            dom.statTime.textContent = `${ms.toFixed(1)} ms`;
+            dom.statCanvasDim.textContent = `${state.mainW}×${state.mainH}px`;
+        }
+
+        // ============================================================================
+        // 10. VÒNG LẶP 60 FPS CÓ ĐIỀU TIẾT & ĐO FPS THỰC TẾ
+        // ============================================================================
+        function animationLoop(now) {
+            requestAnimationFrame(animationLoop);
+
+            if (!state.isPlaying || state.isExportingGif) {
+                state.lastFrameTs = now;
+                state.fpsCounterLastTs = now;
+                state.fpsCounterFrames = 0;
+                return;
+            }
+
+            if (!state.lastFrameTs) {
+                state.lastFrameTs = now;
+                state.fpsCounterLastTs = now;
+            }
+
+            const deltaMs = now - state.lastFrameTs;
+            const interval = 1000 / state.targetFps;
+
+            if (deltaMs >= interval - 0.5) {
+                state.lastFrameTs = now - (deltaMs % interval);
+                state.elapsedSec += Math.min(deltaMs, 100) / 1000;
+                renderSingleFrame(state.elapsedSec);
+
+                // Đo FPS thực tế mỗi 350ms
+                state.fpsCounterFrames++;
+                const fpsElapsed = now - state.fpsCounterLastTs;
+                if (fpsElapsed >= 350) {
+                    state.actualFps = Math.min(state.targetFps, Math.round((state.fpsCounterFrames * 1000) / fpsElapsed));
+                    state.fpsCounterFrames = 0;
+                    state.fpsCounterLastTs = now;
+                    dom.statusLiveText.textContent = `running • ${state.actualFps} fps`;
+                }
+            }
+        }
+
+        function setPlaying(playing) {
+            state.isPlaying = playing;
+            dom.playPauseIcon.textContent = playing ? '⏸' : '▶';
+            dom.playPauseText.textContent = playing ? 'Đang chạy' : 'Tạm dừng';
+            dom.statusLiveText.textContent = playing ? `running • ${state.actualFps} fps` : 'paused';
+            dom.statusDot.className = playing
+                ? 'w-2 h-2 rounded-full bg-emerald-400 animate-pulse-dot'
+                : 'w-2 h-2 rounded-full bg-slate-500';
+
+            if (state.mediaType === 'video') {
+                if (playing) dom.hiddenVideo.play().catch(() => {});
+                else dom.hiddenVideo.pause();
+            }
+            if (!playing) renderSingleFrame(state.elapsedSec);
+        }
+
+        // ============================================================================
+        // 11. HỆ THỐNG ZOOM & PAN MƯỢT MÀ TRÊN KHUNG XEM TRƯỚC
+        // ============================================================================
+        function applyViewTransform() {
+            const { scale, tx, ty } = state.view;
+            dom.canvasStage.style.transform = `translate3d(${tx}px, ${ty}px, 0) scale(${scale})`;
+            dom.zoomPctLabel.textContent = `${Math.round(scale * 100)}%`;
+        }
+
+        function fitCanvasToViewport() {
+            const cw = dom.asciiCanvas.width;
+            const ch = dom.asciiCanvas.height;
+            if (!cw || !ch) return;
+            const rect = dom.viewportContainer.getBoundingClientRect();
+            const pad = 28;
+            const scaleX = (rect.width - pad) / cw;
+            const scaleY = (rect.height - pad) / ch;
+            const fitScale = Math.max(0.1, Math.min(3, Math.min(scaleX, scaleY)));
+
+            state.view.scale = fitScale;
+            state.view.tx = (rect.width - cw * fitScale) * 0.5;
+            state.view.ty = (rect.height - ch * fitScale) * 0.5;
+            applyViewTransform();
+        }
+
+        function setZoomAtCenter(newScale) {
+            const rect = dom.viewportContainer.getBoundingClientRect();
+            zoomAroundPoint(newScale, rect.width * 0.5, rect.height * 0.5);
+        }
+
+        function zoomAroundPoint(targetScale, px, py) {
+            const clamped = Math.max(0.1, Math.min(8.0, targetScale));
+            const oldScale = state.view.scale;
+            const ratio = clamped / oldScale;
+            state.view.tx = px - (px - state.view.tx) * ratio;
+            state.view.ty = py - (py - state.view.ty) * ratio;
+            state.view.scale = clamped;
+            applyViewTransform();
+        }
+
+        function bindZoomPanEvents() {
+            const vp = dom.viewportContainer;
+
+            // Cuộn chuột để Zoom theo con trỏ
+            vp.addEventListener('wheel', (e) => {
+                e.preventDefault();
+                const rect = vp.getBoundingClientRect();
+                const mx = e.clientX - rect.left;
+                const my = e.clientY - rect.top;
+                const factor = e.deltaY < 0 ? 1.14 : 1 / 1.14;
+                zoomAroundPoint(state.view.scale * factor, mx, my);
+            }, { passive: false });
+
+            // Kéo chuột để Pan
+            vp.addEventListener('mousedown', (e) => {
+                if (e.button !== 0) return;
+                state.view.isDragging = true;
+                state.view.lastX = e.clientX;
+                state.view.lastY = e.clientY;
+            });
+            window.addEventListener('mousemove', (e) => {
+                if (!state.view.isDragging) return;
+                state.view.tx += e.clientX - state.view.lastX;
+                state.view.ty += e.clientY - state.view.lastY;
+                state.view.lastX = e.clientX;
+                state.view.lastY = e.clientY;
+                applyViewTransform();
+            });
+            window.addEventListener('mouseup', () => {
+                state.view.isDragging = false;
+            });
+
+            // Hỗ trợ cảm ứng (Touch Pan) trên thiết bị di động
+            vp.addEventListener('touchstart', (e) => {
+                if (e.touches.length === 1) {
+                    state.view.isDragging = true;
+                    state.view.lastX = e.touches[0].clientX;
+                    state.view.lastY = e.touches[0].clientY;
+                }
+            }, { passive: true });
+            vp.addEventListener('touchmove', (e) => {
+                if (!state.view.isDragging || e.touches.length !== 1) return;
+                e.preventDefault();
+                state.view.tx += e.touches[0].clientX - state.view.lastX;
+                state.view.ty += e.touches[0].clientY - state.view.lastY;
+                state.view.lastX = e.touches[0].clientX;
+                state.view.lastY = e.touches[0].clientY;
+                applyViewTransform();
+            }, { passive: false });
+            vp.addEventListener('touchend', () => { state.view.isDragging = false; });
+
+            // Các nút điều khiển Zoom
+            dom.btnZoomFit.addEventListener('click', fitCanvasToViewport);
+            dom.btnZoom100.addEventListener('click', () => {
+                const rect = vp.getBoundingClientRect();
+                const cw = dom.asciiCanvas.width;
+                const ch = dom.asciiCanvas.height;
+                state.view.scale = 1;
+                state.view.tx = (rect.width - cw) * 0.5;
+                state.view.ty = (rect.height - ch) * 0.5;
+                applyViewTransform();
+            });
+            dom.btnZoomIn.addEventListener('click', () => setZoomAtCenter(state.view.scale * 1.25));
+            dom.btnZoomOut.addEventListener('click', () => setZoomAtCenter(state.view.scale / 1.25));
+        }
+
+        // ============================================================================
+        // 12. XUẤT TỆP ĐA ĐỊNH DẠNG (GIF89a BẤT ĐỒNG BỘ, PNG, HTML, ANSI, TEXT)
+        // ============================================================================
+        function getBaseFileName() {
+            return state.fileName.replace(/\.[^/.]+$/, '').replace(/[^a-zA-Z0-9_-]/g, '_') || 'ascii_studio';
+        }
+
+        async function exportAnimatedGif() {
+            if (state.isExportingGif) return;
+            if (!state.sourceImage && state.mediaType !== 'video') {
+                showToast('Chưa có nguồn hình ảnh để xuất GIF.', 'error');
+                return;
+            }
+
+            state.isExportingGif = true;
+            dom.btnExportGif.disabled = true;
+            dom.btnQuickGif.disabled = true;
+            dom.btnExportGifText.textContent = 'Đang tạo GIF...';
+            dom.gifProgressWrap.classList.remove('hidden');
+            dom.gifProgressBar.style.width = '0%';
+
+            const wasPlaying = state.isPlaying;
+
+            try {
+                const exportFps = state.gifExportFps;
+                const totalFrames = Math.max(4, Math.round(exportFps * state.gifDuration));
+                const delayCs = Math.max(2, Math.round(100 / exportFps));
+
+                // Canvas kết xuất gốc & canvas thu nhỏ theo tỷ lệ xuất GIF
+                const rawCanvas = document.createElement('canvas');
+                const rawCtx = rawCanvas.getContext('2d', { alpha: false });
+                const scaledCanvas = document.createElement('canvas');
+                const scaledCtx = scaledCanvas.getContext('2d', { willReadFrequently: true });
+
+                compileAsciiFrame(state.elapsedSec);
+                blitAsciiToCanvas(rawCanvas, rawCtx, state.elapsedSec, state.glow, false);
+
+                // Giới hạn cạnh lớn nhất ở mức hợp lý để tệp GIF tải nhanh & sắc nét
+                const outW = Math.max(64, Math.round(rawCanvas.width * state.gifExportScale));
+                const outH = Math.max(64, Math.round(rawCanvas.height * state.gifExportScale));
+                scaledCanvas.width = outW;
+                scaledCanvas.height = outH;
+
+                const encoder = new PureGifEncoder(outW, outH, delayCs);
+                encoder.writeHeader();
+
+                const startTime = state.elapsedSec;
+                for (let f = 0; f < totalFrames; f++) {
+                    const frameTime = startTime + (f / exportFps);
+                    compileAsciiFrame(frameTime);
+                    blitAsciiToCanvas(rawCanvas, rawCtx, frameTime, state.glow, false);
+
+                    scaledCtx.drawImage(rawCanvas, 0, 0, outW, outH);
+                    const rgba = scaledCtx.getImageData(0, 0, outW, outH).data;
+                    encoder.addFrame(rgba, delayCs);
+
+                    const pct = Math.round(((f + 1) / totalFrames) * 100);
+                    dom.gifProgressLabel.textContent = `Đang mã hóa ${f + 1}/${totalFrames}...`;
+                    dom.gifProgressPct.textContent = `${pct}%`;
+                    dom.gifProgressBar.style.width = `${pct}%`;
+
+                    // Nhường luồng về trình duyệt để UI luôn phản hồi mượt mà
+                    await new Promise(resolve => setTimeout(resolve, 0));
+                }
+
+                const blob = encoder.finish();
+                const sizeKb = (blob.size / 1024).toFixed(1);
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `${getBaseFileName()}_${state.cols}col.gif`;
+                a.click();
+                setTimeout(() => URL.revokeObjectURL(url), 2500);
+
+                showToast(`Đã xuất GIF thành công (${totalFrames} khung • ${outW}×${outH} • ${sizeKb} KB)!`, 'success');
+            } catch (err) {
+                console.error(err);
+                showToast('Có lỗi xảy ra khi mã hóa GIF.', 'error');
+            } finally {
+                state.isExportingGif = false;
+                dom.btnExportGif.disabled = false;
+                dom.btnQuickGif.disabled = false;
+                dom.btnExportGifText.textContent = 'Xuất tệp GIF (.gif)';
+                setTimeout(() => dom.gifProgressWrap.classList.add('hidden'), 1500);
+                if (wasPlaying) setPlaying(true);
+            }
+        }
+
+        function exportPng() {
+            try {
+                const link = document.createElement('a');
+                link.download = `${getBaseFileName()}_${state.cols}col_ascii.png`;
+                link.href = dom.asciiCanvas.toDataURL('image/png');
+                link.click();
+                showToast(`Đã tải ảnh PNG (${state.mainW}×${state.mainH}px)!`, 'success');
+            } catch (err) {
+                showToast('Không thể xuất ảnh PNG.', 'error');
+            }
+        }
+
+        function escapeHtml(ch) {
+            if (ch === '&') return '&amp;';
+            if (ch === '<') return '&lt;';
+            if (ch === '>') return '&gt;';
+            if (ch === '"') return '&quot;';
+            if (ch === "'") return '&#39;';
+            return ch;
+        }
+
+        function exportHtml() {
+            try {
+                const cols = state.gridCols;
+                const rows = state.gridRows;
+                const chars = state.cellChars;
+                const R = state.cellR, G = state.cellG, B = state.cellB;
+
+                const lines = [];
+                let idx = 0;
+                for (let y = 0; y < rows; y++) {
+                    let line = '';
+                    for (let x = 0; x < cols; x++, idx++) {
+                        const ch = chars[idx];
+                        if (ch === ' ') {
+                            line += ' ';
+                        } else {
+                            line += `<span style="color:rgb(${R[idx]},${G[idx]},${B[idx]})">${escapeHtml(ch)}</span>`;
+                        }
+                    }
+                    lines.push(line);
+                }
+
+                const glowCss = state.glow ? 'text-shadow: 0 0 6px currentColor;' : '';
+                const doc = `<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ASCII Ultra HD — ${getBaseFileName()}</title>
+<style>
+  body { margin: 0; padding: 20px; background: #05070a; display: flex; justify-content: center; align-items: center; min-height: 100vh; box-sizing: border-box; overflow: auto; }
+  pre { margin: 0; font-family: "JetBrains Mono", Consolas, monospace; font-size: ${state.glyphScale}px; line-height: 1.15; font-weight: 600; ${glowCss} }
+</style>
+</head>
+<body><pre>${lines.join('\n')}</pre></body>
+</html>`;
+
+                const blob = new Blob([doc], { type: 'text/html;charset=utf-8' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `${getBaseFileName()}_${cols}col_ascii.html`;
+                a.click();
+                setTimeout(() => URL.revokeObjectURL(url), 1000);
+                showToast('Đã tải xuống tệp HTML độc lập!', 'success');
+            } catch (err) {
+                showToast('Không thể xuất tệp HTML.', 'error');
+            }
+        }
+
+        function copyToClipboard(text, msg) {
+            try {
+                const ta = document.createElement('textarea');
+                ta.value = text;
+                ta.setAttribute('readonly', '');
+                ta.style.position = 'fixed';
+                ta.style.left = '-9999px';
+                document.body.appendChild(ta);
+                ta.select();
+                const ok = document.execCommand('copy');
+                document.body.removeChild(ta);
+                if (ok) showToast(msg, 'success');
+                else showToast('Không thể sao chép vào bộ nhớ tạm.', 'error');
+            } catch (err) {
+                showToast('Lỗi sao chép vào bộ nhớ tạm.', 'error');
+            }
+        }
+
+        function copyAnsi() {
+            const cols = state.gridCols, rows = state.gridRows;
+            const chars = state.cellChars;
+            const R = state.cellR, G = state.cellG, B = state.cellB;
+            const parts = [];
+            let idx = 0;
+            for (let y = 0; y < rows; y++) {
+                let lr = -1, lg = -1, lb = -1;
+                let line = '';
+                for (let x = 0; x < cols; x++, idx++) {
+                    const ch = chars[idx];
+                    if (ch === ' ') {
+                        line += ' ';
+                    } else {
+                        const r = R[idx], g = G[idx], b = B[idx];
+                        if (r !== lr || g !== lg || b !== lb) {
+                            line += `\x1b[38;2;${r};${g};${b}m`;
+                            lr = r; lg = g; lb = b;
+                        }
+                        line += ch;
+                    }
+                }
+                parts.push(line + '\x1b[0m');
+            }
+            copyToClipboard(parts.join('\n'), 'Đã sao chép mã màu ANSI TrueColor!');
+        }
+
+        function copyPlain() {
+            const cols = state.gridCols, rows = state.gridRows;
+            const chars = state.cellChars;
+            const lines = [];
+            for (let y = 0; y < rows; y++) {
+                lines.push(chars.slice(y * cols, (y + 1) * cols).join(''));
+            }
+            copyToClipboard(lines.join('\n'), 'Đã sao chép văn bản ASCII thuần!');
+        }
+
+        // ============================================================================
+        // 13. CẬP NHẬT TRẠNG THÁI NÚT PRESET & GẮN SỰ KIỆN GIAO DIỆN
+        // ============================================================================
+        function updateResPresetUI() {
+            dom.resPresetButtons.forEach(btn => {
+                const active = parseInt(btn.dataset.cols, 10) === state.cols;
+                btn.className = active
+                    ? 'res-preset-btn py-1.5 px-1 rounded-lg text-[10px] font-mono border bg-emerald-500/20 border-emerald-500/60 text-emerald-300 transition text-center'
+                    : 'res-preset-btn py-1.5 px-1 rounded-lg text-[10px] font-mono border bg-[#07090d] border-[#232c40] text-slate-400 hover:text-white transition text-center';
+            });
+        }
+
+        function updateColorModeUI() {
+            dom.colorModeButtons.forEach(b => {
+                const active = b.dataset.mode === state.colorMode;
+                b.className = active
+                    ? 'color-mode-btn px-2.5 py-1.5 rounded-xl text-xs font-medium border transition text-left flex items-center gap-2 bg-emerald-500/15 border-emerald-500/50 text-emerald-300'
+                    : 'color-mode-btn px-2.5 py-1.5 rounded-xl text-xs font-medium border transition text-left flex items-center gap-2 bg-[#07090d] border-[#232c40] text-slate-300 hover:border-slate-500';
+            });
+        }
+
+        function bindEvents() {
+            // Tải tệp & kéo thả
+            dom.dropZone.addEventListener('click', () => dom.fileInput.click());
+            dom.fileInput.addEventListener('change', (e) => {
+                if (e.target.files?.[0]) {
+                    handleUploadedFile(e.target.files[0]);
+                    e.target.value = '';
+                }
+            });
+            ['dragenter', 'dragover'].forEach(ev => {
+                dom.dropZone.addEventListener(ev, (e) => {
+                    e.preventDefault(); e.stopPropagation();
+                    dom.dropZone.classList.add('border-emerald-400', 'bg-emerald-500/10');
+                });
+            });
+            ['dragleave', 'drop'].forEach(ev => {
+                dom.dropZone.addEventListener(ev, (e) => {
+                    e.preventDefault(); e.stopPropagation();
+                    dom.dropZone.classList.remove('border-emerald-400', 'bg-emerald-500/10');
+                });
+            });
+            dom.dropZone.addEventListener('drop', (e) => {
+                const f = e.dataTransfer?.files?.[0];
+                if (f) handleUploadedFile(f);
+            });
+
+            dom.btnUseSample.addEventListener('click', () => {
+                loadSampleDemo();
+                setPlaying(true);
+                showToast('Đã nạp lại cảnh Cây thông Noel HD!', 'info');
+            });
+
+            // Độ rộng ma trận (40..360) & Preset nhanh
+            dom.resolutionSlider.addEventListener('input', (e) => {
+                state.cols = parseInt(e.target.value, 10);
+                dom.resolutionVal.textContent = state.cols;
+                updateResPresetUI();
+                renderSingleFrame(state.elapsedSec);
+                fitCanvasToViewport();
+            });
+
+            dom.resPresetButtons.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    state.cols = parseInt(btn.dataset.cols, 10);
+                    dom.resolutionSlider.value = state.cols;
+                    dom.resolutionVal.textContent = state.cols;
+                    // Gợi ý cỡ chữ nhỏ hơn chút ở 260/360 để khung hình tổng thể cân đối
+                    if (state.cols >= 360 && state.glyphScale > 6) {
+                        state.glyphScale = 6;
+                        dom.glyphScaleSlider.value = 6;
+                        dom.glyphScaleVal.textContent = '6px';
+                    } else if (state.cols >= 260 && state.glyphScale > 7) {
+                        state.glyphScale = 7;
+                        dom.glyphScaleSlider.value = 7;
+                        dom.glyphScaleVal.textContent = '7px';
+                    }
+                    updateResPresetUI();
+                    renderSingleFrame(state.elapsedSec);
+                    fitCanvasToViewport();
+                });
+            });
+
+            // Cỡ ô ký tự (Glyph Scale)
+            dom.glyphScaleSlider.addEventListener('input', (e) => {
+                state.glyphScale = parseInt(e.target.value, 10);
+                dom.glyphScaleVal.textContent = `${state.glyphScale}px`;
+                renderSingleFrame(state.elapsedSec);
+                fitCanvasToViewport();
+            });
+
+            // Bộ ký tự
+            dom.charsetSelect.addEventListener('change', (e) => {
+                state.charsetType = e.target.value;
+                dom.customCharsetWrapper.classList.toggle('hidden', state.charsetType !== 'custom');
+                renderSingleFrame(state.elapsedSec);
+            });
+            dom.customCharsetInput.addEventListener('input', (e) => {
+                state.customCharset = e.target.value;
+                renderSingleFrame(state.elapsedSec);
+            });
+
+            // Chế độ màu
+            dom.colorModeButtons.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    state.colorMode = btn.dataset.mode;
+                    updateColorModeUI();
+                    renderSingleFrame(state.elapsedSec);
+                });
+            });
+
+            // Sắc nét, Bão hòa, Độ sáng, Tương phản
+            dom.sharpenSlider.addEventListener('input', (e) => {
+                const v = parseInt(e.target.value, 10);
+                state.sharpen = v / 100;
+                dom.sharpenVal.textContent = `${v}%`;
+                if (!state.isPlaying) renderSingleFrame(state.elapsedSec);
+            });
+            dom.saturationSlider.addEventListener('input', (e) => {
+                const v = parseInt(e.target.value, 10);
+                state.saturation = v / 100;
+                dom.saturationVal.textContent = `${v}%`;
+                if (!state.isPlaying) renderSingleFrame(state.elapsedSec);
+            });
+            dom.brightnessSlider.addEventListener('input', (e) => {
+                state.brightness = parseInt(e.target.value, 10);
+                dom.brightnessVal.textContent = state.brightness > 0 ? `+${state.brightness}` : state.brightness;
+                if (!state.isPlaying) renderSingleFrame(state.elapsedSec);
+            });
+            dom.contrastSlider.addEventListener('input', (e) => {
+                state.contrast = parseInt(e.target.value, 10);
+                dom.contrastVal.textContent = state.contrast > 0 ? `+${state.contrast}` : state.contrast;
+                if (!state.isPlaying) renderSingleFrame(state.elapsedSec);
+            });
+
+            dom.glowToggle.addEventListener('change', (e) => {
+                state.glow = e.target.checked;
+                renderSingleFrame(state.elapsedSec);
+            });
+            dom.hudToggle.addEventListener('change', (e) => {
+                state.showHud = e.target.checked;
+                renderSingleFrame(state.elapsedSec);
+                fitCanvasToViewport();
+            });
+            dom.invertToggle.addEventListener('change', (e) => {
+                state.invert = e.target.checked;
+                renderSingleFrame(state.elapsedSec);
+            });
+
+            dom.btnResetSettings.addEventListener('click', () => {
+                state.colorMode = 'truecolor';
+                state.sharpen = 0.35;
+                state.saturation = 1.15;
+                state.brightness = 0;
+                state.contrast = 18;
+                state.invert = false;
+                state.glow = true;
+                state.showHud = true;
+
+                dom.sharpenSlider.value = 35; dom.sharpenVal.textContent = '35%';
+                dom.saturationSlider.value = 115; dom.saturationVal.textContent = '115%';
+                dom.brightnessSlider.value = 0; dom.brightnessVal.textContent = '0';
+                dom.contrastSlider.value = 18; dom.contrastVal.textContent = '+18';
+                dom.invertToggle.checked = false;
+                dom.glowToggle.checked = true;
+                dom.hudToggle.checked = true;
+                updateColorModeUI();
+                renderSingleFrame(state.elapsedSec);
+                showToast('Đã đặt lại thông số màu & độ nét mặc định.', 'info');
+            });
+
+            // Animation
+            dom.btnPlayPause.addEventListener('click', () => setPlaying(!state.isPlaying));
+            dom.animModeSelect.addEventListener('change', (e) => {
+                state.animMode = e.target.value;
+                if (state.animMode !== 'none' && !state.isPlaying) setPlaying(true);
+                renderSingleFrame(state.elapsedSec);
+            });
+            dom.fpsSlider.addEventListener('input', (e) => {
+                state.targetFps = parseInt(e.target.value, 10);
+                dom.fpsVal.textContent = `${state.targetFps} fps`;
+            });
+            dom.animIntensitySlider.addEventListener('input', (e) => {
+                const v = parseInt(e.target.value, 10);
+                state.animIntensity = v / 100;
+                dom.animIntensityVal.textContent = `${v}%`;
+                if (!state.isPlaying) renderSingleFrame(state.elapsedSec);
+            });
+            dom.animSpeedSlider.addEventListener('input', (e) => {
+                state.animSpeed = parseFloat(e.target.value);
+                dom.animSpeedVal.textContent = `${state.animSpeed.toFixed(1)}x`;
+            });
+
+            // Xuất GIF
+            dom.gifDurationSlider.addEventListener('input', (e) => {
+                state.gifDuration = parseFloat(e.target.value);
+                dom.gifDurationVal.textContent = `${state.gifDuration.toFixed(1)}s`;
+            });
+            dom.gifFpsSlider.addEventListener('input', (e) => {
+                state.gifExportFps = parseInt(e.target.value, 10);
+                dom.gifFpsVal.textContent = state.gifExportFps;
+            });
+            dom.gifScaleButtons.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    state.gifExportScale = parseFloat(btn.dataset.scale);
+                    dom.gifScaleButtons.forEach(b => {
+                        const active = b === btn;
+                        b.className = active
+                            ? 'gif-scale-btn px-2 py-1 rounded-lg font-mono border bg-emerald-500/20 border-emerald-500/50 text-emerald-300 transition'
+                            : 'gif-scale-btn px-2 py-1 rounded-lg font-mono border bg-[#0c1018] border-[#232c40] text-slate-400 hover:text-white transition';
+                    });
+                });
+            });
+
+            dom.btnExportGif.addEventListener('click', exportAnimatedGif);
+            dom.btnQuickGif.addEventListener('click', exportAnimatedGif);
+            dom.btnExportPng.addEventListener('click', exportPng);
+            dom.btnExportHtml.addEventListener('click', exportHtml);
+            dom.btnCopyAnsi.addEventListener('click', copyAnsi);
+            dom.btnCopyPlain.addEventListener('click', copyPlain);
+
+            // Tự động cân lại khung khi thay đổi kích thước cửa sổ
+            window.addEventListener('resize', () => {
+                fitCanvasToViewport();
+            });
+        }
+
+        // Khởi chạy sau khi tải xong tài liệu & font monospace
+        window.onload = function () {
+            bindEvents();
+            bindZoomPanEvents();
+            const start = () => {
+                loadSampleDemo();
+                requestAnimationFrame(animationLoop);
+            };
+            if (document.fonts && document.fonts.ready) {
+                document.fonts.ready.then(start);
+            } else {
+                start();
+            }
+        };
+    </script>
+</body>
+</html>

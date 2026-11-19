@@ -1,0 +1,3587 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ASCII Color Studio Ultra HD — TrueColor Fidelity Edition</title>
+    <style>
+        /* =====================================================================
+           DESIGN TOKENS & TERMINAL DARK THEME (#07090d)
+           ===================================================================== */
+        :root {
+            --bg-app: #07090d;
+            --bg-panel: #0c1018;
+            --bg-card: #080b11;
+            --bg-elevated: #121826;
+            --border: #1b2334;
+            --border-hover: #2d3a54;
+            --text-main: #e2e8f0;
+            --text-muted: #94a3b8;
+            --text-dim: #64748b;
+            --accent: #10b981;
+            --accent-hover: #34d399;
+            --accent-soft: rgba(16, 185, 129, 0.16);
+            --accent-border: rgba(16, 185, 129, 0.45);
+            --sky: #38bdf8;
+            --amber: #f59e0b;
+            --rose: #f43f5e;
+            --font-ui: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            --font-mono: "JetBrains Mono", "Cascadia Code", "Fira Code", Consolas, "Courier New", monospace;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html, body {
+            height: 100%;
+            background: var(--bg-app);
+            color: var(--text-main);
+            font-family: var(--font-ui);
+            font-size: 13px;
+            line-height: 1.45;
+            -webkit-font-smoothing: antialiased;
+            overflow-x: hidden;
+        }
+
+        body {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        /* Thanh cuộn tinh gọn */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: var(--bg-app); }
+        ::-webkit-scrollbar-thumb { background: #1f293d; border-radius: 999px; }
+        ::-webkit-scrollbar-thumb:hover { background: #33425f; }
+
+        /* =====================================================================
+           HEADER BAR
+           ===================================================================== */
+        .app-header {
+            position: sticky;
+            top: 0;
+            z-index: 30;
+            background: rgba(10, 13, 20, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border);
+            padding: 8px 14px;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            min-width: 0;
+        }
+
+        .brand-icon {
+            width: 34px;
+            height: 34px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.24), rgba(56, 189, 248, 0.24));
+            border: 1px solid var(--accent-border);
+            color: var(--accent-hover);
+            font-family: var(--font-mono);
+            font-weight: 700;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .brand-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .badge {
+            font-family: var(--font-mono);
+            font-size: 10px;
+            font-weight: 600;
+            padding: 2px 7px;
+            border-radius: 999px;
+            background: var(--accent-soft);
+            color: var(--accent-hover);
+            border: 1px solid var(--accent-border);
+        }
+
+        .brand-sub {
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+
+        .header-actions {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 6px;
+        }
+
+        /* =====================================================================
+           BUTTONS & INPUT CONTROLS
+           ===================================================================== */
+        button {
+            font-family: inherit;
+            cursor: pointer;
+            border: none;
+            outline: none;
+            transition: background 0.14s ease, border-color 0.14s ease, transform 0.1s ease, color 0.14s ease;
+        }
+
+        button:active:not(:disabled) { transform: scale(0.97); }
+        button:disabled { opacity: 0.45; cursor: not-allowed; }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+            padding: 6px 10px;
+            border-radius: 9px;
+            font-size: 12px;
+            font-weight: 600;
+            background: var(--bg-elevated);
+            color: var(--text-main);
+            border: 1px solid var(--border);
+        }
+
+        .btn:hover:not(:disabled) {
+            background: #1a2336;
+            border-color: var(--border-hover);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #059669, #0d9488);
+            color: #ffffff;
+            border: 1px solid rgba(52, 211, 153, 0.35);
+            box-shadow: 0 4px 14px rgba(5, 150, 105, 0.28);
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            background: linear-gradient(135deg, #10b981, #14b8a6);
+        }
+
+        .btn-sky {
+            background: rgba(56, 189, 248, 0.12);
+            color: #7dd3fc;
+            border: 1px solid rgba(56, 189, 248, 0.35);
+        }
+
+        .btn-sky:hover:not(:disabled) {
+            background: rgba(56, 189, 248, 0.22);
+        }
+
+        .btn-sm {
+            padding: 4px 8px;
+            font-size: 11px;
+            border-radius: 7px;
+        }
+
+        .btn-full {
+            width: 100%;
+            padding: 8px 12px;
+        }
+
+        /* =====================================================================
+           MAIN WORKSPACE LAYOUT
+           ===================================================================== */
+        .workspace {
+            flex: 1;
+            display: grid;
+            grid-template-columns: 336px minmax(0, 1fr);
+            gap: 10px;
+            padding: 10px;
+            max-width: 2048px;
+            width: 100%;
+            margin: 0 auto;
+            min-height: 0;
+        }
+
+        @media (max-width: 1024px) {
+            .workspace {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* SIDEBAR */
+        .sidebar {
+            background: var(--bg-panel);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            height: calc(100vh - 72px);
+            overflow-y: auto;
+        }
+
+        @media (max-width: 1024px) {
+            .sidebar {
+                height: auto;
+                max-height: none;
+            }
+        }
+
+        .section {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .section-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 6px;
+        }
+
+        .section-title {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: var(--text-muted);
+        }
+
+        .section-title.accent { color: var(--accent-hover); }
+
+        .divider {
+            height: 1px;
+            background: var(--border);
+            border: none;
+        }
+
+        /* DROPZONE */
+        .dropzone {
+            border: 2px dashed #253047;
+            background: var(--bg-card);
+            border-radius: 11px;
+            padding: 9px;
+            cursor: pointer;
+            transition: border-color 0.15s ease, background 0.15s ease;
+        }
+
+        .dropzone:hover, .dropzone.dragover {
+            border-color: var(--accent);
+            background: rgba(16, 185, 129, 0.08);
+        }
+
+        .dropzone-inner {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .thumb-box {
+            width: 48px;
+            height: 48px;
+            border-radius: 8px;
+            background: #040609;
+            border: 1px solid var(--border);
+            overflow: hidden;
+            position: relative;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .thumb-box img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .media-badge {
+            position: absolute;
+            bottom: 2px;
+            right: 2px;
+            font-family: var(--font-mono);
+            font-size: 8px;
+            font-weight: 700;
+            padding: 1px 4px;
+            border-radius: 4px;
+            background: #059669;
+            color: #fff;
+        }
+
+        .file-meta { min-width: 0; flex: 1; }
+
+        .file-name {
+            font-size: 12px;
+            font-weight: 600;
+            color: #f8fafc;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .file-hint { font-size: 11px; color: var(--text-muted); }
+        .file-hint span { color: var(--accent-hover); text-decoration: underline; }
+        .file-sub { font-size: 10px; color: var(--text-dim); }
+
+        /* FORM CONTROLS */
+        .field {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .field-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            font-size: 11.5px;
+        }
+
+        .field-label { color: #cbd5e1; }
+
+        .field-val {
+            font-family: var(--font-mono);
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--accent-hover);
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 8px;
+        }
+
+        .grid-4 {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 5px;
+        }
+
+        input[type="range"] {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 100%;
+            height: 5px;
+            background: #1a2335;
+            border-radius: 999px;
+            outline: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 13px;
+            height: 13px;
+            border-radius: 50%;
+            background: var(--accent);
+            border: 2px solid var(--bg-app);
+            box-shadow: 0 0 8px rgba(16, 185, 129, 0.55);
+            cursor: pointer;
+            transition: transform 0.12s ease;
+        }
+
+        input[type="range"]::-webkit-slider-thumb:hover {
+            transform: scale(1.18);
+            background: var(--accent-hover);
+        }
+
+        select, input[type="text"] {
+            width: 100%;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 9px;
+            color: var(--text-main);
+            padding: 6px 9px;
+            font-size: 12px;
+            font-family: inherit;
+            outline: none;
+            transition: border-color 0.15s ease;
+        }
+
+        select:focus, input[type="text"]:focus { border-color: var(--accent); }
+
+        .pill-btn {
+            padding: 5px 4px;
+            border-radius: 8px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            color: var(--text-muted);
+            font-family: var(--font-mono);
+            font-size: 11px;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        .pill-btn:hover { border-color: var(--border-hover); color: #ffffff; }
+
+        .pill-btn.active {
+            background: var(--accent-soft);
+            border-color: var(--accent-border);
+            color: var(--accent-hover);
+        }
+
+        .pill-btn small {
+            display: block;
+            font-size: 9px;
+            font-weight: 400;
+            opacity: 0.78;
+        }
+
+        /* COLOR PROFILE CARDS */
+        .profile-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 6px;
+        }
+
+        .profile-btn {
+            text-align: left;
+            padding: 7px 8px;
+            border-radius: 9px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            color: #cbd5e1;
+            font-size: 11.5px;
+            font-weight: 600;
+        }
+
+        .profile-btn:hover { border-color: var(--border-hover); color: #ffffff; }
+
+        .profile-btn.active {
+            background: var(--accent-soft);
+            border-color: var(--accent-border);
+            color: #6ee7b7;
+        }
+
+        .profile-btn small {
+            display: block;
+            margin-top: 2px;
+            font-size: 10px;
+            font-weight: 400;
+            color: var(--text-muted);
+        }
+
+        /* TOGGLE SWITCH */
+        .toggle-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            padding: 6px 9px;
+            border-radius: 9px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            cursor: pointer;
+            user-select: none;
+            font-size: 11.5px;
+            color: #cbd5e1;
+        }
+
+        .toggle-row:hover { border-color: var(--border-hover); }
+
+        .switch {
+            position: relative;
+            width: 32px;
+            height: 17px;
+            flex-shrink: 0;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+            position: absolute;
+        }
+
+        .slider-track {
+            position: absolute;
+            inset: 0;
+            background: #222c40;
+            border-radius: 999px;
+            transition: background 0.16s ease;
+        }
+
+        .slider-track::after {
+            content: "";
+            position: absolute;
+            width: 13px;
+            height: 13px;
+            left: 2px;
+            top: 2px;
+            border-radius: 50%;
+            background: #ffffff;
+            transition: transform 0.16s ease;
+        }
+
+        .switch input:checked + .slider-track { background: var(--accent); }
+        .switch input:checked + .slider-track::after { transform: translateX(15px); }
+
+        /* GIF EXPORT BOX */
+        .gif-box {
+            background: #080c13;
+            border: 1px solid rgba(16, 185, 129, 0.28);
+            border-radius: 11px;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .progress-wrap {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .progress-bar-bg {
+            width: 100%;
+            height: 6px;
+            background: #172030;
+            border-radius: 999px;
+            overflow: hidden;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #10b981, #38bdf8);
+            transition: width 0.08s linear;
+        }
+
+        /* =====================================================================
+           RIGHT VIEWPORT PANEL
+           ===================================================================== */
+        .viewer-panel {
+            background: #05070a;
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            height: calc(100vh - 72px);
+            min-height: 540px;
+        }
+
+        @media (max-width: 1024px) {
+            .viewer-panel {
+                height: 74vh;
+                min-height: 460px;
+            }
+        }
+
+        .viewer-bar {
+            background: #0a0e16;
+            border-bottom: 1px solid var(--border);
+            padding: 7px 12px;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            flex-shrink: 0;
+        }
+
+        .bar-group {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .win-dots {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            margin-right: 4px;
+        }
+
+        .win-dot { width: 9px; height: 9px; border-radius: 50%; }
+
+        .segmented {
+            display: inline-flex;
+            background: var(--bg-app);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 2px;
+            gap: 2px;
+        }
+
+        .seg-btn {
+            padding: 4px 8px;
+            border-radius: 6px;
+            background: transparent;
+            color: var(--text-muted);
+            font-size: 11px;
+            font-weight: 600;
+            font-family: var(--font-mono);
+        }
+
+        .seg-btn:hover { color: #ffffff; }
+        .seg-btn.active { background: var(--accent-soft); color: var(--accent-hover); }
+
+        .zoom-label {
+            font-family: var(--font-mono);
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--accent-hover);
+            min-width: 44px;
+            text-align: center;
+            display: inline-block;
+        }
+
+        /* VIEWPORT STAGE */
+        .viewport {
+            position: relative;
+            flex: 1;
+            overflow: hidden;
+            background: #05070a;
+            background-image:
+                radial-gradient(circle at 50% 50%, rgba(16, 185, 129, 0.03) 0%, transparent 65%),
+                linear-gradient(rgba(255, 255, 255, 0.015) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.015) 1px, transparent 1px);
+            background-size: 100% 100%, 24px 24px, 24px 24px;
+            cursor: grab;
+            touch-action: none;
+            user-select: none;
+        }
+
+        .viewport.dragging { cursor: grabbing; }
+        .viewport.dom-selectable { user-select: text; cursor: text; }
+
+        #gpuCanvas {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        #domScrollWrap {
+            position: absolute;
+            inset: 0;
+            overflow: auto;
+            padding: 16px;
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            background: #05070a;
+        }
+
+        #domAsciiPre {
+            margin: 0;
+            font-family: var(--font-mono);
+            white-space: pre;
+            line-height: 0.96;
+            letter-spacing: -0.02em;
+            background: #05070a;
+        }
+
+        /* COMPARE OVERLAY */
+        #compareLayer {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            overflow: hidden;
+            z-index: 6;
+        }
+
+        #compareCanvas {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        #splitHandle {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: #10b981;
+            box-shadow: 0 0 12px rgba(16, 185, 129, 0.85);
+            z-index: 8;
+            cursor: ew-resize;
+            pointer-events: auto;
+        }
+
+        #splitHandle::after {
+            content: "⇄";
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: #0a0e16;
+            border: 2px solid #10b981;
+            color: #34d399;
+            font-size: 12px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
+        }
+
+        .vp-hint {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            z-index: 9;
+            pointer-events: none;
+            padding: 4px 9px;
+            border-radius: 7px;
+            background: rgba(10, 14, 22, 0.82);
+            border: 1px solid var(--border);
+            font-family: var(--font-mono);
+            font-size: 10px;
+            color: var(--text-muted);
+        }
+
+        /* GIF SCRUBBER */
+        .gif-scrubber {
+            background: #090d15;
+            border-top: 1px solid var(--border);
+            padding: 6px 12px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-family: var(--font-mono);
+            font-size: 11px;
+            color: #7dd3fc;
+        }
+
+        /* FOOTER */
+        .viewer-footer {
+            background: #0a0e16;
+            border-top: 1px solid var(--border);
+            padding: 6px 12px;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            font-family: var(--font-mono);
+            font-size: 11px;
+            color: var(--text-muted);
+            flex-shrink: 0;
+        }
+
+        .stats-row {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .stats-row strong { color: #f8fafc; }
+        .stats-row strong.green { color: var(--accent-hover); }
+        .stats-row strong.sky { color: var(--sky); }
+
+        .live-status {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: var(--amber);
+        }
+
+        .live-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--accent);
+        }
+
+        .live-dot.paused { background: var(--text-dim); }
+
+        .hidden { display: none !important; }
+
+        /* TOAST NOTIFICATION */
+        #toastContainer {
+            position: fixed;
+            bottom: 16px;
+            right: 16px;
+            z-index: 60;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            pointer-events: none;
+        }
+
+        .toast {
+            pointer-events: auto;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 9px 13px;
+            border-radius: 10px;
+            font-size: 12px;
+            font-weight: 500;
+            background: #0d1613;
+            border: 1px solid rgba(16, 185, 129, 0.45);
+            color: #6ee7b7;
+            box-shadow: 0 12px 28px rgba(0, 0, 0, 0.55);
+            transform: translateY(10px);
+            opacity: 0;
+            transition: transform 0.22s ease, opacity 0.22s ease;
+        }
+
+        .toast.show { transform: translateY(0); opacity: 1; }
+        .toast.error { background: #1c0f14; border-color: rgba(244, 63, 94, 0.45); color: #fda4af; }
+        .toast.info { background: #0d1624; border-color: rgba(56, 189, 248, 0.45); color: #7dd3fc; }
+    </style>
+</head>
+<body>
+
+    <!-- HEADER -->
+    <header class="app-header">
+        <div class="brand">
+            <div class="brand-icon">&gt;_</div>
+            <div>
+                <div class="brand-title">
+                    ASCII Color Studio Ultra HD
+                    <span id="engineBadge" class="badge">TrueColor Fidelity • WebGL2</span>
+                </div>
+                <div class="brand-sub">Giữ tối đa màu &amp; sắc độ ảnh gốc • Ký tự đậm khít dòng không đen, không ám trắng</div>
+            </div>
+        </div>
+
+        <div class="header-actions">
+            <button id="btnQuickGif" type="button" class="btn btn-primary">🎞 Xuất GIF</button>
+            <button id="btnExportPng4k" type="button" class="btn btn-sky">🖼 PNG 4K</button>
+            <button id="btnExportHtml" type="button" class="btn">&lt;/&gt; HTML</button>
+            <button id="btnCopyAnsi" type="button" class="btn">&gt;_ ANSI</button>
+            <button id="btnCopyPlain" type="button" class="btn">📋 Text</button>
+        </div>
+    </header>
+
+    <!-- MAIN WORKSPACE -->
+    <main class="workspace">
+
+        <!-- LEFT CONTROL PANEL -->
+        <aside class="sidebar">
+
+            <!-- 1. MEDIA INPUT -->
+            <section class="section">
+                <div class="section-head">
+                    <span class="section-title">1. Nguồn Ảnh / GIF / Video</span>
+                    <button id="btnDemoTree" type="button" class="btn btn-sm">🎄 Cây Thông HD</button>
+                </div>
+
+                <div id="dropZone" class="dropzone">
+                    <input id="fileInput" type="file" accept="image/png,image/jpeg,image/webp,image/gif,image/bmp,video/mp4,video/webm" class="hidden">
+                    <div class="dropzone-inner">
+                        <div class="thumb-box">
+                            <img id="sourcePreview" alt="Ảnh nguồn">
+                            <span id="mediaTypeBadge" class="media-badge">DEMO</span>
+                        </div>
+                        <div class="file-meta">
+                            <div id="fileNameLabel" class="file-name">christmas_tree_hd.png</div>
+                            <div class="file-hint">Kéo thả hoặc <span>chọn tệp từ máy</span></div>
+                            <div class="file-sub">PNG, JPG, WEBP, GIF động, MP4/WEBM</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <hr class="divider">
+
+            <!-- 2. MATRIX & TIGHT GLYPH PACKING -->
+            <section class="section">
+                <div class="section-head">
+                    <span class="section-title accent">2. Ma Trận &amp; Đóng Gói Khít Dòng</span>
+                    <span id="matrixTag" class="field-val">180 × 100</span>
+                </div>
+
+                <div class="field">
+                    <div class="field-row">
+                        <span class="field-label">Độ rộng ma trận (Cột)</span>
+                        <span id="colsVal" class="field-val">180</span>
+                    </div>
+                    <input id="colsSlider" type="range" min="40" max="360" value="180" step="2">
+                    <div class="grid-4" id="colsPresetGroup">
+                        <button type="button" data-cols="100" class="pill-btn">100<small>Nhẹ</small></button>
+                        <button type="button" data-cols="180" class="pill-btn active">180<small>Chi tiết</small></button>
+                        <button type="button" data-cols="260" class="pill-btn">260<small>Siêu nét</small></button>
+                        <button type="button" data-cols="360" class="pill-btn">360<small>Ultra HD</small></button>
+                    </div>
+                </div>
+
+                <div class="field">
+                    <div class="field-row">
+                        <span class="field-label">Cỡ chữ hiển thị (px)</span>
+                        <span id="fontSizeVal" class="field-val">11px</span>
+                    </div>
+                    <input id="fontSizeSlider" type="range" min="6" max="22" value="11" step="1">
+                </div>
+
+                <div class="field">
+                    <div class="field-row">
+                        <span class="field-label">Độ đậm nét chữ (Font Weight)</span>
+                    </div>
+                    <div class="grid-4" id="fontWeightGroup">
+                        <button type="button" data-weight="500" class="pill-btn">500</button>
+                        <button type="button" data-weight="600" class="pill-btn">600</button>
+                        <button type="button" data-weight="700" class="pill-btn active">700</button>
+                        <button type="button" data-weight="800" class="pill-btn">800</button>
+                    </div>
+                </div>
+
+                <div class="field">
+                    <span class="field-label" style="font-size:11.5px;">Bộ ký tự (Charset)</span>
+                    <select id="charsetSelect">
+                        <option value="fullbody" selected>TrueColor Đậm Đều (Giữ màu gốc)</option>
+                        <option value="ultra">Siêu chi tiết (70 ký tự)</option>
+                        <option value="nodot">Đầy đủ không trống (.,:-=+*#%@)</option>
+                        <option value="basic">Cơ bản ( .:-=+*#%@)</option>
+                        <option value="blocks">Khối Unicode (░▒▓█)</option>
+                        <option value="custom">Tùy chỉnh ký tự riêng...</option>
+                    </select>
+                    <input id="customCharsetInput" type="text" class="hidden" value="rxtvjnczuoaepsdwqkmhXUYJCLQ0OZ#MW&8%B@$" placeholder="Nhập ký tự từ tối đến sáng...">
+                </div>
+            </section>
+
+            <hr class="divider">
+
+            <!-- 3. TRUECOLOR FIDELITY ENGINE -->
+            <section class="section">
+                <div class="section-head">
+                    <span class="section-title accent">3. Bộ Máy Màu TrueColor Fidelity</span>
+                    <button id="btnResetTune" type="button" class="btn btn-sm">Đặt lại</button>
+                </div>
+
+                <div class="profile-grid" id="colorProfileGroup">
+                    <button type="button" data-profile="fidelity" class="profile-btn active">
+                        🎯 Giữ Màu Ảnh Gốc
+                        <small>BG 12% • Gain 132%</small>
+                    </button>
+                    <button type="button" data-profile="pureblack" class="profile-btn">
+                        🖤 Nền Đen Thuần
+                        <small>0% BG • Gain 142%</small>
+                    </button>
+                    <button type="button" data-profile="vivid" class="profile-btn">
+                        🌈 Rực Rỡ (Vivid)
+                        <small>BG 18% • Bão hòa 135%</small>
+                    </button>
+                    <button type="button" data-profile="classic" class="profile-btn">
+                        💻 Terminal Cổ Điển
+                        <small>70 ký tự • 0% BG</small>
+                    </button>
+                </div>
+
+                <div class="grid-4" id="colorModeGroup">
+                    <button type="button" data-mode="truecolor" class="pill-btn active">Gốc</button>
+                    <button type="button" data-mode="vivid" class="pill-btn">Vivid</button>
+                    <button type="button" data-mode="matrix" class="pill-btn">Matrix</button>
+                    <button type="button" data-mode="mono" class="pill-btn">Mono</button>
+                </div>
+
+                <div class="field">
+                    <div class="field-row">
+                        <span class="field-label">Nền ô theo ảnh (Cell BG)</span>
+                        <span id="cellBgVal" class="field-val">12%</span>
+                    </div>
+                    <input id="cellBgSlider" type="range" min="0" max="60" value="12" step="1">
+                </div>
+
+                <div class="grid-2">
+                    <div class="field">
+                        <div class="field-row">
+                            <span class="field-label">Gamma sáng</span>
+                            <span id="gammaVal" class="field-val">1.18</span>
+                        </div>
+                        <input id="gammaSlider" type="range" min="0.7" max="2.2" value="1.18" step="0.02">
+                    </div>
+                    <div class="field">
+                        <div class="field-row">
+                            <span class="field-label">Bù sáng (Chroma-Safe)</span>
+                            <span id="fgGainVal" class="field-val">132%</span>
+                        </div>
+                        <input id="fgGainSlider" type="range" min="80" max="220" value="132" step="2">
+                    </div>
+                </div>
+
+                <div class="grid-2">
+                    <div class="field">
+                        <div class="field-row">
+                            <span class="field-label">Nâng vùng tối (Lift)</span>
+                            <span id="colorLiftVal" class="field-val">8</span>
+                        </div>
+                        <input id="colorLiftSlider" type="range" min="0" max="45" value="8" step="1">
+                    </div>
+                    <div class="field">
+                        <div class="field-row">
+                            <span class="field-label">Bão hòa màu</span>
+                            <span id="saturationVal" class="field-val">112%</span>
+                        </div>
+                        <input id="saturationSlider" type="range" min="0" max="200" value="112" step="2">
+                    </div>
+                </div>
+
+                <div class="grid-2">
+                    <div class="field">
+                        <div class="field-row">
+                            <span class="field-label">Độ sáng</span>
+                            <span id="brightnessVal" class="field-val">0</span>
+                        </div>
+                        <input id="brightnessSlider" type="range" min="-100" max="100" value="0" step="1">
+                    </div>
+                    <div class="field">
+                        <div class="field-row">
+                            <span class="field-label">Tương phản</span>
+                            <span id="contrastVal" class="field-val">0</span>
+                        </div>
+                        <input id="contrastSlider" type="range" min="-100" max="100" value="0" step="1">
+                    </div>
+                </div>
+
+                <div class="grid-2">
+                    <div class="field">
+                        <div class="field-row">
+                            <span class="field-label">Sắc nét (Unsharp)</span>
+                            <span id="sharpenVal" class="field-val">25%</span>
+                        </div>
+                        <input id="sharpenSlider" type="range" min="0" max="100" value="25" step="5">
+                    </div>
+                    <div class="field">
+                        <div class="field-row">
+                            <span class="field-label">Phát sáng (Glow)</span>
+                            <span id="glowVal" class="field-val">0%</span>
+                        </div>
+                        <input id="glowSlider" type="range" min="0" max="100" value="0" step="5">
+                    </div>
+                </div>
+
+                <label class="toggle-row">
+                    <span>Đảo ngược sáng (Invert)</span>
+                    <span class="switch">
+                        <input id="invertToggle" type="checkbox">
+                        <span class="slider-track"></span>
+                    </span>
+                </label>
+            </section>
+
+            <hr class="divider">
+
+            <!-- 4. REAL-TIME ANIMATION -->
+            <section class="section">
+                <div class="section-head">
+                    <span class="section-title">4. Animation Thời Gian Thực</span>
+                    <button id="btnPlayPause" type="button" class="btn btn-sm">⏸ Đang chạy</button>
+                </div>
+
+                <select id="animModeSelect">
+                    <option value="none" selected>⏹ Tĩnh / Phát gốc (Rõ nét tối đa)</option>
+                    <option value="twinkle">✨ Lấp lánh &amp; Tuyết rơi</option>
+                    <option value="rotate3d">🌀 Xoay 3D trục Y</option>
+                    <option value="wave">🌊 Sóng động (Ripple)</option>
+                    <option value="glitch">⚡ Glitch / RGB Shift</option>
+                    <option value="matrixRain">🟢 Mưa Matrix</option>
+                    <option value="neonPulse">🌈 Nhịp thở Neon</option>
+                </select>
+
+                <div class="field">
+                    <div class="field-row">
+                        <span class="field-label">FPS mục tiêu</span>
+                        <span id="fpsVal" class="field-val">60 fps</span>
+                    </div>
+                    <input id="fpsSlider" type="range" min="5" max="60" value="60" step="1">
+                </div>
+
+                <div class="grid-2">
+                    <div class="field">
+                        <div class="field-row">
+                            <span class="field-label">Cường độ</span>
+                            <span id="animIntensityVal" class="field-val">60%</span>
+                        </div>
+                        <input id="animIntensitySlider" type="range" min="10" max="100" value="60" step="5">
+                    </div>
+                    <div class="field">
+                        <div class="field-row">
+                            <span class="field-label">Tốc độ</span>
+                            <span id="animSpeedVal" class="field-val">1.0x</span>
+                        </div>
+                        <input id="animSpeedSlider" type="range" min="0.2" max="3.0" value="1.0" step="0.1">
+                    </div>
+                </div>
+            </section>
+
+            <hr class="divider">
+
+            <!-- 5. PURE JS GIF89a EXPORT -->
+            <section class="gif-box">
+                <div class="section-head">
+                    <span class="section-title accent">5. Xuất Tệp GIF (.gif)</span>
+                    <span style="font-family:var(--font-mono); font-size:10px; color:var(--text-dim);">GIF89a LZW</span>
+                </div>
+
+                <div class="grid-2">
+                    <div class="field">
+                        <div class="field-row">
+                            <span class="field-label">Thời lượng</span>
+                            <span id="gifDurationVal" class="field-val">2.5s</span>
+                        </div>
+                        <input id="gifDurationSlider" type="range" min="1" max="5" value="2.5" step="0.5">
+                    </div>
+                    <div class="field">
+                        <div class="field-row">
+                            <span class="field-label">FPS xuất</span>
+                            <span id="gifFpsVal" class="field-val">15</span>
+                        </div>
+                        <input id="gifFpsSlider" type="range" min="8" max="24" value="15" step="1">
+                    </div>
+                </div>
+
+                <div class="field-row">
+                    <span class="field-label">Độ phân giải GIF</span>
+                    <div style="display:flex; gap:4px;" id="gifScaleGroup">
+                        <button type="button" data-scale="0.5" class="pill-btn" style="padding:3px 7px;">0.5x</button>
+                        <button type="button" data-scale="0.75" class="pill-btn active" style="padding:3px 7px;">0.75x</button>
+                        <button type="button" data-scale="1" class="pill-btn" style="padding:3px 7px;">1x</button>
+                    </div>
+                </div>
+
+                <button id="btnExportGif" type="button" class="btn btn-primary btn-full">
+                    <span id="btnExportGifText">🎞 Xuất tệp GIF (.gif)</span>
+                </button>
+
+                <div id="gifProgressWrap" class="progress-wrap hidden">
+                    <div class="field-row" style="font-family:var(--font-mono); font-size:10px;">
+                        <span id="gifProgressLabel">Đang mã hóa...</span>
+                        <span id="gifProgressPct">0%</span>
+                    </div>
+                    <div class="progress-bar-bg">
+                        <div id="gifProgressBar" class="progress-bar-fill"></div>
+                    </div>
+                </div>
+            </section>
+        </aside>
+
+        <!-- RIGHT VIEWPORT PANEL -->
+        <section class="viewer-panel">
+
+            <!-- VIEWER TOOLBAR -->
+            <div class="viewer-bar">
+                <div class="bar-group">
+                    <div class="win-dots">
+                        <span class="win-dot" style="background:#f43f5e;"></span>
+                        <span class="win-dot" style="background:#f59e0b;"></span>
+                        <span class="win-dot" style="background:#10b981;"></span>
+                    </div>
+
+                    <!-- Chuyển đổi WebGL2 HiDPI / Ký tự thật DOM Text -->
+                    <div class="segmented" id="renderModeGroup">
+                        <button type="button" data-rmode="gpu" class="seg-btn active">⚡ WebGL2 HiDPI (60 FPS)</button>
+                        <button type="button" data-rmode="dom" class="seg-btn">Aa Ký tự thật (DOM Text)</button>
+                    </div>
+
+                    <label id="domCopyToggleWrap" class="hidden" style="display:inline-flex; align-items:center; gap:5px; font-size:11px; color:var(--text-muted); cursor:pointer;">
+                        <input id="domCopyCheckbox" type="checkbox">
+                        <span>Cho phép bôi đen / Copy</span>
+                    </label>
+                </div>
+
+                <div class="bar-group">
+                    <!-- So sánh ảnh gốc -->
+                    <button id="btnHoldOrig" type="button" class="btn btn-sm" title="Nhấn giữ để đối chiếu ảnh gốc đúng vị trí">👁 Giữ xem ảnh gốc</button>
+                    <button id="btnSplitCompare" type="button" class="btn btn-sm" title="Kéo thanh chia dọc so sánh ảnh gốc và ASCII">◧ Chia đôi</button>
+
+                    <!-- Zoom controls (25% - 600%) -->
+                    <div class="segmented">
+                        <button id="btnZoomOut" type="button" class="seg-btn" title="Thu nhỏ">−</button>
+                        <span id="zoomPctLabel" class="zoom-label">100%</span>
+                        <button id="btnZoomIn" type="button" class="seg-btn" title="Phóng to">+</button>
+                        <button id="btnZoom100" type="button" class="seg-btn" title="Tỷ lệ 1:1">100%</button>
+                        <button id="btnZoomFit" type="button" class="seg-btn active" title="Vừa khung nhìn">Vừa khung</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- MAIN VIEWPORT -->
+            <div id="viewport" class="viewport">
+                <canvas id="gpuCanvas"></canvas>
+
+                <div id="domScrollWrap" class="hidden">
+                    <pre id="domAsciiPre"></pre>
+                </div>
+
+                <!-- Lớp so sánh ảnh gốc khớp 1:1 -->
+                <div id="compareLayer" class="hidden">
+                    <canvas id="compareCanvas"></canvas>
+                </div>
+                <div id="splitHandle" class="hidden" style="left:50%;"></div>
+
+                <div class="vp-hint">Cuộn chuột: Zoom 25%–600% sắc nét • Kéo chuột: Di chuyển soi ký tự</div>
+            </div>
+
+            <!-- GIF FRAME SCRUBBER -->
+            <div id="gifScrubberBar" class="gif-scrubber hidden">
+                <span id="gifFrameLabel">GIF 1/1</span>
+                <input id="gifScrubberSlider" type="range" min="0" max="0" value="0" step="1" style="flex:1;">
+            </div>
+
+            <!-- STATUS FOOTER -->
+            <footer class="viewer-footer">
+                <div class="stats-row">
+                    <span>Ma trận: <strong id="statMatrix">180 × 100</strong></span>
+                    <span>Render: <strong id="statTime" class="green">0.0 ms</strong></span>
+                    <span>DPR: <strong id="statDpr" class="sky">1x</strong></span>
+                </div>
+                <div class="live-status">
+                    <span id="statusDot" class="live-dot"></span>
+                    <span id="statusLiveText">running • 60 fps</span>
+                </div>
+            </footer>
+        </section>
+    </main>
+
+    <!-- TOAST CONTAINER (NO alert()/confirm()) -->
+    <div id="toastContainer"></div>
+
+    <!-- HIDDEN HELPERS -->
+    <canvas id="sampleCanvas" class="hidden"></canvas>
+    <video id="hiddenVideo" class="hidden" muted loop playsinline crossorigin="anonymous"></video>
+
+    <script>
+    (function () {
+        'use strict';
+
+        // =========================================================================
+        // 1. CẤU HÌNH BỘ KÝ TỰ ĐẬM ĐỀU & BỘ MÁY MÀU TRUECOLOR FIDELITY
+        // =========================================================================
+        const FONT_FAMILY_STACK = '"JetBrains Mono", "Cascadia Code", "Fira Code", Consolas, "Courier New", monospace';
+
+        // Tỷ lệ ô khít dòng: cellAspect = cellW / cellH = 0.72 (cellH ≈ cellW * 1.38)
+        const TIGHT_CELL_ASPECT = 0.72;
+
+        const CHARSETS = {
+            // Mặc định mới: KHÔNG khoảng trắng, dấu chấm, dấu phẩy, gạch ngang
+            // Giữ mật độ mực 45%-70% ở cả vùng tối/trung tính để chống tối kép triệt để
+            fullbody: 'rxtvjnczuoaepsdwqkmhXUYJCLQ0OZ#MW&8%B@$',
+            ultra: " .'`^\",:;Il!i><~+_-?][}{1)(|\\/tfjrxnuvczXYUJCLQ0OZmwqpdbkhao*#MW&8%B@$",
+            nodot: '.,:-=+*#%@',
+            basic: ' .:-=+*#%@',
+            blocks: '░▒▓█'
+        };
+
+        // 4 cấu hình màu 1-Click chuẩn TrueColor Fidelity
+        const COLOR_PROFILES = {
+            fidelity: {
+                charsetType: 'fullbody',
+                cellBgTint: 0.12,
+                gamma: 1.18,
+                fgGain: 1.32,
+                colorLift: 8,
+                saturation: 1.12,
+                contrast: 0,
+                brightness: 0,
+                colorMode: 'truecolor'
+            },
+            pureblack: {
+                charsetType: 'fullbody',
+                cellBgTint: 0.00,
+                gamma: 1.24,
+                fgGain: 1.42,
+                colorLift: 12,
+                saturation: 1.15,
+                contrast: 0,
+                brightness: 0,
+                colorMode: 'truecolor'
+            },
+            vivid: {
+                charsetType: 'fullbody',
+                cellBgTint: 0.18,
+                gamma: 1.15,
+                fgGain: 1.36,
+                colorLift: 10,
+                saturation: 1.35,
+                contrast: 8,
+                brightness: 0,
+                colorMode: 'truecolor'
+            },
+            classic: {
+                charsetType: 'ultra',
+                cellBgTint: 0.00,
+                gamma: 1.05,
+                fgGain: 1.15,
+                colorLift: 0,
+                saturation: 1.15,
+                contrast: 15,
+                brightness: 0,
+                colorMode: 'truecolor'
+            }
+        };
+
+        const BG_R = 5, BG_G = 7, BG_B = 10;
+
+        // =========================================================================
+        // 2. BỘ MÃ HÓA GIF89a THUẦN JAVASCRIPT (LZW ENCODER)
+        // =========================================================================
+        class PureGifEncoder {
+            constructor(width, height, delayCs = 7) {
+                this.width = width;
+                this.height = height;
+                this.delayCs = Math.max(2, Math.round(delayCs));
+                this.chunks = [];
+                this.initPalette();
+            }
+
+            initPalette() {
+                if (PureGifEncoder._pal) {
+                    this.palette = PureGifEncoder._pal;
+                    this.lut = PureGifEncoder._lut;
+                    return;
+                }
+                const pal = new Uint8Array(256 * 3);
+                pal[0] = BG_R; pal[1] = BG_G; pal[2] = BG_B;
+                let idx = 1;
+                const levels = [0, 51, 102, 153, 204, 255];
+                for (let r = 0; r < 6; r++) {
+                    for (let g = 0; g < 6; g++) {
+                        for (let b = 0; b < 6; b++) {
+                            if (idx < 217) {
+                                pal[idx * 3] = levels[r];
+                                pal[idx * 3 + 1] = levels[g];
+                                pal[idx * 3 + 2] = levels[b];
+                                idx++;
+                            }
+                        }
+                    }
+                }
+                for (let i = 0; i < 39 && idx < 256; i++) {
+                    const v = Math.round((i / 38) * 248);
+                    pal[idx * 3] = v; pal[idx * 3 + 1] = v; pal[idx * 3 + 2] = v;
+                    idx++;
+                }
+
+                const lut = new Uint8Array(32768);
+                for (let r5 = 0; r5 < 32; r5++) {
+                    const r = (r5 << 3) | (r5 >> 2);
+                    for (let g5 = 0; g5 < 32; g5++) {
+                        const g = (g5 << 3) | (g5 >> 2);
+                        for (let b5 = 0; b5 < 32; b5++) {
+                            const b = (b5 << 3) | (b5 >> 2);
+                            let best = 0, bestD = 1e9;
+                            for (let p = 0; p < 256; p++) {
+                                const dr = r - pal[p * 3];
+                                const dg = g - pal[p * 3 + 1];
+                                const db = b - pal[p * 3 + 2];
+                                const d = dr * dr * 2 + dg * dg * 4 + db * db;
+                                if (d < bestD) { bestD = d; best = p; if (d === 0) break; }
+                            }
+                            lut[(r5 << 10) | (g5 << 5) | b5] = best;
+                        }
+                    }
+                }
+                PureGifEncoder._pal = pal;
+                PureGifEncoder._lut = lut;
+                this.palette = pal;
+                this.lut = lut;
+            }
+
+            writeHeader() {
+                this.chunks.push(new Uint8Array([
+                    0x47, 0x49, 0x46, 0x38, 0x39, 0x61,
+                    this.width & 255, (this.width >> 8) & 255,
+                    this.height & 255, (this.height >> 8) & 255,
+                    0xF7, 0x00, 0x00
+                ]));
+                this.chunks.push(this.palette);
+                this.chunks.push(new Uint8Array([
+                    0x21, 0xFF, 0x0B,
+                    0x4E, 0x45, 0x54, 0x53, 0x43, 0x41, 0x50, 0x45, 0x32, 0x2E, 0x30,
+                    0x03, 0x01, 0x00, 0x00, 0x00
+                ]));
+            }
+
+            addFrame(rgbaData, customDelayCs = null) {
+                const count = this.width * this.height;
+                const indexed = new Uint8Array(count);
+                const lut = this.lut;
+                for (let i = 0, p = 0; i < count; i++, p += 4) {
+                    const r = rgbaData[p], g = rgbaData[p + 1], b = rgbaData[p + 2];
+                    indexed[i] = (r <= 7 && g <= 9 && b <= 12)
+                        ? 0
+                        : lut[((r >> 3) << 10) | ((g >> 3) << 5) | (b >> 3)];
+                }
+                const delay = customDelayCs !== null ? Math.max(2, Math.round(customDelayCs)) : this.delayCs;
+                this.chunks.push(new Uint8Array([
+                    0x21, 0xF9, 0x04, 0x04,
+                    delay & 255, (delay >> 8) & 255,
+                    0x00, 0x00, 0x2C,
+                    0x00, 0x00, 0x00, 0x00,
+                    this.width & 255, (this.width >> 8) & 255,
+                    this.height & 255, (this.height >> 8) & 255,
+                    0x00
+                ]));
+                this.chunks.push(this.lzwEncode(indexed));
+            }
+
+            lzwEncode(pixels) {
+                const minCodeSize = 8;
+                const clearCode = 256;
+                const eoiCode = 257;
+                const out = [minCodeSize];
+                const sub = new Uint8Array(255);
+                let subLen = 0, bitBuf = 0, bitCount = 0;
+
+                const flush = () => {
+                    if (subLen > 0) {
+                        out.push(subLen);
+                        for (let i = 0; i < subLen; i++) out.push(sub[i]);
+                        subLen = 0;
+                    }
+                };
+                const emit = (code, size) => {
+                    bitBuf |= (code << bitCount);
+                    bitCount += size;
+                    while (bitCount >= 8) {
+                        sub[subLen++] = bitBuf & 255;
+                        bitBuf >>= 8;
+                        bitCount -= 8;
+                        if (subLen === 255) flush();
+                    }
+                };
+
+                const HASH_SIZE = 5003;
+                const hKeys = new Int32Array(HASH_SIZE).fill(-1);
+                const hVals = new Int16Array(HASH_SIZE);
+                let codeSize = 9, nextCode = 258;
+                emit(clearCode, codeSize);
+
+                let ent = pixels[0];
+                for (let i = 1; i < pixels.length; i++) {
+                    const k = pixels[i];
+                    const key = (ent << 8) | k;
+                    let h = ((k << 4) ^ ent) % HASH_SIZE;
+                    if (h < 0) h += HASH_SIZE;
+                    let found = -1;
+                    while (hKeys[h] !== -1) {
+                        if (hKeys[h] === key) { found = hVals[h]; break; }
+                        if (++h >= HASH_SIZE) h = 0;
+                    }
+                    if (found !== -1) {
+                        ent = found;
+                    } else {
+                        emit(ent, codeSize);
+                        if (nextCode < 4096) {
+                            hKeys[h] = key;
+                            hVals[h] = nextCode++;
+                            if (nextCode > (1 << codeSize) && codeSize < 12) codeSize++;
+                        } else {
+                            emit(clearCode, codeSize);
+                            hKeys.fill(-1);
+                            nextCode = 258;
+                            codeSize = 9;
+                        }
+                        ent = k;
+                    }
+                }
+                emit(ent, codeSize);
+                emit(eoiCode, codeSize);
+                if (bitCount > 0) sub[subLen++] = bitBuf & 255;
+                flush();
+                out.push(0x00);
+                return new Uint8Array(out);
+            }
+
+            finish() {
+                this.chunks.push(new Uint8Array([0x3B]));
+                return new Blob(this.chunks, { type: 'image/gif' });
+            }
+        }
+
+        // =========================================================================
+        // 3. ĐỘNG CƠ KẾT XUẤT WEBGL2 CRISP HIDPI GLYPH ATLAS (48×66px) + 2D FALLBACK
+        // =========================================================================
+        class CrispAsciiRenderer {
+            constructor(canvas) {
+                this.canvas = canvas;
+                this.gl = null;
+                this.ctx2d = null;
+                this.isWebGL2 = false;
+                this.atlasKey = '';
+                this.atlasCols = 16;
+                this.atlasRows = 8;
+                // Tight Glyph Packing Atlas: 48×66px (tỷ lệ 48/66 ≈ 0.727)
+                this.glyphW = 48;
+                this.glyphH = 66;
+                this.atlasCanvas = document.createElement('canvas');
+                this.atlasCtx = this.atlasCanvas.getContext('2d');
+                this.initWebGL2();
+            }
+
+            initWebGL2() {
+                try {
+                    const gl = this.canvas.getContext('webgl2', {
+                        alpha: false,
+                        antialias: false,
+                        preserveDrawingBuffer: true,
+                        powerPreference: 'high-performance'
+                    });
+                    if (!gl) throw new Error('WebGL2 unavailable');
+
+                    const vsSrc = `#version 300 es
+                    in vec2 a_pos;
+                    out vec2 v_uv;
+                    void main() {
+                        v_uv = a_pos * 0.5 + 0.5;
+                        gl_Position = vec4(a_pos, 0.0, 1.0);
+                    }`;
+
+                    const fsSrc = `#version 300 es
+                    precision highp float;
+                    in vec2 v_uv;
+                    out vec4 outColor;
+
+                    uniform sampler2D u_atlasTex;
+                    uniform sampler2D u_fgTex;
+                    uniform sampler2D u_bgTex;
+                    uniform vec2 u_viewport;
+                    uniform vec2 u_pan;
+                    uniform float u_zoom;
+                    uniform float u_dpr;
+                    uniform vec2 u_gridSize;
+                    uniform vec2 u_cellSize;
+                    uniform vec2 u_atlasGrid;
+                    uniform float u_glow;
+
+                    float sampleGlyph(float glyphIndex, vec2 cellUv) {
+                        float ax = mod(glyphIndex, u_atlasGrid.x);
+                        float ay = floor(glyphIndex / u_atlasGrid.x);
+                        vec2 uv = (vec2(ax, ay) + clamp(cellUv, 0.01, 0.99)) / u_atlasGrid;
+                        float rawAlpha = texture(u_atlasTex, uv).a;
+
+                        // Cắt nét sạch khi phóng to (smoothstep 0.22..0.72)
+                        // và bù alpha nhẹ khi thu nhỏ để ảnh không bị tối đi lúc zoom nhỏ
+                        float screenCellH = u_cellSize.y * u_zoom * u_dpr;
+                        float crispAlpha = smoothstep(0.22, 0.72, rawAlpha);
+                        float minAlpha = clamp(pow(max(rawAlpha, 0.0), 0.78) * 1.12, 0.0, 1.0);
+                        float sharpMix = clamp((screenCellH - 9.0) / 10.0, 0.0, 1.0);
+                        return mix(minAlpha, crispAlpha, sharpMix);
+                    }
+
+                    void main() {
+                        vec2 screenCss = vec2(v_uv.x * u_viewport.x, (1.0 - v_uv.y) * u_viewport.y);
+                        vec2 worldPx = (screenCss - u_pan) / u_zoom;
+                        vec2 gridTotal = u_gridSize * u_cellSize;
+
+                        vec3 baseBg = vec3(0.0196, 0.0274, 0.0392);
+                        if (worldPx.x < 0.0 || worldPx.y < 0.0 || worldPx.x >= gridTotal.x || worldPx.y >= gridTotal.y) {
+                            outColor = vec4(baseBg, 1.0);
+                            return;
+                        }
+
+                        vec2 cellCoord = worldPx / u_cellSize;
+                        vec2 cellIdx = floor(cellCoord);
+                        vec2 cellUv = fract(cellCoord);
+                        vec2 texUv = (cellIdx + 0.5) / u_gridSize;
+
+                        vec4 fgData = texture(u_fgTex, texUv);
+                        vec4 bgData = texture(u_bgTex, texUv);
+                        float glyphIndex = floor(fgData.a * 255.0 + 0.5);
+
+                        float alpha = sampleGlyph(glyphIndex, cellUv);
+                        vec3 col = mix(bgData.rgb, fgData.rgb, alpha);
+
+                        if (u_glow > 0.01) {
+                            vec2 stepUv = 1.0 / u_gridSize;
+                            vec3 n1 = texture(u_fgTex, texUv + vec2(stepUv.x, 0.0)).rgb;
+                            vec3 n2 = texture(u_fgTex, texUv - vec2(stepUv.x, 0.0)).rgb;
+                            vec3 n3 = texture(u_fgTex, texUv + vec2(0.0, stepUv.y)).rgb;
+                            vec3 n4 = texture(u_fgTex, texUv - vec2(0.0, stepUv.y)).rgb;
+                            vec3 glowCol = (fgData.rgb * 2.0 + n1 + n2 + n3 + n4) / 6.0;
+                            col += glowCol * u_glow * 0.42;
+                        }
+
+                        outColor = vec4(clamp(col, 0.0, 1.0), 1.0);
+                    }`;
+
+                    const compile = (type, src) => {
+                        const sh = gl.createShader(type);
+                        gl.shaderSource(sh, src);
+                        gl.compileShader(sh);
+                        if (!gl.getShaderParameter(sh, gl.COMPILE_STATUS)) {
+                            throw new Error(gl.getShaderInfoLog(sh));
+                        }
+                        return sh;
+                    };
+
+                    const prog = gl.createProgram();
+                    gl.attachShader(prog, compile(gl.VERTEX_SHADER, vsSrc));
+                    gl.attachShader(prog, compile(gl.FRAGMENT_SHADER, fsSrc));
+                    gl.linkProgram(prog);
+                    if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) {
+                        throw new Error(gl.getProgramInfoLog(prog));
+                    }
+
+                    this.gl = gl;
+                    this.program = prog;
+                    this.isWebGL2 = true;
+
+                    const vbo = gl.createBuffer();
+                    gl.bindBuffer(gl.ARRAY_BUFFER, vbo);
+                    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]), gl.STATIC_DRAW);
+                    const loc = gl.getAttribLocation(prog, 'a_pos');
+                    gl.enableVertexAttribArray(loc);
+                    gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
+
+                    this.u = {
+                        atlasTex: gl.getUniformLocation(prog, 'u_atlasTex'),
+                        fgTex: gl.getUniformLocation(prog, 'u_fgTex'),
+                        bgTex: gl.getUniformLocation(prog, 'u_bgTex'),
+                        viewport: gl.getUniformLocation(prog, 'u_viewport'),
+                        pan: gl.getUniformLocation(prog, 'u_pan'),
+                        zoom: gl.getUniformLocation(prog, 'u_zoom'),
+                        dpr: gl.getUniformLocation(prog, 'u_dpr'),
+                        gridSize: gl.getUniformLocation(prog, 'u_gridSize'),
+                        cellSize: gl.getUniformLocation(prog, 'u_cellSize'),
+                        atlasGrid: gl.getUniformLocation(prog, 'u_atlasGrid'),
+                        glow: gl.getUniformLocation(prog, 'u_glow')
+                    };
+
+                    this.atlasTex = gl.createTexture();
+                    this.fgTex = gl.createTexture();
+                    this.bgTex = gl.createTexture();
+
+                    [this.fgTex, this.bgTex].forEach(tex => {
+                        gl.bindTexture(gl.TEXTURE_2D, tex);
+                        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+                        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+                        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+                        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+                    });
+
+                    this.anisoExt = gl.getExtension('EXT_texture_filter_anisotropic');
+                } catch (err) {
+                    console.warn('WebGL2 fallback -> HiDPI Canvas 2D:', err);
+                    this.isWebGL2 = false;
+                    this.ctx2d = this.canvas.getContext('2d', { alpha: false });
+                }
+            }
+
+            buildAtlas(charset, fontWeight) {
+                const key = `${charset}__${fontWeight}`;
+                if (this.atlasKey === key) return;
+                this.atlasKey = key;
+
+                const cw = this.glyphW;
+                const ch = this.glyphH;
+                const cols = this.atlasCols;
+                const rows = Math.max(1, Math.ceil(charset.length / cols));
+                this.atlasRows = rows;
+
+                this.atlasCanvas.width = cols * cw;
+                this.atlasCanvas.height = rows * ch;
+                const ctx = this.atlasCtx;
+                ctx.clearRect(0, 0, this.atlasCanvas.width, this.atlasCanvas.height);
+
+                // Vẽ ký tự chiếm 92% chiều cao ô để khít dòng, loại bỏ sọc ngang tối
+                ctx.font = `${fontWeight} ${Math.round(ch * 0.92)}px ${FONT_FAMILY_STACK}`;
+                ctx.fillStyle = '#ffffff';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+
+                for (let i = 0; i < charset.length; i++) {
+                    const gx = (i % cols) * cw;
+                    const gy = Math.floor(i / cols) * ch;
+                    ctx.fillText(charset[i], gx + cw * 0.5, gy + ch * 0.53);
+                }
+
+                if (this.isWebGL2) {
+                    const gl = this.gl;
+                    gl.activeTexture(gl.TEXTURE0);
+                    gl.bindTexture(gl.TEXTURE_2D, this.atlasTex);
+                    gl.pixelStorei(gl.UNPACK_ALIGNMENT, 1);
+                    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, this.atlasCanvas);
+                    gl.generateMipmap(gl.TEXTURE_2D);
+                    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
+                    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+                    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+                    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+                    if (this.anisoExt) {
+                        const maxAniso = gl.getParameter(this.anisoExt.MAX_TEXTURE_MAX_ANISOTROPY_EXT);
+                        gl.texParameterf(gl.TEXTURE_2D, this.anisoExt.TEXTURE_MAX_ANISOTROPY_EXT, Math.min(8, maxAniso));
+                    }
+                }
+            }
+
+            uploadGrid(cols, rows, fgBytes, bgBytes) {
+                if (!this.isWebGL2) return;
+                const gl = this.gl;
+                gl.pixelStorei(gl.UNPACK_ALIGNMENT, 1);
+
+                gl.activeTexture(gl.TEXTURE1);
+                gl.bindTexture(gl.TEXTURE_2D, this.fgTex);
+                gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, cols, rows, 0, gl.RGBA, gl.UNSIGNED_BYTE, fgBytes);
+
+                gl.activeTexture(gl.TEXTURE2);
+                gl.bindTexture(gl.TEXTURE_2D, this.bgTex);
+                gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, cols, rows, 0, gl.RGBA, gl.UNSIGNED_BYTE, bgBytes);
+            }
+
+            render(params) {
+                const { cssW, cssH, dpr, panX, panY, zoom, cols, rows, cellW, cellH, glow, charset, fontWeight, fgBytes, bgBytes } = params;
+                if (this.isWebGL2) {
+                    const gl = this.gl;
+                    gl.viewport(0, 0, this.canvas.width, this.canvas.height);
+                    gl.useProgram(this.program);
+                    gl.uniform1i(this.u.atlasTex, 0);
+                    gl.uniform1i(this.u.fgTex, 1);
+                    gl.uniform1i(this.u.bgTex, 2);
+                    gl.uniform2f(this.u.viewport, cssW, cssH);
+                    gl.uniform2f(this.u.pan, panX, panY);
+                    gl.uniform1f(this.u.zoom, zoom);
+                    gl.uniform1f(this.u.dpr, dpr);
+                    gl.uniform2f(this.u.gridSize, cols, rows);
+                    gl.uniform2f(this.u.cellSize, cellW, cellH);
+                    gl.uniform2f(this.u.atlasGrid, this.atlasCols, this.atlasRows);
+                    gl.uniform1f(this.u.glow, glow);
+                    gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+                } else {
+                    const ctx = this.ctx2d;
+                    ctx.save();
+                    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+                    ctx.fillStyle = `rgb(${BG_R},${BG_G},${BG_B})`;
+                    ctx.fillRect(0, 0, cssW, cssH);
+
+                    ctx.translate(panX, panY);
+                    ctx.scale(zoom, zoom);
+
+                    const fontPx = Math.max(4, Math.round(cellH * 0.92));
+                    ctx.font = `${fontWeight} ${fontPx}px ${FONT_FAMILY_STACK}`;
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+
+                    let idx = 0;
+                    for (let y = 0; y < rows; y++) {
+                        const py = y * cellH;
+                        for (let x = 0; x < cols; x++, idx++) {
+                            const px = x * cellW;
+                            const o = idx * 4;
+                            const bgr = bgBytes[o], bgg = bgBytes[o + 1], bgb = bgBytes[o + 2];
+                            if (bgr !== BG_R || bgg !== BG_G || bgb !== BG_B) {
+                                ctx.fillStyle = `rgb(${bgr},${bgg},${bgb})`;
+                                ctx.fillRect(px, py, cellW + 0.4, cellH + 0.4);
+                            }
+                            const ch = charset[fgBytes[o + 3]] || ' ';
+                            if (ch !== ' ') {
+                                ctx.fillStyle = `rgb(${fgBytes[o]},${fgBytes[o + 1]},${fgBytes[o + 2]})`;
+                                ctx.fillText(ch, px + cellW * 0.5, py + cellH * 0.53);
+                            }
+                        }
+                    }
+                    ctx.restore();
+                }
+            }
+        }
+
+        // =========================================================================
+        // 4. THAM CHIẾU DOM & TRẠNG THÁI ỨNG DỤNG
+        // =========================================================================
+        const dom = {
+            engineBadge: document.getElementById('engineBadge'),
+            dropZone: document.getElementById('dropZone'),
+            fileInput: document.getElementById('fileInput'),
+            sourcePreview: document.getElementById('sourcePreview'),
+            mediaTypeBadge: document.getElementById('mediaTypeBadge'),
+            fileNameLabel: document.getElementById('fileNameLabel'),
+            btnDemoTree: document.getElementById('btnDemoTree'),
+
+            matrixTag: document.getElementById('matrixTag'),
+            colsSlider: document.getElementById('colsSlider'),
+            colsVal: document.getElementById('colsVal'),
+            colsPresetButtons: document.querySelectorAll('#colsPresetGroup button'),
+            fontSizeSlider: document.getElementById('fontSizeSlider'),
+            fontSizeVal: document.getElementById('fontSizeVal'),
+            fontWeightButtons: document.querySelectorAll('#fontWeightGroup button'),
+            charsetSelect: document.getElementById('charsetSelect'),
+            customCharsetInput: document.getElementById('customCharsetInput'),
+
+            btnResetTune: document.getElementById('btnResetTune'),
+            colorProfileButtons: document.querySelectorAll('#colorProfileGroup button'),
+            colorModeButtons: document.querySelectorAll('#colorModeGroup button'),
+            cellBgSlider: document.getElementById('cellBgSlider'),
+            cellBgVal: document.getElementById('cellBgVal'),
+            gammaSlider: document.getElementById('gammaSlider'),
+            gammaVal: document.getElementById('gammaVal'),
+            fgGainSlider: document.getElementById('fgGainSlider'),
+            fgGainVal: document.getElementById('fgGainVal'),
+            colorLiftSlider: document.getElementById('colorLiftSlider'),
+            colorLiftVal: document.getElementById('colorLiftVal'),
+            saturationSlider: document.getElementById('saturationSlider'),
+            saturationVal: document.getElementById('saturationVal'),
+            brightnessSlider: document.getElementById('brightnessSlider'),
+            brightnessVal: document.getElementById('brightnessVal'),
+            contrastSlider: document.getElementById('contrastSlider'),
+            contrastVal: document.getElementById('contrastVal'),
+            sharpenSlider: document.getElementById('sharpenSlider'),
+            sharpenVal: document.getElementById('sharpenVal'),
+            glowSlider: document.getElementById('glowSlider'),
+            glowVal: document.getElementById('glowVal'),
+            invertToggle: document.getElementById('invertToggle'),
+
+            btnPlayPause: document.getElementById('btnPlayPause'),
+            animModeSelect: document.getElementById('animModeSelect'),
+            fpsSlider: document.getElementById('fpsSlider'),
+            fpsVal: document.getElementById('fpsVal'),
+            animIntensitySlider: document.getElementById('animIntensitySlider'),
+            animIntensityVal: document.getElementById('animIntensityVal'),
+            animSpeedSlider: document.getElementById('animSpeedSlider'),
+            animSpeedVal: document.getElementById('animSpeedVal'),
+
+            gifDurationSlider: document.getElementById('gifDurationSlider'),
+            gifDurationVal: document.getElementById('gifDurationVal'),
+            gifFpsSlider: document.getElementById('gifFpsSlider'),
+            gifFpsVal: document.getElementById('gifFpsVal'),
+            gifScaleButtons: document.querySelectorAll('#gifScaleGroup button'),
+            btnExportGif: document.getElementById('btnExportGif'),
+            btnExportGifText: document.getElementById('btnExportGifText'),
+            btnQuickGif: document.getElementById('btnQuickGif'),
+            gifProgressWrap: document.getElementById('gifProgressWrap'),
+            gifProgressLabel: document.getElementById('gifProgressLabel'),
+            gifProgressPct: document.getElementById('gifProgressPct'),
+            gifProgressBar: document.getElementById('gifProgressBar'),
+
+            btnExportPng4k: document.getElementById('btnExportPng4k'),
+            btnExportHtml: document.getElementById('btnExportHtml'),
+            btnCopyAnsi: document.getElementById('btnCopyAnsi'),
+            btnCopyPlain: document.getElementById('btnCopyPlain'),
+
+            renderModeButtons: document.querySelectorAll('#renderModeGroup button'),
+            domCopyToggleWrap: document.getElementById('domCopyToggleWrap'),
+            domCopyCheckbox: document.getElementById('domCopyCheckbox'),
+            btnHoldOrig: document.getElementById('btnHoldOrig'),
+            btnSplitCompare: document.getElementById('btnSplitCompare'),
+            btnZoomOut: document.getElementById('btnZoomOut'),
+            btnZoomIn: document.getElementById('btnZoomIn'),
+            btnZoom100: document.getElementById('btnZoom100'),
+            btnZoomFit: document.getElementById('btnZoomFit'),
+            zoomPctLabel: document.getElementById('zoomPctLabel'),
+
+            viewport: document.getElementById('viewport'),
+            gpuCanvas: document.getElementById('gpuCanvas'),
+            domScrollWrap: document.getElementById('domScrollWrap'),
+            domAsciiPre: document.getElementById('domAsciiPre'),
+            compareLayer: document.getElementById('compareLayer'),
+            compareCanvas: document.getElementById('compareCanvas'),
+            splitHandle: document.getElementById('splitHandle'),
+
+            gifScrubberBar: document.getElementById('gifScrubberBar'),
+            gifFrameLabel: document.getElementById('gifFrameLabel'),
+            gifScrubberSlider: document.getElementById('gifScrubberSlider'),
+
+            statMatrix: document.getElementById('statMatrix'),
+            statTime: document.getElementById('statTime'),
+            statDpr: document.getElementById('statDpr'),
+            statusDot: document.getElementById('statusDot'),
+            statusLiveText: document.getElementById('statusLiveText'),
+            toastContainer: document.getElementById('toastContainer'),
+
+            sampleCanvas: document.getElementById('sampleCanvas'),
+            hiddenVideo: document.getElementById('hiddenVideo')
+        };
+
+        const sampleCtx = dom.sampleCanvas.getContext('2d', { willReadFrequently: true });
+        const compareCtx = dom.compareCanvas.getContext('2d');
+        const renderer = new CrispAsciiRenderer(dom.gpuCanvas);
+
+        const state = {
+            mediaType: 'demo',
+            sourceImage: null,
+            gifFrames: [],
+            gifTotalDurMs: 1000,
+            gifFrameIdx: 0,
+            fileName: 'christmas_tree_hd.png',
+
+            renderMode: 'gpu',
+            domAllowCopy: false,
+
+            cols: 180,
+            fontSize: 11,
+            fontWeight: 700,
+            charsetType: 'fullbody',
+            customCharset: CHARSETS.fullbody,
+
+            // Mặc định TrueColor Fidelity
+            colorProfile: 'fidelity',
+            colorMode: 'truecolor',
+            cellBgTint: 0.12,
+            gamma: 1.18,
+            fgGain: 1.32,
+            colorLift: 8,
+            saturation: 1.12,
+            brightness: 0,
+            contrast: 0,
+            sharpen: 0.25,
+            glow: 0.0,
+            invert: false,
+
+            isPlaying: true,
+            animMode: 'none',
+            targetFps: 60,
+            actualFps: 60,
+            animIntensity: 0.60,
+            animSpeed: 1.0,
+            elapsedSec: 0,
+            lastFrameTs: 0,
+            fpsFrames: 0,
+            fpsLastTs: 0,
+
+            gifDuration: 2.5,
+            gifExportFps: 15,
+            gifExportScale: 0.75,
+            isExportingGif: false,
+
+            compareHold: false,
+            splitMode: false,
+            splitRatio: 0.5,
+            isDraggingSplit: false,
+
+            view: {
+                zoom: 1,
+                panX: 0,
+                panY: 0,
+                isDragging: false,
+                lastX: 0,
+                lastY: 0
+            },
+
+            gridCols: 0,
+            gridRows: 0,
+            fgBytes: null,
+            bgBytes: null,
+            sharpBuf: null,
+            gammaLut: new Uint8Array(256),
+            staticCacheKey: '',
+            staticPixels: null,
+            snowParticles: [],
+            matrixDrops: []
+        };
+
+        // =========================================================================
+        // 5. TIỆN ÍCH CƠ BẢN & TOAST
+        // =========================================================================
+        function clamp255(v) {
+            return v < 0 ? 0 : (v > 255 ? 255 : v | 0);
+        }
+
+        function rebuildGammaLut() {
+            const invG = 1 / Math.max(0.2, state.gamma);
+            for (let i = 0; i < 256; i++) {
+                state.gammaLut[i] = clamp255(Math.pow(i / 255, invG) * 255);
+            }
+        }
+
+        function getActiveCharset() {
+            if (state.charsetType === 'custom') {
+                return state.customCharset && state.customCharset.length >= 2 ? state.customCharset : CHARSETS.fullbody;
+            }
+            return CHARSETS[state.charsetType] || CHARSETS.fullbody;
+        }
+
+        // Tight Glyph Packing: cellAspect = 0.72 -> cellH ≈ cellW * 1.38
+        function getCellMetrics() {
+            const cellH = state.fontSize * 1.04;
+            const cellW = cellH * TIGHT_CELL_ASPECT;
+            return { cellW, cellH };
+        }
+
+        function showToast(msg, type = 'success') {
+            const el = document.createElement('div');
+            el.className = `toast ${type}`;
+            el.textContent = msg;
+            dom.toastContainer.appendChild(el);
+            requestAnimationFrame(() => el.classList.add('show'));
+            setTimeout(() => {
+                el.classList.remove('show');
+                setTimeout(() => el.remove(), 260);
+            }, 2600);
+        }
+
+        // =========================================================================
+        // 6. ẢNH MẪU CÂY THÔNG NOEL HD MẶC ĐỊNH
+        // =========================================================================
+        function createChristmasTreeCanvas() {
+            const c = document.createElement('canvas');
+            const w = 760, h = 900;
+            c.width = w; c.height = h;
+            const ctx = c.getContext('2d');
+
+            const bg = ctx.createLinearGradient(0, 0, 0, h);
+            bg.addColorStop(0, '#02050d');
+            bg.addColorStop(0.65, '#071122');
+            bg.addColorStop(1, '#0e192d');
+            ctx.fillStyle = bg;
+            ctx.fillRect(0, 0, w, h);
+
+            const aurora = ctx.createRadialGradient(w * 0.5, h * 0.36, 30, w * 0.5, h * 0.36, 400);
+            aurora.addColorStop(0, 'rgba(16, 185, 129, 0.22)');
+            aurora.addColorStop(0.55, 'rgba(56, 189, 248, 0.10)');
+            aurora.addColorStop(1, 'rgba(0, 0, 0, 0)');
+            ctx.fillStyle = aurora;
+            ctx.fillRect(0, 0, w, h);
+
+            let seed = 1337;
+            const rand = () => { seed = (seed * 1664525 + 1013904223) % 4294967296; return seed / 4294967296; };
+
+            for (let i = 0; i < 220; i++) {
+                ctx.fillStyle = rand() > 0.72 ? '#fde68a' : '#bae6fd';
+                ctx.beginPath();
+                ctx.arc(rand() * w, rand() * (h * 0.72), 1.0 + rand() * 2.3, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            const snowGlow = ctx.createRadialGradient(w / 2, 770, 30, w / 2, 770, 370);
+            snowGlow.addColorStop(0, 'rgba(148, 185, 225, 0.36)');
+            snowGlow.addColorStop(0.65, 'rgba(52, 85, 130, 0.14)');
+            snowGlow.addColorStop(1, 'rgba(5, 7, 12, 0)');
+            ctx.fillStyle = snowGlow;
+            ctx.fillRect(0, 640, w, 260);
+
+            ctx.fillStyle = '#6b3a19';
+            ctx.fillRect(w / 2 - 26, 680, 52, 88);
+
+            const layers = [
+                { topY: 135, botY: 290, hw: 100 },
+                { topY: 222, botY: 400, hw: 158 },
+                { topY: 320, botY: 515, hw: 215 },
+                { topY: 430, botY: 622, hw: 268 },
+                { topY: 536, botY: 722, hw: 312 }
+            ];
+            layers.forEach((l, idx) => {
+                const g = ctx.createLinearGradient(w / 2 - l.hw, l.topY, w / 2 + l.hw, l.botY);
+                g.addColorStop(0, '#0d6e35');
+                g.addColorStop(0.4, '#1ec961');
+                g.addColorStop(0.65, '#34e87a');
+                g.addColorStop(1, '#0b5829');
+                ctx.fillStyle = g;
+                ctx.beginPath();
+                ctx.moveTo(w / 2, l.topY);
+                ctx.lineTo(w / 2 + l.hw, l.botY);
+                ctx.lineTo(w / 2 - l.hw, l.botY);
+                ctx.closePath();
+                ctx.fill();
+
+                ctx.strokeStyle = '#ffd54f';
+                ctx.lineWidth = 9 + idx * 1.3;
+                ctx.lineCap = 'round';
+                ctx.beginPath();
+                const sx = w / 2 - l.hw * 0.72;
+                const ex = w / 2 + l.hw * 0.74;
+                const y1 = l.topY + (l.botY - l.topY) * 0.56;
+                const y2 = l.topY + (l.botY - l.topY) * 0.84;
+                ctx.moveTo(sx, y1);
+                ctx.quadraticCurveTo(w / 2, y2 + 24, ex, y2 - 12);
+                ctx.stroke();
+            });
+
+            const bulbs = ['#ff4242', '#ffdf40', '#38bdf8', '#f472b6', '#ffffff', '#ff8533', '#a78bfa'];
+            for (let i = 0; i < 68; i++) {
+                const t = rand();
+                const oy = 178 + t * 525;
+                const ox = w / 2 + (rand() * 2 - 1) * (26 + t * 255) * 0.85;
+                const col = bulbs[Math.floor(rand() * bulbs.length)];
+                const rad = 6.5 + rand() * 7.5;
+                const glw = ctx.createRadialGradient(ox, oy, 1, ox, oy, rad * 2.3);
+                glw.addColorStop(0, col);
+                glw.addColorStop(1, 'rgba(0,0,0,0)');
+                ctx.fillStyle = glw;
+                ctx.beginPath();
+                ctx.arc(ox, oy, rad * 2.3, 0, Math.PI * 2);
+                ctx.fill();
+
+                ctx.fillStyle = col;
+                ctx.beginPath();
+                ctx.arc(ox, oy, rad, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            const starGlow = ctx.createRadialGradient(w / 2, 114, 8, w / 2, 114, 105);
+            starGlow.addColorStop(0, 'rgba(255, 244, 120, 1)');
+            starGlow.addColorStop(0.45, 'rgba(255, 195, 45, 0.45)');
+            starGlow.addColorStop(1, 'rgba(255, 180, 0, 0)');
+            ctx.fillStyle = starGlow;
+            ctx.beginPath();
+            ctx.arc(w / 2, 114, 105, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.fillStyle = '#fff066';
+            ctx.beginPath();
+            for (let i = 0; i < 5; i++) {
+                const a1 = (i * 72 - 90) * Math.PI / 180;
+                const a2 = (i * 72 + 36 - 90) * Math.PI / 180;
+                const x1 = w / 2 + Math.cos(a1) * 42, y1 = 114 + Math.sin(a1) * 42;
+                const x2 = w / 2 + Math.cos(a2) * 17, y2 = 114 + Math.sin(a2) * 17;
+                if (i === 0) ctx.moveTo(x1, y1); else ctx.lineTo(x1, y1);
+                ctx.lineTo(x2, y2);
+            }
+            ctx.closePath(); ctx.fill();
+
+            const gifts = [
+                { x: 138, y: 690, gw: 112, gh: 86, body: '#2563eb', ribbon: '#93c5fd' },
+                { x: 266, y: 704, gw: 124, gh: 92, body: '#ef4444', ribbon: '#fde047' },
+                { x: 406, y: 698, gw: 108, gh: 88, body: '#10b981', ribbon: '#fef08a' },
+                { x: 526, y: 692, gw: 114, gh: 90, body: '#dc2626', ribbon: '#ffffff' }
+            ];
+            gifts.forEach(g => {
+                ctx.fillStyle = g.body;
+                ctx.fillRect(g.x, g.y, g.gw, g.gh);
+                ctx.fillStyle = g.ribbon;
+                ctx.fillRect(g.x + g.gw / 2 - 7, g.y, 14, g.gh);
+                ctx.fillRect(g.x, g.y + g.gh / 2 - 7, g.gw, 14);
+            });
+
+            ctx.font = `700 38px ${FONT_FAMILY_STACK}`;
+            ctx.textAlign = 'center';
+            const tGrad = ctx.createLinearGradient(180, 845, 580, 845);
+            tGrad.addColorStop(0, '#ef4444');
+            tGrad.addColorStop(0.5, '#facc15');
+            tGrad.addColorStop(1, '#22c55e');
+            ctx.fillStyle = tGrad;
+            ctx.fillText('MERRY CHRISTMAS', w / 2, 852);
+            return c;
+        }
+
+        function loadDefaultDemo() {
+            stopVideoIfPlaying();
+            const canvas = createChristmasTreeCanvas();
+            state.mediaType = 'demo';
+            state.sourceImage = canvas;
+            state.gifFrames = [];
+            state.staticCacheKey = '';
+            state.elapsedSec = 0;
+            state.fileName = 'christmas_tree_hd.png';
+
+            dom.sourcePreview.src = canvas.toDataURL('image/png');
+            dom.mediaTypeBadge.textContent = 'DEMO';
+            dom.fileNameLabel.textContent = state.fileName;
+            dom.gifScrubberBar.classList.add('hidden');
+
+            renderSingleFrame(0);
+            fitViewport();
+        }
+
+        // =========================================================================
+        // 7. NHẬP ẢNH TĨNH, GIF ĐỘNG (ImageDecoder) & VIDEO
+        // =========================================================================
+        function stopVideoIfPlaying() {
+            if (!dom.hiddenVideo.paused) dom.hiddenVideo.pause();
+            if (dom.hiddenVideo.src && dom.hiddenVideo.src.startsWith('blob:')) {
+                URL.revokeObjectURL(dom.hiddenVideo.src);
+            }
+            dom.hiddenVideo.removeAttribute('src');
+        }
+
+        async function decodeAnimatedGif(file) {
+            if (typeof ImageDecoder === 'undefined') return null;
+            try {
+                const buf = await file.arrayBuffer();
+                const dec = new ImageDecoder({ data: buf, type: 'image/gif' });
+                await dec.tracks.ready;
+                const count = Math.min(dec.tracks.selectedTrack.frameCount || 1, 180);
+                if (count <= 1) { dec.close(); return null; }
+
+                const frames = [];
+                let totalDur = 0;
+                for (let i = 0; i < count; i++) {
+                    const res = await dec.decode({ frameIndex: i });
+                    const vf = res.image;
+                    const c = document.createElement('canvas');
+                    c.width = vf.displayWidth;
+                    c.height = vf.displayHeight;
+                    c.getContext('2d').drawImage(vf, 0, 0);
+                    const delayMs = Math.max(20, Math.round((vf.duration || 80000) / 1000));
+                    totalDur += delayMs;
+                    frames.push({ canvas: c, delayMs, cachedCols: 0, cachedRows: 0, cachedPixels: null });
+                    vf.close();
+                }
+                dec.close();
+                return { frames, totalDur };
+            } catch (e) {
+                console.warn('ImageDecoder fallback:', e);
+                return null;
+            }
+        }
+
+        async function handleUploadedFile(file) {
+            if (!file) return;
+            const isVideo = file.type.startsWith('video/');
+            const isGif = file.type === 'image/gif' || file.name.toLowerCase().endsWith('.gif');
+            const isImage = file.type.startsWith('image/');
+            if (!isImage && !isVideo) {
+                showToast('Vui lòng chọn PNG, JPG, WEBP, GIF hoặc video MP4/WEBM.', 'error');
+                return;
+            }
+
+            stopVideoIfPlaying();
+            state.fileName = file.name;
+            state.elapsedSec = 0;
+            state.staticCacheKey = '';
+            dom.fileNameLabel.textContent = file.name;
+
+            if (isVideo) {
+                const url = URL.createObjectURL(file);
+                dom.hiddenVideo.src = url;
+                dom.hiddenVideo.onloadeddata = () => {
+                    dom.hiddenVideo.play().catch(() => {});
+                    state.mediaType = 'video';
+                    state.gifFrames = [];
+                    state.sourceImage = null;
+                    const thumb = document.createElement('canvas');
+                    thumb.width = dom.hiddenVideo.videoWidth || 320;
+                    thumb.height = dom.hiddenVideo.videoHeight || 240;
+                    thumb.getContext('2d').drawImage(dom.hiddenVideo, 0, 0, thumb.width, thumb.height);
+                    dom.sourcePreview.src = thumb.toDataURL('image/jpeg', 0.7);
+                    dom.mediaTypeBadge.textContent = 'VIDEO';
+                    dom.gifScrubberBar.classList.add('hidden');
+                    state.animMode = 'none';
+                    dom.animModeSelect.value = 'none';
+                    setPlaying(true);
+                    renderSingleFrame(0);
+                    fitViewport();
+                    showToast(`Đang phát video "${file.name}"!`, 'success');
+                };
+                dom.hiddenVideo.onerror = () => showToast('Không thể phát định dạng video này.', 'error');
+                return;
+            }
+
+            if (isGif) {
+                showToast('Đang tách khung hình GIF...', 'info');
+                const decoded = await decodeAnimatedGif(file);
+                if (decoded && decoded.frames.length > 1) {
+                    state.mediaType = 'gif';
+                    state.gifFrames = decoded.frames;
+                    state.gifTotalDurMs = decoded.totalDur;
+                    state.gifFrameIdx = 0;
+                    state.sourceImage = decoded.frames[0].canvas;
+                    dom.sourcePreview.src = decoded.frames[0].canvas.toDataURL('image/png');
+                    dom.mediaTypeBadge.textContent = `GIF ${decoded.frames.length}f`;
+                    dom.gifScrubberBar.classList.remove('hidden');
+                    dom.gifScrubberSlider.max = decoded.frames.length - 1;
+                    dom.gifScrubberSlider.value = 0;
+                    dom.gifFrameLabel.textContent = `GIF 1/${decoded.frames.length}`;
+                    state.animMode = 'none';
+                    dom.animModeSelect.value = 'none';
+                    setPlaying(true);
+                    renderSingleFrame(0);
+                    fitViewport();
+                    showToast(`Đã tải GIF động (${decoded.frames.length} khung hình)!`, 'success');
+                    return;
+                }
+            }
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const img = new Image();
+                img.onload = () => {
+                    state.mediaType = 'image';
+                    state.sourceImage = img;
+                    state.gifFrames = [];
+                    state.staticCacheKey = '';
+                    dom.sourcePreview.src = e.target.result;
+                    dom.mediaTypeBadge.textContent = 'IMG';
+                    dom.gifScrubberBar.classList.add('hidden');
+                    renderSingleFrame(0);
+                    fitViewport();
+                    showToast(`Đã tải "${file.name}" (${state.cols} cột TrueColor)!`, 'success');
+                };
+                img.onerror = () => showToast('Không thể đọc tệp hình ảnh này.', 'error');
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // =========================================================================
+        // 8. BIÊN DỊCH PIXEL -> MA TRẬN ASCII + TRUECOLOR FIDELITY CHROMA-SAFE
+        // =========================================================================
+        function ensureGridBuffers(cols, rows) {
+            const total = cols * rows;
+            if (state.gridCols !== cols || state.gridRows !== rows) {
+                state.gridCols = cols;
+                state.gridRows = rows;
+                state.fgBytes = new Uint8Array(total * 4);
+                state.bgBytes = new Uint8Array(total * 4);
+                state.sharpBuf = new Uint8ClampedArray(total * 4);
+            }
+            if (state.snowParticles.length !== 80) {
+                state.snowParticles = Array.from({ length: 80 }, (_, i) => ({
+                    x: ((i * 37.3) % 100) / 100,
+                    y: ((i * 71.7) % 100) / 100,
+                    speed: 0.11 + ((i * 19) % 10) * 0.02,
+                    drift: (i % 2 === 0 ? 1 : -1) * (0.015 + (i % 5) * 0.006)
+                }));
+            }
+            if (state.matrixDrops.length !== cols) {
+                state.matrixDrops = Array.from({ length: cols }, (_, i) => ({
+                    phase: ((i * 17.3) % 100) / 100,
+                    speed: 0.35 + ((i * 29) % 10) * 0.08,
+                    length: 6 + (i % 12)
+                }));
+            }
+        }
+
+        function getCurrentMediaElement() {
+            if (state.mediaType === 'video' && dom.hiddenVideo.readyState >= 2) return dom.hiddenVideo;
+            if (state.mediaType === 'gif' && state.gifFrames.length > 0) return state.gifFrames[state.gifFrameIdx]?.canvas || null;
+            return state.sourceImage;
+        }
+
+        function getSampledPixels(timeSec) {
+            const cols = state.cols;
+
+            if (state.mediaType === 'video' && dom.hiddenVideo.readyState >= 2) {
+                const sw = dom.hiddenVideo.videoWidth, sh = dom.hiddenVideo.videoHeight;
+                if (!sw || !sh) return null;
+                const rows = Math.max(1, Math.round((sh / sw) * cols * TIGHT_CELL_ASPECT));
+                dom.sampleCanvas.width = cols;
+                dom.sampleCanvas.height = rows;
+                sampleCtx.drawImage(dom.hiddenVideo, 0, 0, cols, rows);
+                return { cols, rows, pixels: sampleCtx.getImageData(0, 0, cols, rows).data };
+            }
+
+            if (state.mediaType === 'gif' && state.gifFrames.length > 0) {
+                if (state.isPlaying) {
+                    const totalDur = state.gifTotalDurMs || 1000;
+                    const tMs = ((timeSec * 1000 * state.animSpeed) % totalDur + totalDur) % totalDur;
+                    let acc = 0, idx = 0;
+                    for (let i = 0; i < state.gifFrames.length; i++) {
+                        acc += state.gifFrames[i].delayMs;
+                        if (tMs <= acc) { idx = i; break; }
+                    }
+                    state.gifFrameIdx = idx;
+                    dom.gifScrubberSlider.value = idx;
+                    dom.gifFrameLabel.textContent = `GIF ${idx + 1}/${state.gifFrames.length}`;
+                }
+                const frame = state.gifFrames[state.gifFrameIdx];
+                const rows = Math.max(1, Math.round((frame.canvas.height / frame.canvas.width) * cols * TIGHT_CELL_ASPECT));
+                if (frame.cachedCols !== cols || frame.cachedRows !== rows || !frame.cachedPixels) {
+                    dom.sampleCanvas.width = cols;
+                    dom.sampleCanvas.height = rows;
+                    sampleCtx.clearRect(0, 0, cols, rows);
+                    sampleCtx.drawImage(frame.canvas, 0, 0, cols, rows);
+                    frame.cachedPixels = sampleCtx.getImageData(0, 0, cols, rows).data;
+                    frame.cachedCols = cols;
+                    frame.cachedRows = rows;
+                }
+                return { cols, rows, pixels: frame.cachedPixels };
+            }
+
+            const src = state.sourceImage;
+            if (!src) return null;
+            const sw = src.naturalWidth || src.width;
+            const sh = src.naturalHeight || src.height;
+            if (!sw || !sh) return null;
+            const rows = Math.max(1, Math.round((sh / sw) * cols * TIGHT_CELL_ASPECT));
+
+            const key = `${cols}x${rows}_${sw}x${sh}`;
+            if (state.staticCacheKey !== key || !state.staticPixels) {
+                dom.sampleCanvas.width = cols;
+                dom.sampleCanvas.height = rows;
+                sampleCtx.clearRect(0, 0, cols, rows);
+                sampleCtx.imageSmoothingEnabled = true;
+                sampleCtx.imageSmoothingQuality = 'high';
+                sampleCtx.drawImage(src, 0, 0, cols, rows);
+                state.staticPixels = sampleCtx.getImageData(0, 0, cols, rows).data;
+                state.staticCacheKey = key;
+            }
+            return { cols, rows, pixels: state.staticPixels };
+        }
+
+        function applyFastSharpen(src, dst, cols, rows, amount) {
+            const s = amount * 0.58;
+            const cw = 1 + 4 * s;
+            for (let y = 0; y < rows; y++) {
+                const yU = y > 0 ? y - 1 : 0;
+                const yD = y < rows - 1 ? y + 1 : rows - 1;
+                for (let x = 0; x < cols; x++) {
+                    const xL = x > 0 ? x - 1 : 0;
+                    const xR = x < cols - 1 ? x + 1 : cols - 1;
+                    const i = (y * cols + x) * 4;
+                    const iU = (yU * cols + x) * 4;
+                    const iD = (yD * cols + x) * 4;
+                    const iL = (y * cols + xL) * 4;
+                    const iR = (y * cols + xR) * 4;
+                    dst[i]     = src[i] * cw - s * (src[iU] + src[iD] + src[iL] + src[iR]);
+                    dst[i + 1] = src[i + 1] * cw - s * (src[iU + 1] + src[iD + 1] + src[iL + 1] + src[iR + 1]);
+                    dst[i + 2] = src[i + 2] * cw - s * (src[iU + 2] + src[iD + 2] + src[iL + 2] + src[iR + 2]);
+                    dst[i + 3] = src[i + 3];
+                }
+            }
+            return dst;
+        }
+
+        function rotateHueRGB(r, g, b, cosA, sinA) {
+            const k = 0.3333333, sq = 0.5773503, om = 1 - cosA;
+            return [
+                clamp255(r * (cosA + om * k) + g * (k * om - sq * sinA) + b * (k * om + sq * sinA)),
+                clamp255(r * (k * om + sq * sinA) + g * (cosA + k * om) + b * (k * om - sq * sinA)),
+                clamp255(r * (k * om - sq * sinA) + g * (k * om + sq * sinA) + b * (cosA + k * om))
+            ];
+        }
+
+        function compileAsciiFrame(timeSec) {
+            const sampled = getSampledPixels(timeSec);
+            if (!sampled) return false;
+
+            const { cols, rows } = sampled;
+            ensureGridBuffers(cols, rows);
+
+            const imgData = state.sharpen > 0.01
+                ? applyFastSharpen(sampled.pixels, state.sharpBuf, cols, rows, state.sharpen)
+                : sampled.pixels;
+
+            const charset = getActiveCharset();
+            const charLen = charset.length;
+            const denomChar = Math.max(1, charLen - 1);
+            const gammaLut = state.gammaLut;
+            const fgBytes = state.fgBytes;
+            const bgBytes = state.bgBytes;
+
+            const brightness = state.brightness;
+            const contrastFactor = (259 * (state.contrast + 255)) / (255 * (259 - state.contrast));
+            const satFactor = state.colorMode === 'vivid' ? state.saturation * 1.35 : state.saturation;
+            const colorMode = state.colorMode;
+            const invert = state.invert;
+            const cellBgTint = state.cellBgTint;
+            const fgGain = state.fgGain;
+            const colorLift = state.colorLift;
+
+            const mode = state.animMode;
+            const t = timeSec * state.animSpeed;
+            const inten = state.animIntensity;
+
+            const rotAngle = (t * 1.35) % (Math.PI * 2);
+            const cosRot = Math.cos(rotAngle), sinRot = Math.sin(rotAngle);
+            const absCosRot = Math.max(0.08, Math.abs(cosRot));
+            const glitchTrigger = mode === 'glitch' && Math.sin(t * 9.5) > (0.55 - inten * 0.45);
+            const glitchShift = glitchTrigger ? Math.round(Math.sin(t * 47) * 6 * inten) : 0;
+            const hueCos = mode === 'neonPulse' ? Math.cos(t * 1.8 * inten) : 1;
+            const hueSin = mode === 'neonPulse' ? Math.sin(t * 1.8 * inten) : 0;
+            const halfCols = cols * 0.5, halfRows = rows * 0.5;
+
+            for (let y = 0; y < rows; y++) {
+                const rowWave = mode === 'wave' ? Math.sin(y * 0.24 - t * 4.0) * (4.0 * inten) : 0;
+                const rowGlitch = (glitchTrigger && ((y + ((t * 25) | 0)) % 7 < 2)) ? glitchShift : 0;
+                const rowOff = y * cols;
+
+                for (let x = 0; x < cols; x++) {
+                    const outO = (rowOff + x) * 4;
+                    let sx = x, sy = y, depthShade = 1.0;
+
+                    if (mode === 'rotate3d') {
+                        const nx = (x - halfCols) / halfCols;
+                        const mappedX = nx / absCosRot;
+                        if (mappedX < -1 || mappedX > 1) {
+                            fgBytes[outO] = 0; fgBytes[outO + 1] = 0; fgBytes[outO + 2] = 0; fgBytes[outO + 3] = 0;
+                            bgBytes[outO] = BG_R; bgBytes[outO + 1] = BG_G; bgBytes[outO + 2] = BG_B; bgBytes[outO + 3] = 255;
+                            continue;
+                        }
+                        const persp = 1 + mappedX * sinRot * 0.12 * inten;
+                        sx = (((cosRot >= 0 ? mappedX : -mappedX) * 0.5 + 0.5) * (cols - 1)) | 0;
+                        sy = (((y - halfRows) / persp) + halfRows) | 0;
+                        if (sy < 0 || sy >= rows) {
+                            fgBytes[outO] = 0; fgBytes[outO + 1] = 0; fgBytes[outO + 2] = 0; fgBytes[outO + 3] = 0;
+                            bgBytes[outO] = BG_R; bgBytes[outO + 1] = BG_G; bgBytes[outO + 2] = BG_B; bgBytes[outO + 3] = 255;
+                            continue;
+                        }
+                        depthShade = 0.58 + 0.42 * absCosRot;
+                    } else if (mode === 'wave') {
+                        sx = (x + rowWave) | 0;
+                        sy = (y + Math.cos(x * 0.14 - t * 3.1) * (1.6 * inten)) | 0;
+                        if (sx < 0 || sx >= cols || sy < 0 || sy >= rows) {
+                            fgBytes[outO] = 0; fgBytes[outO + 1] = 0; fgBytes[outO + 2] = 0; fgBytes[outO + 3] = 0;
+                            bgBytes[outO] = BG_R; bgBytes[outO + 1] = BG_G; bgBytes[outO + 2] = BG_B; bgBytes[outO + 3] = 255;
+                            continue;
+                        }
+                    } else if (mode === 'glitch') {
+                        sx = x + rowGlitch;
+                        if (sx < 0) sx = 0; else if (sx >= cols) sx = cols - 1;
+                    }
+
+                    const pIdx = (sy * cols + sx) * 4;
+                    const a = imgData[pIdx + 3] * 0.00392157;
+                    let r = imgData[pIdx] * a;
+                    let g = imgData[pIdx + 1] * a;
+                    let b = imgData[pIdx + 2] * a;
+
+                    if (mode === 'glitch' && glitchTrigger) {
+                        const sh = Math.max(1, (2.5 * inten) | 0);
+                        r = imgData[(sy * cols + Math.max(0, sx - sh)) * 4] * a;
+                        b = imgData[(sy * cols + Math.min(cols - 1, sx + sh)) * 4 + 2] * a;
+                    }
+
+                    // Đo độ sáng gốc để bảo vệ nền đen thuần (lum < 8) khỏi nổi nhiễu
+                    const srcLum = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+                    const isPureBlack = srcLum < 8.0 && brightness <= 0 && !invert;
+
+                    // 1. Brightness & Contrast
+                    r = (contrastFactor * (r + brightness - 128) + 128) * depthShade;
+                    g = (contrastFactor * (g + brightness - 128) + 128) * depthShade;
+                    b = (contrastFactor * (b + brightness - 128) + 128) * depthShade;
+
+                    // 2. Gamma LUT (không nâng nhiễu nền đen thuần)
+                    let baseR = isPureBlack ? clamp255(r) : gammaLut[clamp255(r)];
+                    let baseG = isPureBlack ? clamp255(g) : gammaLut[clamp255(g)];
+                    let baseB = isPureBlack ? clamp255(b) : gammaLut[clamp255(b)];
+
+                    // 3. Saturation
+                    if (satFactor !== 1.0 && colorMode !== 'mono' && colorMode !== 'matrix') {
+                        const gray = 0.299 * baseR + 0.587 * baseG + 0.114 * baseB;
+                        baseR = clamp255(gray + (baseR - gray) * satFactor);
+                        baseG = clamp255(gray + (baseG - gray) * satFactor);
+                        baseB = clamp255(gray + (baseB - gray) * satFactor);
+                    }
+
+                    if (mode === 'neonPulse' && !isPureBlack) {
+                        const rot = rotateHueRGB(baseR, baseG, baseB, hueCos, hueSin);
+                        baseR = rot[0]; baseG = rot[1]; baseB = rot[2];
+                    }
+
+                    let lum = 0.2126 * baseR + 0.7152 * baseG + 0.0722 * baseB;
+
+                    // Hiệu ứng Lấp lánh
+                    if (mode === 'twinkle' && lum > 70) {
+                        const h = Math.sin(x * 12.9898 + y * 78.233) * 43758.5453;
+                        const frac = h - Math.floor(h);
+                        if (frac > (0.945 - inten * 0.11)) {
+                            const pulse = 0.5 + 0.5 * Math.sin(t * 7.5 + frac * 40);
+                            const boost = pulse * 105 * inten;
+                            baseR = clamp255(baseR + boost);
+                            baseG = clamp255(baseG + boost * 0.95);
+                            baseB = clamp255(baseB + boost * 0.75);
+                            lum = Math.min(255, lum + boost);
+                        }
+                    }
+
+                    const mappedLum = invert ? (255 - lum) : lum;
+                    let cIdx = Math.round((mappedLum / 255) * denomChar);
+                    if (cIdx < 0) cIdx = 0; else if (cIdx >= charLen) cIdx = charLen - 1;
+
+                    // 4. Nền ô nhẹ theo ảnh (mặc định 12% — giữ chiều sâu không bệt khối)
+                    let bgR = BG_R, bgG = BG_G, bgB = BG_B;
+                    if (cellBgTint > 0.001 && !isPureBlack) {
+                        let br = baseR, bg2 = baseG, bb = baseB;
+                        if (colorMode === 'matrix') {
+                            br = mappedLum * 0.08; bg2 = mappedLum * 0.85; bb = mappedLum * 0.16;
+                        } else if (colorMode === 'mono') {
+                            br = mappedLum; bg2 = mappedLum; bb = mappedLum;
+                        } else if (invert) {
+                            br = 255 - baseR; bg2 = 255 - baseG; bb = 255 - baseB;
+                        }
+                        bgR = clamp255(BG_R + (br - BG_R) * cellBgTint);
+                        bgG = clamp255(BG_G + (bg2 - BG_G) * cellBgTint);
+                        bgB = clamp255(BG_B + (bb - BG_B) * cellBgTint);
+                    }
+
+                    // 5. TrueColor Chroma-Safe Foreground Gain + Color Lift
+                    let outR = baseR, outG = baseG, outB = baseB;
+
+                    if (!isPureBlack) {
+                        // Nâng vùng tối giữ nguyên sắc độ (Color Lift)
+                        if (colorLift > 0) {
+                            const maxC = Math.max(outR, outG, outB);
+                            const liftCeiling = 96;
+                            if (maxC > 4 && maxC < liftCeiling) {
+                                const liftFactor = (maxC + colorLift * (1.0 - maxC / liftCeiling)) / maxC;
+                                outR *= liftFactor;
+                                outG *= liftFactor;
+                                outB *= liftFactor;
+                            }
+                        }
+
+                        // Nhân hệ số sáng fgGain với bảo toàn tỷ lệ RGB (Chroma-Safe)
+                        outR *= fgGain;
+                        outG *= fgGain;
+                        outB *= fgGain;
+
+                        const peak = Math.max(outR, outG, outB);
+                        if (peak > 255) {
+                            const chromaScale = 255 / peak;
+                            outR *= chromaScale;
+                            outG *= chromaScale;
+                            outB *= chromaScale;
+                        }
+                    }
+
+                    outR = clamp255(outR);
+                    outG = clamp255(outG);
+                    outB = clamp255(outB);
+
+                    if (colorMode === 'matrix') {
+                        const m = isPureBlack ? (mappedLum | 0) : clamp255(mappedLum * fgGain);
+                        outR = (m * 0.1) | 0;
+                        outG = isPureBlack ? (m | 0) : clamp255(m * 1.18 + 12);
+                        outB = (m * 0.22) | 0;
+                    } else if (colorMode === 'mono') {
+                        const gr = isPureBlack ? (mappedLum | 0) : clamp255(mappedLum * fgGain);
+                        outR = gr; outG = gr; outB = gr;
+                    } else if (invert) {
+                        outR = 255 - outR; outG = 255 - outG; outB = 255 - outB;
+                    }
+
+                    // Mưa Matrix
+                    if (mode === 'matrixRain') {
+                        const drop = state.matrixDrops[x];
+                        const headY = ((drop.phase + t * drop.speed * 0.35) % 1.35) * rows;
+                        const dist = headY - y;
+                        if (dist >= 0 && dist < drop.length) {
+                            const tail = (1 - dist / drop.length) * inten;
+                            if (dist < 1.1) {
+                                cIdx = (x + ((t * 18) | 0)) % charLen;
+                                outR = clamp255(outR * 0.3 + 190 * inten);
+                                outG = 255;
+                                outB = clamp255(outB * 0.3 + 210 * inten);
+                            } else {
+                                outG = clamp255(Math.max(outG, 190 * tail));
+                            }
+                        }
+                    }
+
+                    fgBytes[outO]     = outR;
+                    fgBytes[outO + 1] = outG;
+                    fgBytes[outO + 2] = outB;
+                    fgBytes[outO + 3] = cIdx;
+
+                    bgBytes[outO]     = bgR;
+                    bgBytes[outO + 1] = bgG;
+                    bgBytes[outO + 2] = bgB;
+                    bgBytes[outO + 3] = 255;
+                }
+            }
+
+            // Hạt tuyết rơi cho hiệu ứng Twinkle
+            if (mode === 'twinkle') {
+                const count = (state.snowParticles.length * inten) | 0;
+                const snowCharIdx = Math.max(0, Math.min(charLen - 1, Math.floor(charLen * 0.72)));
+                for (let i = 0; i < count; i++) {
+                    const p = state.snowParticles[i];
+                    const px = ((((p.x + t * p.drift) % 1) + 1) % 1 * cols) | 0;
+                    const py = ((((p.y + t * p.speed) % 1) + 1) % 1 * rows) | 0;
+                    const o = (py * cols + px) * 4;
+                    if (o >= 0 && o + 3 < fgBytes.length && fgBytes[o] < 38 && fgBytes[o + 1] < 38 && fgBytes[o + 2] < 38) {
+                        const sp = 185 + ((60 * Math.sin(t * 5 + i)) | 0);
+                        fgBytes[o] = sp;
+                        fgBytes[o + 1] = Math.min(255, sp + 8);
+                        fgBytes[o + 2] = 255;
+                        fgBytes[o + 3] = snowCharIdx;
+                    }
+                }
+            }
+
+            return true;
+        }
+
+        // =========================================================================
+        // 9. KẾT XUẤT LÊN VIEWPORT (WEBGL2 HIDPI / DOM TEXT / SO SÁNH ẢNH GỐC)
+        // =========================================================================
+        function resizeGpuCanvas() {
+            const rect = dom.viewport.getBoundingClientRect();
+            const dpr = Math.min(window.devicePixelRatio || 1, 2.5);
+            const w = Math.max(1, Math.round(rect.width * dpr));
+            const h = Math.max(1, Math.round(rect.height * dpr));
+            if (dom.gpuCanvas.width !== w || dom.gpuCanvas.height !== h) {
+                dom.gpuCanvas.width = w;
+                dom.gpuCanvas.height = h;
+            }
+            if (dom.compareCanvas.width !== w || dom.compareCanvas.height !== h) {
+                dom.compareCanvas.width = w;
+                dom.compareCanvas.height = h;
+            }
+            dom.statDpr.textContent = `${dpr.toFixed(dpr % 1 === 0 ? 0 : 1)}x`;
+        }
+
+        function renderCompareOverlay() {
+            const show = state.compareHold || state.splitMode;
+            dom.compareLayer.classList.toggle('hidden', !show || state.renderMode !== 'gpu');
+            dom.splitHandle.classList.toggle('hidden', !state.splitMode || state.renderMode !== 'gpu');
+            if (!show || state.renderMode !== 'gpu') return;
+
+            const media = getCurrentMediaElement();
+            if (!media) return;
+
+            const rect = dom.viewport.getBoundingClientRect();
+            const dpr = Math.min(window.devicePixelRatio || 1, 2.5);
+            const { cellW, cellH } = getCellMetrics();
+            const worldW = state.gridCols * cellW;
+            const worldH = state.gridRows * cellH;
+
+            compareCtx.save();
+            compareCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+            compareCtx.clearRect(0, 0, rect.width, rect.height);
+            compareCtx.drawImage(
+                media,
+                state.view.panX,
+                state.view.panY,
+                worldW * state.view.zoom,
+                worldH * state.view.zoom
+            );
+            compareCtx.restore();
+
+            if (state.compareHold) {
+                dom.compareLayer.style.clipPath = 'none';
+            } else {
+                const pct = (state.splitRatio * 100).toFixed(2);
+                dom.compareLayer.style.clipPath = `inset(0 ${(100 - state.splitRatio * 100).toFixed(2)}% 0 0)`;
+                dom.splitHandle.style.left = `${pct}%`;
+            }
+        }
+
+        function escapeHtml(ch) {
+            if (ch === '&') return '&amp;';
+            if (ch === '<') return '&lt;';
+            if (ch === '>') return '&gt;';
+            if (ch === '"') return '&quot;';
+            return ch;
+        }
+
+        function renderDomAscii() {
+            const cols = state.gridCols, rows = state.gridRows;
+            const charset = getActiveCharset();
+            const fg = state.fgBytes, bg = state.bgBytes;
+            const useBg = state.cellBgTint > 0.001;
+
+            dom.domAsciiPre.style.fontSize = `${Math.max(4, Math.round(state.fontSize * state.view.zoom))}px`;
+            dom.domAsciiPre.style.fontWeight = String(state.fontWeight);
+            dom.domAsciiPre.style.textShadow = state.glow > 0.01
+                ? `0 0 ${Math.round(state.glow * 10)}px currentColor`
+                : 'none';
+
+            const lines = new Array(rows);
+            let idx = 0;
+            for (let y = 0; y < rows; y++) {
+                let line = '';
+                for (let x = 0; x < cols; x++, idx++) {
+                    const o = idx * 4;
+                    const ch = charset[fg[o + 3]] || ' ';
+                    const style = useBg
+                        ? `color:rgb(${fg[o]},${fg[o + 1]},${fg[o + 2]});background:rgb(${bg[o]},${bg[o + 1]},${bg[o + 2]})`
+                        : `color:rgb(${fg[o]},${fg[o + 1]},${fg[o + 2]})`;
+                    line += `<span style="${style}">${escapeHtml(ch)}</span>`;
+                }
+                lines[y] = line;
+            }
+            dom.domAsciiPre.innerHTML = lines.join('\n');
+        }
+
+        function drawCurrentViewport() {
+            if (!state.gridCols || !state.gridRows) return;
+
+            if (state.renderMode === 'dom') {
+                renderDomAscii();
+                return;
+            }
+
+            resizeGpuCanvas();
+            const rect = dom.viewport.getBoundingClientRect();
+            const dpr = Math.min(window.devicePixelRatio || 1, 2.5);
+            const { cellW, cellH } = getCellMetrics();
+            const charset = getActiveCharset();
+
+            renderer.buildAtlas(charset, state.fontWeight);
+            renderer.uploadGrid(state.gridCols, state.gridRows, state.fgBytes, state.bgBytes);
+            renderer.render({
+                cssW: rect.width,
+                cssH: rect.height,
+                dpr,
+                panX: state.view.panX,
+                panY: state.view.panY,
+                zoom: state.view.zoom,
+                cols: state.gridCols,
+                rows: state.gridRows,
+                cellW,
+                cellH,
+                glow: state.glow,
+                charset,
+                fontWeight: state.fontWeight,
+                fgBytes: state.fgBytes,
+                bgBytes: state.bgBytes
+            });
+            renderCompareOverlay();
+        }
+
+        function renderSingleFrame(timeSec) {
+            const t0 = performance.now();
+            if (!compileAsciiFrame(timeSec)) return;
+            drawCurrentViewport();
+            const ms = performance.now() - t0;
+
+            const total = state.gridCols * state.gridRows;
+            dom.matrixTag.textContent = `${state.gridCols} × ${state.gridRows}`;
+            dom.statMatrix.textContent = `${state.gridCols} × ${state.gridRows} (${total.toLocaleString('vi-VN')} ký tự)`;
+            dom.statTime.textContent = `${ms.toFixed(1)} ms`;
+        }
+
+        // =========================================================================
+        // 10. VÒNG LẶP ANIMATION 60 FPS
+        // =========================================================================
+        function animationLoop(now) {
+            requestAnimationFrame(animationLoop);
+
+            const needsLiveLoop = state.isPlaying && !state.isExportingGif && (
+                state.animMode !== 'none' || state.mediaType === 'gif' || state.mediaType === 'video'
+            );
+
+            if (!needsLiveLoop) {
+                state.lastFrameTs = now;
+                state.fpsLastTs = now;
+                state.fpsFrames = 0;
+                return;
+            }
+
+            if (!state.lastFrameTs) { state.lastFrameTs = now; state.fpsLastTs = now; }
+            const delta = now - state.lastFrameTs;
+            const interval = 1000 / state.targetFps;
+
+            if (delta >= interval - 0.5) {
+                state.lastFrameTs = now - (delta % interval);
+                state.elapsedSec += Math.min(delta, 100) / 1000;
+                renderSingleFrame(state.elapsedSec);
+
+                state.fpsFrames++;
+                const elapsed = now - state.fpsLastTs;
+                if (elapsed >= 350) {
+                    state.actualFps = Math.min(state.targetFps, Math.round((state.fpsFrames * 1000) / elapsed));
+                    state.fpsFrames = 0;
+                    state.fpsLastTs = now;
+                    dom.statusLiveText.textContent = `running • ${state.actualFps} fps`;
+                }
+            }
+        }
+
+        function setPlaying(playing) {
+            state.isPlaying = playing;
+            dom.btnPlayPause.textContent = playing ? '⏸ Đang chạy' : '▶ Tạm dừng';
+            dom.statusDot.classList.toggle('paused', !playing);
+            dom.statusLiveText.textContent = playing ? `running • ${state.actualFps} fps` : 'paused';
+            if (state.mediaType === 'video') {
+                if (playing) dom.hiddenVideo.play().catch(() => {});
+                else dom.hiddenVideo.pause();
+            }
+            if (!playing) renderSingleFrame(state.elapsedSec);
+        }
+
+        // =========================================================================
+        // 11. ZOOM (25%–600%) & PAN SẮC NÉT
+        // =========================================================================
+        function updateZoomLabel() {
+            dom.zoomPctLabel.textContent = `${Math.round(state.view.zoom * 100)}%`;
+        }
+
+        function fitViewport() {
+            if (!state.gridCols || !state.gridRows) return;
+            const rect = dom.viewport.getBoundingClientRect();
+            const { cellW, cellH } = getCellMetrics();
+            const worldW = state.gridCols * cellW;
+            const worldH = state.gridRows * cellH;
+            const pad = 24;
+            const fit = Math.max(0.25, Math.min(6.0, Math.min((rect.width - pad) / worldW, (rect.height - pad) / worldH)));
+            state.view.zoom = fit;
+            state.view.panX = (rect.width - worldW * fit) * 0.5;
+            state.view.panY = (rect.height - worldH * fit) * 0.5;
+            updateZoomLabel();
+            drawCurrentViewport();
+        }
+
+        function zoomAround(targetZoom, cx, cy) {
+            const clamped = Math.max(0.25, Math.min(6.0, targetZoom));
+            const ratio = clamped / state.view.zoom;
+            state.view.panX = cx - (cx - state.view.panX) * ratio;
+            state.view.panY = cy - (cy - state.view.panY) * ratio;
+            state.view.zoom = clamped;
+            updateZoomLabel();
+            drawCurrentViewport();
+        }
+
+        function bindViewportInteractions() {
+            const vp = dom.viewport;
+
+            vp.addEventListener('wheel', (e) => {
+                if (state.renderMode !== 'gpu') return;
+                e.preventDefault();
+                const rect = vp.getBoundingClientRect();
+                const factor = e.deltaY < 0 ? 1.15 : 1 / 1.15;
+                zoomAround(state.view.zoom * factor, e.clientX - rect.left, e.clientY - rect.top);
+            }, { passive: false });
+
+            vp.addEventListener('mousedown', (e) => {
+                if (state.renderMode !== 'gpu' || e.button !== 0 || e.target === dom.splitHandle) return;
+                state.view.isDragging = true;
+                state.view.lastX = e.clientX;
+                state.view.lastY = e.clientY;
+                vp.classList.add('dragging');
+            });
+
+            dom.splitHandle.addEventListener('mousedown', (e) => {
+                e.stopPropagation();
+                state.isDraggingSplit = true;
+            });
+
+            window.addEventListener('mousemove', (e) => {
+                if (state.isDraggingSplit) {
+                    const rect = vp.getBoundingClientRect();
+                    state.splitRatio = Math.max(0.05, Math.min(0.95, (e.clientX - rect.left) / rect.width));
+                    renderCompareOverlay();
+                    return;
+                }
+                if (!state.view.isDragging) return;
+                state.view.panX += e.clientX - state.view.lastX;
+                state.view.panY += e.clientY - state.view.lastY;
+                state.view.lastX = e.clientX;
+                state.view.lastY = e.clientY;
+                drawCurrentViewport();
+            });
+
+            window.addEventListener('mouseup', () => {
+                state.view.isDragging = false;
+                state.isDraggingSplit = false;
+                vp.classList.remove('dragging');
+            });
+
+            // Hỗ trợ cảm ứng (Touch Pan & Split)
+            vp.addEventListener('touchstart', (e) => {
+                if (state.renderMode !== 'gpu' || e.touches.length !== 1) return;
+                if (e.target === dom.splitHandle) {
+                    state.isDraggingSplit = true;
+                    return;
+                }
+                state.view.isDragging = true;
+                state.view.lastX = e.touches[0].clientX;
+                state.view.lastY = e.touches[0].clientY;
+            }, { passive: true });
+
+            vp.addEventListener('touchmove', (e) => {
+                if (e.touches.length !== 1) return;
+                if (state.isDraggingSplit) {
+                    e.preventDefault();
+                    const rect = vp.getBoundingClientRect();
+                    state.splitRatio = Math.max(0.05, Math.min(0.95, (e.touches[0].clientX - rect.left) / rect.width));
+                    renderCompareOverlay();
+                    return;
+                }
+                if (!state.view.isDragging) return;
+                e.preventDefault();
+                state.view.panX += e.touches[0].clientX - state.view.lastX;
+                state.view.panY += e.touches[0].clientY - state.view.lastY;
+                state.view.lastX = e.touches[0].clientX;
+                state.view.lastY = e.touches[0].clientY;
+                drawCurrentViewport();
+            }, { passive: false });
+
+            vp.addEventListener('touchend', () => {
+                state.view.isDragging = false;
+                state.isDraggingSplit = false;
+            });
+
+            dom.btnZoomFit.addEventListener('click', fitViewport);
+            dom.btnZoom100.addEventListener('click', () => {
+                const rect = vp.getBoundingClientRect();
+                const { cellW, cellH } = getCellMetrics();
+                state.view.zoom = 1;
+                state.view.panX = (rect.width - state.gridCols * cellW) * 0.5;
+                state.view.panY = (rect.height - state.gridRows * cellH) * 0.5;
+                updateZoomLabel();
+                drawCurrentViewport();
+            });
+            dom.btnZoomIn.addEventListener('click', () => {
+                const r = vp.getBoundingClientRect();
+                zoomAround(state.view.zoom * 1.25, r.width * 0.5, r.height * 0.5);
+            });
+            dom.btnZoomOut.addEventListener('click', () => {
+                const r = vp.getBoundingClientRect();
+                zoomAround(state.view.zoom / 1.25, r.width * 0.5, r.height * 0.5);
+            });
+        }
+
+        // =========================================================================
+        // 12. XUẤT TỆP ĐỒNG BỘ 100% (PNG 4K VECTOR FONT, GIF89a, HTML, ANSI, TEXT)
+        // =========================================================================
+        function getBaseFileName() {
+            return state.fileName.replace(/\.[^/.]+$/, '').replace(/[^a-zA-Z0-9_-]/g, '_') || 'ascii_truecolor';
+        }
+
+        function drawFrameToVectorCanvas(targetCanvas, targetCtx, scaleMultiplier) {
+            const cols = state.gridCols, rows = state.gridRows;
+            const charset = getActiveCharset();
+            const { cellW: baseW, cellH: baseH } = getCellMetrics();
+            const cw = baseW * scaleMultiplier;
+            const ch = baseH * scaleMultiplier;
+            const pad = Math.round(cw * 1.1);
+
+            const W = Math.max(64, Math.round(cols * cw + pad * 2));
+            const H = Math.max(64, Math.round(rows * ch + pad * 2));
+            targetCanvas.width = W;
+            targetCanvas.height = H;
+
+            targetCtx.fillStyle = `rgb(${BG_R},${BG_G},${BG_B})`;
+            targetCtx.fillRect(0, 0, W, H);
+
+            // Vẽ Vector Font chiếm 92% chiều cao ô khít dòng, đồng bộ 100% với WebGL2 Atlas
+            const fontPx = Math.max(4, Math.round(ch * 0.92));
+            targetCtx.font = `${state.fontWeight} ${fontPx}px ${FONT_FAMILY_STACK}`;
+            targetCtx.textAlign = 'center';
+            targetCtx.textBaseline = 'middle';
+
+            const fg = state.fgBytes, bg = state.bgBytes;
+            const useBg = state.cellBgTint > 0.001;
+
+            let idx = 0;
+            for (let y = 0; y < rows; y++) {
+                const py = pad + y * ch;
+                for (let x = 0; x < cols; x++, idx++) {
+                    const px = pad + x * cw;
+                    const o = idx * 4;
+                    if (useBg) {
+                        targetCtx.fillStyle = `rgb(${bg[o]},${bg[o + 1]},${bg[o + 2]})`;
+                        targetCtx.fillRect(px, py, cw + 0.5, ch + 0.5);
+                    }
+                    const chStr = charset[fg[o + 3]] || ' ';
+                    if (chStr !== ' ') {
+                        targetCtx.fillStyle = `rgb(${fg[o]},${fg[o + 1]},${fg[o + 2]})`;
+                        targetCtx.fillText(chStr, px + cw * 0.5, py + ch * 0.53);
+                    }
+                }
+            }
+        }
+
+        function exportPng4k() {
+            try {
+                compileAsciiFrame(state.elapsedSec);
+                const c = document.createElement('canvas');
+                const ctx = c.getContext('2d', { alpha: false });
+                const { cellW } = getCellMetrics();
+                const targetW = 3200;
+                const mult = Math.max(1.2, Math.min(3.0, targetW / (state.gridCols * cellW)));
+                drawFrameToVectorCanvas(c, ctx, mult);
+
+                const a = document.createElement('a');
+                a.download = `${getBaseFileName()}_${state.cols}col_4k.png`;
+                a.href = c.toDataURL('image/png');
+                a.click();
+                showToast(`Đã xuất PNG 4K TrueColor (${c.width}×${c.height}px)!`, 'success');
+            } catch (err) {
+                console.error(err);
+                showToast('Không thể xuất ảnh PNG 4K.', 'error');
+            }
+        }
+
+        async function exportAnimatedGif() {
+            if (state.isExportingGif) return;
+            if (!state.sourceImage && state.mediaType !== 'video') {
+                showToast('Chưa có ảnh nguồn để xuất GIF.', 'error');
+                return;
+            }
+
+            state.isExportingGif = true;
+            dom.btnExportGif.disabled = true;
+            dom.btnQuickGif.disabled = true;
+            dom.btnExportGifText.textContent = 'Đang tạo GIF...';
+            dom.gifProgressWrap.classList.remove('hidden');
+            dom.gifProgressBar.style.width = '0%';
+            const wasPlaying = state.isPlaying;
+
+            try {
+                const fps = state.gifExportFps;
+                const totalFrames = Math.max(4, Math.round(fps * state.gifDuration));
+                const delayCs = Math.max(2, Math.round(100 / fps));
+
+                const off = document.createElement('canvas');
+                const offCtx = off.getContext('2d', { willReadFrequently: true });
+
+                compileAsciiFrame(state.elapsedSec);
+                drawFrameToVectorCanvas(off, offCtx, state.gifExportScale * 0.72);
+                const outW = off.width, outH = off.height;
+
+                const enc = new PureGifEncoder(outW, outH, delayCs);
+                enc.writeHeader();
+
+                const startT = state.elapsedSec;
+                for (let f = 0; f < totalFrames; f++) {
+                    const ft = startT + f / fps;
+                    compileAsciiFrame(ft);
+                    drawFrameToVectorCanvas(off, offCtx, state.gifExportScale * 0.72);
+                    enc.addFrame(offCtx.getImageData(0, 0, outW, outH).data, delayCs);
+
+                    const pct = Math.round(((f + 1) / totalFrames) * 100);
+                    dom.gifProgressLabel.textContent = `Đang mã hóa ${f + 1}/${totalFrames}...`;
+                    dom.gifProgressPct.textContent = `${pct}%`;
+                    dom.gifProgressBar.style.width = `${pct}%`;
+                    await new Promise(r => setTimeout(r, 0));
+                }
+
+                const blob = enc.finish();
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `${getBaseFileName()}_${state.cols}col.gif`;
+                a.click();
+                setTimeout(() => URL.revokeObjectURL(url), 2500);
+                showToast(`Đã xuất GIF (${totalFrames} khung • ${outW}×${outH} • ${(blob.size / 1024).toFixed(1)} KB)!`, 'success');
+            } catch (err) {
+                console.error(err);
+                showToast('Lỗi khi mã hóa tệp GIF.', 'error');
+            } finally {
+                state.isExportingGif = false;
+                dom.btnExportGif.disabled = false;
+                dom.btnQuickGif.disabled = false;
+                dom.btnExportGifText.textContent = '🎞 Xuất tệp GIF (.gif)';
+                setTimeout(() => dom.gifProgressWrap.classList.add('hidden'), 1400);
+                if (wasPlaying) setPlaying(true);
+            }
+        }
+
+        function exportStandaloneHtml() {
+            try {
+                compileAsciiFrame(state.elapsedSec);
+                const cols = state.gridCols, rows = state.gridRows;
+                const charset = getActiveCharset();
+                const fg = state.fgBytes, bg = state.bgBytes;
+                const useBg = state.cellBgTint > 0.001;
+
+                const lines = new Array(rows);
+                let idx = 0;
+                for (let y = 0; y < rows; y++) {
+                    let line = '';
+                    for (let x = 0; x < cols; x++, idx++) {
+                        const o = idx * 4;
+                        const ch = charset[fg[o + 3]] || ' ';
+                        const st = useBg
+                            ? `color:rgb(${fg[o]},${fg[o + 1]},${fg[o + 2]});background:rgb(${bg[o]},${bg[o + 1]},${bg[o + 2]})`
+                            : `color:rgb(${fg[o]},${fg[o + 1]},${fg[o + 2]})`;
+                        line += `<span style="${st}">${escapeHtml(ch)}</span>`;
+                    }
+                    lines[y] = line;
+                }
+
+                // Tách chuỗi thẻ đóng HTML để không bao giờ ngắt sớm thẻ <script>
+                const docParts = [
+                    '<!DOCTYPE html><html lang="vi"><head><meta charset="UTF-8">',
+                    `<title>ASCII TrueColor — ${getBaseFileName()}</title>`,
+                    '<style>body{margin:0;padding:16px;background:#05070a;display:flex;justify-content:center;overflow:auto;}',
+                    `pre{margin:0;font-family:${FONT_FAMILY_STACK};font-size:${state.fontSize}px;font-weight:${state.fontWeight};line-height:0.96;letter-spacing:-0.02em;}`,
+                    '<' + '/style>',
+                    '<' + '/head><body><pre>',
+                    lines.join('\n'),
+                    '</pre>' + '<' + '/body>' + '<' + '/html>'
+                ];
+
+                const blob = new Blob([docParts.join('')], { type: 'text/html;charset=utf-8' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `${getBaseFileName()}_${cols}col_truecolor.html`;
+                a.click();
+                setTimeout(() => URL.revokeObjectURL(url), 1200);
+                showToast('Đã tải tệp HTML độc lập!', 'success');
+            } catch (err) {
+                showToast('Không thể xuất tệp HTML.', 'error');
+            }
+        }
+
+        function copyTextFallback(text, okMsg) {
+            try {
+                const ta = document.createElement('textarea');
+                ta.value = text;
+                ta.setAttribute('readonly', '');
+                ta.style.position = 'fixed';
+                ta.style.left = '-9999px';
+                document.body.appendChild(ta);
+                ta.select();
+                const ok = document.execCommand('copy');
+                document.body.removeChild(ta);
+                showToast(ok ? okMsg : 'Không thể sao chép vào bộ nhớ tạm.', ok ? 'success' : 'error');
+            } catch (err) {
+                showToast('Lỗi sao chép vào bộ nhớ tạm.', 'error');
+            }
+        }
+
+        function copyAnsi() {
+            compileAsciiFrame(state.elapsedSec);
+            const cols = state.gridCols, rows = state.gridRows;
+            const charset = getActiveCharset();
+            const fg = state.fgBytes, bg = state.bgBytes;
+            const useBg = state.cellBgTint > 0.001;
+            const out = [];
+            let idx = 0;
+            for (let y = 0; y < rows; y++) {
+                let line = '';
+                for (let x = 0; x < cols; x++, idx++) {
+                    const o = idx * 4;
+                    const ch = charset[fg[o + 3]] || ' ';
+                    line += useBg
+                        ? `\x1b[38;2;${fg[o]};${fg[o + 1]};${fg[o + 2]};48;2;${bg[o]};${bg[o + 1]};${bg[o + 2]}m${ch}`
+                        : `\x1b[38;2;${fg[o]};${fg[o + 1]};${fg[o + 2]}m${ch}`;
+                }
+                out.push(line + '\x1b[0m');
+            }
+            copyTextFallback(out.join('\n'), 'Đã sao chép mã màu ANSI TrueColor!');
+        }
+
+        function copyPlain() {
+            compileAsciiFrame(state.elapsedSec);
+            const cols = state.gridCols, rows = state.gridRows;
+            const charset = getActiveCharset();
+            const fg = state.fgBytes;
+            const out = [];
+            let idx = 0;
+            for (let y = 0; y < rows; y++) {
+                let line = '';
+                for (let x = 0; x < cols; x++, idx++) {
+                    line += charset[fg[idx * 4 + 3]] || ' ';
+                }
+                out.push(line);
+            }
+            copyTextFallback(out.join('\n'), 'Đã sao chép văn bản ASCII thuần!');
+        }
+
+        // =========================================================================
+        // 13. ĐỒNG BỘ GIAO DIỆN & GẮN SỰ KIỆN
+        // =========================================================================
+        function syncColorUI() {
+            dom.charsetSelect.value = state.charsetType;
+            dom.customCharsetInput.classList.toggle('hidden', state.charsetType !== 'custom');
+
+            dom.cellBgSlider.value = Math.round(state.cellBgTint * 100);
+            dom.cellBgVal.textContent = `${Math.round(state.cellBgTint * 100)}%`;
+
+            dom.gammaSlider.value = state.gamma.toFixed(2);
+            dom.gammaVal.textContent = state.gamma.toFixed(2);
+
+            dom.fgGainSlider.value = Math.round(state.fgGain * 100);
+            dom.fgGainVal.textContent = `${Math.round(state.fgGain * 100)}%`;
+
+            dom.colorLiftSlider.value = state.colorLift;
+            dom.colorLiftVal.textContent = state.colorLift;
+
+            dom.saturationSlider.value = Math.round(state.saturation * 100);
+            dom.saturationVal.textContent = `${Math.round(state.saturation * 100)}%`;
+
+            dom.brightnessSlider.value = state.brightness;
+            dom.brightnessVal.textContent = state.brightness > 0 ? `+${state.brightness}` : state.brightness;
+
+            dom.contrastSlider.value = state.contrast;
+            dom.contrastVal.textContent = state.contrast > 0 ? `+${state.contrast}` : state.contrast;
+
+            dom.colorModeButtons.forEach(b => b.classList.toggle('active', b.dataset.mode === state.colorMode));
+            dom.colorProfileButtons.forEach(b => b.classList.toggle('active', b.dataset.profile === state.colorProfile));
+        }
+
+        function applyColorProfile(name, rerender = true) {
+            const p = COLOR_PROFILES[name];
+            if (!p) return;
+            state.colorProfile = name;
+            state.charsetType = p.charsetType;
+            state.cellBgTint = p.cellBgTint;
+            state.gamma = p.gamma;
+            state.fgGain = p.fgGain;
+            state.colorLift = p.colorLift;
+            state.saturation = p.saturation;
+            state.contrast = p.contrast;
+            state.brightness = p.brightness;
+            state.colorMode = p.colorMode;
+            rebuildGammaLut();
+            syncColorUI();
+            if (rerender) renderSingleFrame(state.elapsedSec);
+        }
+
+        function bindEvents() {
+            // Upload & Drag/Drop
+            dom.dropZone.addEventListener('click', () => dom.fileInput.click());
+            dom.fileInput.addEventListener('change', (e) => {
+                if (e.target.files?.[0]) {
+                    handleUploadedFile(e.target.files[0]);
+                    e.target.value = '';
+                }
+            });
+            ['dragenter', 'dragover'].forEach(ev => {
+                dom.dropZone.addEventListener(ev, (e) => { e.preventDefault(); dom.dropZone.classList.add('dragover'); });
+            });
+            ['dragleave', 'drop'].forEach(ev => {
+                dom.dropZone.addEventListener(ev, (e) => { e.preventDefault(); dom.dropZone.classList.remove('dragover'); });
+            });
+            dom.dropZone.addEventListener('drop', (e) => {
+                const f = e.dataTransfer?.files?.[0];
+                if (f) handleUploadedFile(f);
+            });
+
+            dom.btnDemoTree.addEventListener('click', () => {
+                loadDefaultDemo();
+                showToast('Đã nạp lại ảnh mẫu Cây Thông Noel HD!', 'info');
+            });
+
+            // Matrix & Typography
+            dom.colsSlider.addEventListener('input', (e) => {
+                state.cols = parseInt(e.target.value, 10);
+                dom.colsVal.textContent = state.cols;
+                dom.colsPresetButtons.forEach(b => b.classList.toggle('active', parseInt(b.dataset.cols, 10) === state.cols));
+                renderSingleFrame(state.elapsedSec);
+                fitViewport();
+            });
+
+            dom.colsPresetButtons.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    state.cols = parseInt(btn.dataset.cols, 10);
+                    dom.colsSlider.value = state.cols;
+                    dom.colsVal.textContent = state.cols;
+                    dom.colsPresetButtons.forEach(b => b.classList.toggle('active', b === btn));
+                    renderSingleFrame(state.elapsedSec);
+                    fitViewport();
+                });
+            });
+
+            dom.fontSizeSlider.addEventListener('input', (e) => {
+                state.fontSize = parseInt(e.target.value, 10);
+                dom.fontSizeVal.textContent = `${state.fontSize}px`;
+                drawCurrentViewport();
+                fitViewport();
+            });
+
+            dom.fontWeightButtons.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    state.fontWeight = parseInt(btn.dataset.weight, 10);
+                    dom.fontWeightButtons.forEach(b => b.classList.toggle('active', b === btn));
+                    drawCurrentViewport();
+                });
+            });
+
+            dom.charsetSelect.addEventListener('change', (e) => {
+                state.charsetType = e.target.value;
+                dom.customCharsetInput.classList.toggle('hidden', state.charsetType !== 'custom');
+                renderSingleFrame(state.elapsedSec);
+            });
+
+            dom.customCharsetInput.addEventListener('input', (e) => {
+                state.customCharset = e.target.value;
+                renderSingleFrame(state.elapsedSec);
+            });
+
+            // TrueColor Fidelity Profiles & Sliders
+            dom.colorProfileButtons.forEach(btn => {
+                btn.addEventListener('click', () => applyColorProfile(btn.dataset.profile, true));
+            });
+
+            dom.colorModeButtons.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    state.colorMode = btn.dataset.mode;
+                    dom.colorModeButtons.forEach(b => b.classList.toggle('active', b === btn));
+                    renderSingleFrame(state.elapsedSec);
+                });
+            });
+
+            dom.cellBgSlider.addEventListener('input', (e) => {
+                const v = parseInt(e.target.value, 10);
+                state.cellBgTint = v / 100;
+                dom.cellBgVal.textContent = `${v}%`;
+                renderSingleFrame(state.elapsedSec);
+            });
+
+            dom.gammaSlider.addEventListener('input', (e) => {
+                state.gamma = parseFloat(e.target.value);
+                dom.gammaVal.textContent = state.gamma.toFixed(2);
+                rebuildGammaLut();
+                renderSingleFrame(state.elapsedSec);
+            });
+
+            dom.fgGainSlider.addEventListener('input', (e) => {
+                const v = parseInt(e.target.value, 10);
+                state.fgGain = v / 100;
+                dom.fgGainVal.textContent = `${v}%`;
+                renderSingleFrame(state.elapsedSec);
+            });
+
+            dom.colorLiftSlider.addEventListener('input', (e) => {
+                state.colorLift = parseInt(e.target.value, 10);
+                dom.colorLiftVal.textContent = state.colorLift;
+                renderSingleFrame(state.elapsedSec);
+            });
+
+            dom.saturationSlider.addEventListener('input', (e) => {
+                const v = parseInt(e.target.value, 10);
+                state.saturation = v / 100;
+                dom.saturationVal.textContent = `${v}%`;
+                renderSingleFrame(state.elapsedSec);
+            });
+
+            dom.brightnessSlider.addEventListener('input', (e) => {
+                state.brightness = parseInt(e.target.value, 10);
+                dom.brightnessVal.textContent = state.brightness > 0 ? `+${state.brightness}` : state.brightness;
+                renderSingleFrame(state.elapsedSec);
+            });
+
+            dom.contrastSlider.addEventListener('input', (e) => {
+                state.contrast = parseInt(e.target.value, 10);
+                dom.contrastVal.textContent = state.contrast > 0 ? `+${state.contrast}` : state.contrast;
+                renderSingleFrame(state.elapsedSec);
+            });
+
+            dom.sharpenSlider.addEventListener('input', (e) => {
+                const v = parseInt(e.target.value, 10);
+                state.sharpen = v / 100;
+                dom.sharpenVal.textContent = `${v}%`;
+                renderSingleFrame(state.elapsedSec);
+            });
+
+            dom.glowSlider.addEventListener('input', (e) => {
+                const v = parseInt(e.target.value, 10);
+                state.glow = v / 100;
+                dom.glowVal.textContent = `${v}%`;
+                drawCurrentViewport();
+            });
+
+            dom.invertToggle.addEventListener('change', (e) => {
+                state.invert = e.target.checked;
+                renderSingleFrame(state.elapsedSec);
+            });
+
+            dom.btnResetTune.addEventListener('click', () => {
+                state.sharpen = 0.25;
+                state.glow = 0.0;
+                state.invert = false;
+                state.fontWeight = 700;
+                dom.sharpenSlider.value = 25; dom.sharpenVal.textContent = '25%';
+                dom.glowSlider.value = 0; dom.glowVal.textContent = '0%';
+                dom.invertToggle.checked = false;
+                dom.fontWeightButtons.forEach(b => b.classList.toggle('active', parseInt(b.dataset.weight, 10) === 700));
+                applyColorProfile('fidelity', true);
+                showToast('Đã đặt lại cấu hình Giữ Màu Ảnh Gốc!', 'info');
+            });
+
+            // Animation
+            dom.btnPlayPause.addEventListener('click', () => setPlaying(!state.isPlaying));
+            dom.animModeSelect.addEventListener('change', (e) => {
+                state.animMode = e.target.value;
+                if (state.animMode !== 'none' && !state.isPlaying) setPlaying(true);
+                renderSingleFrame(state.elapsedSec);
+            });
+            dom.fpsSlider.addEventListener('input', (e) => {
+                state.targetFps = parseInt(e.target.value, 10);
+                dom.fpsVal.textContent = `${state.targetFps} fps`;
+            });
+            dom.animIntensitySlider.addEventListener('input', (e) => {
+                const v = parseInt(e.target.value, 10);
+                state.animIntensity = v / 100;
+                dom.animIntensityVal.textContent = `${v}%`;
+                renderSingleFrame(state.elapsedSec);
+            });
+            dom.animSpeedSlider.addEventListener('input', (e) => {
+                state.animSpeed = parseFloat(e.target.value);
+                dom.animSpeedVal.textContent = `${state.animSpeed.toFixed(1)}x`;
+            });
+
+            // GIF Scrubber
+            dom.gifScrubberSlider.addEventListener('input', (e) => {
+                setPlaying(false);
+                state.gifFrameIdx = parseInt(e.target.value, 10);
+                dom.gifFrameLabel.textContent = `GIF ${state.gifFrameIdx + 1}/${state.gifFrames.length}`;
+                renderSingleFrame(state.elapsedSec);
+            });
+
+            // Render Mode (WebGL2 HiDPI / DOM Text)
+            dom.renderModeButtons.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    state.renderMode = btn.dataset.rmode;
+                    dom.renderModeButtons.forEach(b => b.classList.toggle('active', b === btn));
+                    const isDom = state.renderMode === 'dom';
+                    dom.gpuCanvas.classList.toggle('hidden', isDom);
+                    dom.domScrollWrap.classList.toggle('hidden', !isDom);
+                    dom.domCopyToggleWrap.classList.toggle('hidden', !isDom);
+                    dom.viewport.classList.toggle('dom-selectable', isDom && state.domAllowCopy);
+                    if (isDom) {
+                        state.splitMode = false;
+                        dom.btnSplitCompare.classList.remove('btn-primary');
+                        dom.compareLayer.classList.add('hidden');
+                        dom.splitHandle.classList.add('hidden');
+                    }
+                    drawCurrentViewport();
+                });
+            });
+
+            dom.domCopyCheckbox.addEventListener('change', (e) => {
+                state.domAllowCopy = e.target.checked;
+                dom.viewport.classList.toggle('dom-selectable', state.renderMode === 'dom' && state.domAllowCopy);
+            });
+
+            // Compare Original & Split
+            const startHold = () => { state.compareHold = true; renderCompareOverlay(); };
+            const endHold = () => { state.compareHold = false; renderCompareOverlay(); };
+            dom.btnHoldOrig.addEventListener('mousedown', startHold);
+            dom.btnHoldOrig.addEventListener('mouseup', endHold);
+            dom.btnHoldOrig.addEventListener('mouseleave', endHold);
+            dom.btnHoldOrig.addEventListener('touchstart', (e) => { e.preventDefault(); startHold(); }, { passive: false });
+            dom.btnHoldOrig.addEventListener('touchend', endHold);
+
+            dom.btnSplitCompare.addEventListener('click', () => {
+                if (state.renderMode !== 'gpu') {
+                    showToast('Chế độ Chia đôi hoạt động ở chế độ WebGL2 HiDPI.', 'info');
+                    return;
+                }
+                state.splitMode = !state.splitMode;
+                dom.btnSplitCompare.classList.toggle('btn-primary', state.splitMode);
+                renderCompareOverlay();
+            });
+
+            // Export GIF & Other Formats
+            dom.gifDurationSlider.addEventListener('input', (e) => {
+                state.gifDuration = parseFloat(e.target.value);
+                dom.gifDurationVal.textContent = `${state.gifDuration.toFixed(1)}s`;
+            });
+            dom.gifFpsSlider.addEventListener('input', (e) => {
+                state.gifExportFps = parseInt(e.target.value, 10);
+                dom.gifFpsVal.textContent = state.gifExportFps;
+            });
+            dom.gifScaleButtons.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    state.gifExportScale = parseFloat(btn.dataset.scale);
+                    dom.gifScaleButtons.forEach(b => b.classList.toggle('active', b === btn));
+                });
+            });
+
+            dom.btnExportGif.addEventListener('click', exportAnimatedGif);
+            dom.btnQuickGif.addEventListener('click', exportAnimatedGif);
+            dom.btnExportPng4k.addEventListener('click', exportPng4k);
+            dom.btnExportHtml.addEventListener('click', exportStandaloneHtml);
+            dom.btnCopyAnsi.addEventListener('click', copyAnsi);
+            dom.btnCopyPlain.addEventListener('click', copyPlain);
+
+            window.addEventListener('resize', () => {
+                resizeGpuCanvas();
+                drawCurrentViewport();
+            });
+        }
+
+        // =========================================================================
+        // 14. KHỞI CHẠY ỨNG DỤNG
+        // =========================================================================
+        window.onload = function () {
+            dom.engineBadge.textContent = renderer.isWebGL2
+                ? 'TrueColor Fidelity • WebGL2 HiDPI'
+                : 'TrueColor Fidelity • Canvas 2D';
+            rebuildGammaLut();
+            syncColorUI();
+            bindEvents();
+            bindViewportInteractions();
+            resizeGpuCanvas();
+            loadDefaultDemo();
+            requestAnimationFrame(animationLoop);
+        };
+    })();
+    </script>
+</body>
+</html>

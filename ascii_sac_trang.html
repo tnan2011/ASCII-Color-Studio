@@ -1,0 +1,4336 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ASCII Color Studio Ultra HD</title>
+    <style>
+        /* ==========================================================================
+           DESIGN TOKENS & RESET (100% OFFLINE SYSTEM FONTS, ZERO EXTERNAL LINKS)
+           ========================================================================== */
+        :root {
+            --bg-app: #070a0f;
+            --bg-panel: #0d121b;
+            --bg-panel-alt: #111826;
+            --bg-input: #151e2e;
+            --bg-hover: #1c273b;
+            --border-subtle: #1e293b;
+            --border-strong: #334155;
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            --accent: #10b981;
+            --accent-hover: #059669;
+            --accent-cyan: #22d3ee;
+            --accent-amber: #f59e0b;
+            --accent-rose: #f43f5e;
+            --radius-sm: 6px;
+            --radius-md: 10px;
+            --radius-lg: 14px;
+            --shadow-panel: 0 10px 30px rgba(0, 0, 0, 0.45);
+            --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            --font-mono: "Cascadia Mono", "Consolas", "SFMono-Regular", "Liberation Mono", "Courier New", monospace;
+        }
+
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background: var(--bg-app);
+            color: var(--text-primary);
+            font-family: var(--font-ui);
+            font-size: 13px;
+            line-height: 1.45;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        button, input, select {
+            font-family: inherit;
+            color: inherit;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .mono {
+            font-family: var(--font-mono);
+        }
+
+        /* ==========================================================================
+           APP SHELL LAYOUT
+           ========================================================================== */
+        .app-shell {
+            display: flex;
+            flex-direction: column;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Top Bar */
+        .topbar {
+            flex: 0 0 auto;
+            min-height: 52px;
+            padding: 8px 14px;
+            background: var(--bg-panel);
+            border-bottom: 1px solid var(--border-subtle);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            flex-wrap: wrap;
+            z-index: 30;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .brand-logo {
+            width: 32px;
+            height: 32px;
+            border-radius: 9px;
+            background: linear-gradient(135deg, #10b981, #06b6d4);
+            color: #041014;
+            font-family: var(--font-mono);
+            font-weight: 800;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 18px rgba(16, 185, 129, 0.35);
+            flex-shrink: 0;
+        }
+
+        .brand-title {
+            font-size: 14px;
+            font-weight: 700;
+            letter-spacing: -0.01em;
+            color: #f8fafc;
+        }
+
+        .brand-sub {
+            font-size: 11px;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 2px 7px;
+            border-radius: 999px;
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.02em;
+            background: rgba(16, 185, 129, 0.14);
+            color: #34d399;
+            border: 1px solid rgba(16, 185, 129, 0.35);
+        }
+
+        .badge-cyan {
+            background: rgba(34, 211, 238, 0.14);
+            color: #67e8f9;
+            border-color: rgba(34, 211, 238, 0.35);
+        }
+
+        .topbar-center {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .segmented {
+            display: inline-flex;
+            background: var(--bg-app);
+            border: 1px solid var(--border-subtle);
+            border-radius: 9px;
+            padding: 3px;
+            gap: 3px;
+        }
+
+        .seg-btn {
+            border: none;
+            background: transparent;
+            color: var(--text-secondary);
+            font-size: 11.5px;
+            font-weight: 600;
+            padding: 6px 11px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            white-space: nowrap;
+        }
+
+        .seg-btn:hover {
+            color: #fff;
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .seg-btn.active {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.24), rgba(34, 211, 238, 0.18));
+            color: #ecfdf5;
+            box-shadow: inset 0 0 0 1px rgba(16, 185, 129, 0.5);
+        }
+
+        .dom-select-toggle {
+            display: none;
+            align-items: center;
+            gap: 6px;
+            padding: 5px 10px;
+            border-radius: var(--radius-sm);
+            background: var(--bg-input);
+            border: 1px solid var(--border-strong);
+            font-size: 11.5px;
+            color: var(--text-primary);
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .dom-select-toggle.show {
+            display: inline-flex;
+        }
+
+        .dom-select-toggle input {
+            accent-color: var(--accent);
+            cursor: pointer;
+        }
+
+        .topbar-actions {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            flex-wrap: wrap;
+        }
+
+        /* Workspace Main Split */
+        .workspace {
+            flex: 1 1 auto;
+            min-height: 0;
+            display: flex;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 340px;
+            flex: 0 0 340px;
+            background: var(--bg-panel);
+            border-right: 1px solid var(--border-subtle);
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding: 10px;
+            gap: 10px;
+            transition: margin-left 0.22s ease, opacity 0.22s ease;
+        }
+
+        .sidebar.collapsed {
+            margin-left: -340px;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .sidebar::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .sidebar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .sidebar::-webkit-scrollbar-thumb {
+            background: #263348;
+            border-radius: 99px;
+        }
+
+        /* Accordion Control Groups */
+        details.ctrl-group {
+            background: var(--bg-panel-alt);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-md);
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+
+        details.ctrl-group summary {
+            list-style: none;
+            padding: 10px 12px;
+            font-size: 12px;
+            font-weight: 700;
+            color: #e2e8f0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            user-select: none;
+            background: rgba(255, 255, 255, 0.015);
+            border-bottom: 1px solid transparent;
+            transition: background 0.15s ease;
+        }
+
+        details.ctrl-group summary::-webkit-details-marker {
+            display: none;
+        }
+
+        details.ctrl-group summary:hover {
+            background: rgba(255, 255, 255, 0.04);
+        }
+
+        details.ctrl-group[open] summary {
+            border-bottom-color: var(--border-subtle);
+        }
+
+        details.ctrl-group summary .chevron {
+            font-size: 10px;
+            color: var(--text-muted);
+            transition: transform 0.18s ease;
+        }
+
+        details.ctrl-group[open] summary .chevron {
+            transform: rotate(90deg);
+            color: var(--accent-cyan);
+        }
+
+        .group-body {
+            padding: 11px 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        /* Form Fields & Controls */
+        .field {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .field-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+        }
+
+        .field-label {
+            font-size: 11.5px;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .field-val {
+            font-family: var(--font-mono);
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--accent-cyan);
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+
+        .grid-4 {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 5px;
+        }
+
+        input[type="range"] {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 100%;
+            height: 6px;
+            border-radius: 99px;
+            background: #1e293b;
+            outline: none;
+            cursor: pointer;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            background: var(--accent-cyan);
+            border: 2px solid #082f49;
+            box-shadow: 0 0 8px rgba(34, 211, 238, 0.5);
+            cursor: pointer;
+            transition: transform 0.12s ease;
+        }
+
+        input[type="range"]::-webkit-slider-thumb:hover {
+            transform: scale(1.14);
+        }
+
+        input[type="range"]::-moz-range-thumb {
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            background: var(--accent-cyan);
+            border: 2px solid #082f49;
+            cursor: pointer;
+        }
+
+        select, input[type="text"] {
+            width: 100%;
+            background: var(--bg-input);
+            border: 1px solid var(--border-strong);
+            color: var(--text-primary);
+            padding: 7px 9px;
+            border-radius: var(--radius-sm);
+            font-size: 12px;
+            outline: none;
+            transition: border-color 0.15s ease;
+        }
+
+        select:focus, input[type="text"]:focus {
+            border-color: var(--accent-cyan);
+        }
+
+        /* Buttons */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            padding: 7px 11px;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border-strong);
+            background: var(--bg-input);
+            color: var(--text-primary);
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            white-space: nowrap;
+            user-select: none;
+        }
+
+        .btn:hover:not(:disabled) {
+            background: var(--bg-hover);
+            border-color: #475569;
+        }
+
+        .btn:disabled {
+            opacity: 0.45;
+            cursor: not-allowed;
+        }
+
+        .btn-sm {
+            padding: 5px 9px;
+            font-size: 11.5px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #10b981, #059669);
+            border-color: #34d399;
+            color: #03150e;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            background: linear-gradient(135deg, #34d399, #10b981);
+            border-color: #6ee7b7;
+        }
+
+        .btn-cyan {
+            background: linear-gradient(135deg, #06b6d4, #0284c7);
+            border-color: #38bdf8;
+            color: #03141f;
+        }
+
+        .btn-cyan:hover:not(:disabled) {
+            background: linear-gradient(135deg, #22d3ee, #0ea5e9);
+        }
+
+        .btn-amber {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            border-color: #fbbf24;
+            color: #1c1002;
+        }
+
+        .btn-compare-active {
+            background: rgba(34, 211, 238, 0.2) !important;
+            border-color: rgba(34, 211, 238, 0.7) !important;
+            color: #cffafe !important;
+        }
+
+        .pill-btn {
+            background: var(--bg-input);
+            border: 1px solid var(--border-strong);
+            color: var(--text-secondary);
+            border-radius: var(--radius-sm);
+            padding: 5px 4px;
+            font-size: 11px;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            line-height: 1.2;
+            transition: all 0.14s ease;
+        }
+
+        .pill-btn:hover {
+            color: #fff;
+            border-color: #475569;
+        }
+
+        .pill-btn.active {
+            background: rgba(16, 185, 129, 0.18);
+            border-color: rgba(16, 185, 129, 0.65);
+            color: #a7f3d0;
+        }
+
+        .pill-sub {
+            font-size: 9px;
+            font-weight: 500;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
+        .pill-btn.active .pill-sub {
+            color: #6ee7b7;
+        }
+
+        /* 1-Click Color Profiles */
+        .profile-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 6px;
+        }
+
+        .profile-btn {
+            background: var(--bg-input);
+            border: 1px solid var(--border-strong);
+            color: var(--text-secondary);
+            font-size: 11px;
+            font-weight: 600;
+            padding: 7px 8px;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            text-align: left;
+            transition: all 0.14s ease;
+            line-height: 1.25;
+        }
+
+        .profile-btn:hover {
+            color: #fff;
+            border-color: #475569;
+        }
+
+        .profile-btn.active {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(34, 211, 238, 0.15));
+            border-color: rgba(16, 185, 129, 0.65);
+            color: #ecfdf5;
+        }
+
+        .profile-btn small {
+            display: block;
+            font-size: 9.5px;
+            font-weight: 400;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
+        .profile-btn.active small {
+            color: #a7f3d0;
+        }
+
+        /* Color Mode Buttons */
+        .color-btn {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            padding: 6px 9px;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border-strong);
+            background: var(--bg-input);
+            color: var(--text-secondary);
+            font-size: 11.5px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.14s ease;
+        }
+
+        .color-btn:hover {
+            color: #fff;
+            border-color: #475569;
+        }
+
+        .color-btn.active {
+            background: rgba(34, 211, 238, 0.14);
+            border-color: rgba(34, 211, 238, 0.6);
+            color: #e0f2fe;
+        }
+
+        .swatch {
+            width: 13px;
+            height: 13px;
+            border-radius: 4px;
+            flex-shrink: 0;
+            border: 1px solid rgba(255, 255, 255, 0.25);
+        }
+
+        /* Toggle Switch */
+        .toggle-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            font-size: 11.5px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            user-select: none;
+            padding: 2px 0;
+        }
+
+        .switch {
+            position: relative;
+            width: 36px;
+            height: 20px;
+            flex-shrink: 0;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider-track {
+            position: absolute;
+            inset: 0;
+            background: #1e293b;
+            border: 1px solid var(--border-strong);
+            border-radius: 99px;
+            transition: all 0.18s ease;
+        }
+
+        .slider-track::before {
+            content: "";
+            position: absolute;
+            width: 14px;
+            height: 14px;
+            left: 2px;
+            top: 2px;
+            border-radius: 50%;
+            background: #94a3b8;
+            transition: transform 0.18s ease, background 0.18s ease;
+        }
+
+        .switch input:checked + .slider-track {
+            background: rgba(16, 185, 129, 0.3);
+            border-color: var(--accent);
+        }
+
+        .switch input:checked + .slider-track::before {
+            transform: translateX(16px);
+            background: #34d399;
+        }
+
+        /* Drop Zone */
+        .drop-zone {
+            border: 1.5px dashed var(--border-strong);
+            border-radius: var(--radius-md);
+            background: rgba(15, 23, 42, 0.55);
+            padding: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            transition: all 0.16s ease;
+        }
+
+        .drop-zone:hover, .drop-zone.dragover {
+            border-color: var(--accent-cyan);
+            background: rgba(34, 211, 238, 0.08);
+        }
+
+        .preview-thumb-wrap {
+            position: relative;
+            width: 62px;
+            height: 62px;
+            border-radius: 8px;
+            overflow: hidden;
+            background: #05070a;
+            border: 1px solid var(--border-subtle);
+            flex-shrink: 0;
+        }
+
+        .preview-thumb-wrap img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        .media-badge {
+            position: absolute;
+            bottom: 3px;
+            right: 3px;
+            padding: 1px 4px;
+            border-radius: 4px;
+            background: rgba(5, 7, 10, 0.85);
+            color: var(--accent-cyan);
+            font-family: var(--font-mono);
+            font-size: 8.5px;
+            font-weight: 700;
+            border: 1px solid rgba(34, 211, 238, 0.4);
+        }
+
+        .drop-info {
+            min-width: 0;
+            flex: 1;
+        }
+
+        .drop-filename {
+            font-family: var(--font-mono);
+            font-size: 11px;
+            font-weight: 600;
+            color: #e2e8f0;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .drop-hint {
+            font-size: 11px;
+            color: var(--text-secondary);
+            margin-top: 2px;
+        }
+
+        .drop-hint span {
+            color: var(--accent-cyan);
+            font-weight: 600;
+        }
+
+        .drop-sub {
+            font-size: 10px;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
+        .demo-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 6px;
+        }
+
+        /* Progress Bar for GIF Export */
+        .progress-wrap {
+            display: none;
+            flex-direction: column;
+            gap: 5px;
+            padding: 8px;
+            border-radius: var(--radius-sm);
+            background: #090e17;
+            border: 1px solid var(--border-subtle);
+        }
+
+        .progress-wrap.show {
+            display: flex;
+        }
+
+        .progress-bar-bg {
+            width: 100%;
+            height: 7px;
+            background: #1e293b;
+            border-radius: 99px;
+            overflow: hidden;
+        }
+
+        .progress-bar-fill {
+            width: 0%;
+            height: 100%;
+            background: linear-gradient(90deg, #10b981, #22d3ee);
+            transition: width 0.1s linear;
+        }
+
+        .progress-label {
+            font-family: var(--font-mono);
+            font-size: 10.5px;
+            color: var(--accent-cyan);
+            display: flex;
+            justify-content: space-between;
+        }
+
+        /* ==========================================================================
+           MAIN STAGE & VIEWPORT
+           ========================================================================== */
+        .stage {
+            flex: 1 1 auto;
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+            background: #05070b;
+            position: relative;
+        }
+
+        .stage-toolbar {
+            flex: 0 0 auto;
+            padding: 7px 12px;
+            background: var(--bg-panel);
+            border-bottom: 1px solid var(--border-subtle);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .toolbar-group {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+
+        .zoom-bar {
+            display: inline-flex;
+            align-items: center;
+            background: var(--bg-app);
+            border: 1px solid var(--border-subtle);
+            border-radius: 8px;
+            padding: 2px;
+            gap: 2px;
+        }
+
+        .zoom-btn {
+            border: none;
+            background: transparent;
+            color: var(--text-secondary);
+            font-size: 11.5px;
+            font-weight: 600;
+            padding: 4px 8px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.14s ease;
+        }
+
+        .zoom-btn:hover {
+            background: rgba(255, 255, 255, 0.08);
+            color: #fff;
+        }
+
+        .zoom-btn.accent {
+            color: #34d399;
+        }
+
+        .zoom-val {
+            font-family: var(--font-mono);
+            font-size: 11px;
+            font-weight: 700;
+            color: #e2e8f0;
+            min-width: 44px;
+            text-align: center;
+        }
+
+        /* Viewport Container */
+        .viewport {
+            flex: 1 1 auto;
+            position: relative;
+            overflow: hidden;
+            background: #06080c;
+            cursor: grab;
+            touch-action: none;
+        }
+
+        .viewport.panning {
+            cursor: grabbing;
+        }
+
+        .viewport.dom-selectable {
+            cursor: text;
+        }
+
+        #gpuCanvas {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        /* DOM Text Mode Layer */
+        #domTextLayer {
+            position: absolute;
+            inset: 0;
+            overflow: hidden;
+            display: none;
+            background: #06080c;
+        }
+
+        #domTextLayer.show {
+            display: block;
+        }
+
+        #domAsciiPre {
+            position: absolute;
+            top: 0;
+            left: 0;
+            margin: 0;
+            padding: 0;
+            font-family: var(--font-mono);
+            white-space: pre;
+            line-height: 1.05;
+            letter-spacing: 0;
+            background: #05070a;
+            transform-origin: top left;
+            user-select: none;
+            -webkit-user-select: none;
+            will-change: transform;
+        }
+
+        #domAsciiPre.selectable {
+            user-select: text;
+            -webkit-user-select: text;
+        }
+
+        /* Compare Original Layer & Split Curtain */
+        #compareLayer {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            z-index: 8;
+            display: none;
+            overflow: hidden;
+        }
+
+        #compareLayer.show {
+            display: block;
+        }
+
+        #compareCanvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            transform-origin: top left;
+            image-rendering: auto;
+        }
+
+        #compareDivider {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 50%;
+            width: 2px;
+            background: var(--accent-cyan);
+            box-shadow: 0 0 12px rgba(34, 211, 238, 0.9);
+            z-index: 12;
+            display: none;
+            cursor: ew-resize;
+            pointer-events: auto;
+        }
+
+        #compareDivider.show {
+            display: block;
+        }
+
+        #compareHandle {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: #09131e;
+            border: 2px solid var(--accent-cyan);
+            color: #e0f2fe;
+            font-family: var(--font-mono);
+            font-size: 12px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.7);
+            user-select: none;
+        }
+
+        .compare-tag {
+            position: absolute;
+            top: 12px;
+            left: 12px;
+            padding: 4px 9px;
+            border-radius: 6px;
+            background: rgba(6, 8, 12, 0.82);
+            border: 1px solid rgba(34, 211, 238, 0.5);
+            color: #67e8f9;
+            font-family: var(--font-mono);
+            font-size: 10.5px;
+            font-weight: 700;
+            z-index: 13;
+            display: none;
+            pointer-events: none;
+        }
+
+        .compare-tag.show {
+            display: block;
+        }
+
+        /* Terminal HUD Overlay */
+        .hud-overlay {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            z-index: 10;
+            padding: 12px 14px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            font-family: var(--font-mono);
+            font-size: 11px;
+        }
+
+        .hud-overlay.hidden-hud {
+            display: none;
+        }
+
+        .hud-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .hud-chip {
+            padding: 4px 9px;
+            border-radius: 6px;
+            background: rgba(6, 8, 12, 0.75);
+            border: 1px solid rgba(148, 163, 184, 0.22);
+            color: #cbd5e1;
+            backdrop-filter: blur(4px);
+        }
+
+        .hud-chip.amber {
+            color: #fbbf24;
+            border-color: rgba(245, 158, 11, 0.35);
+        }
+
+        .hud-chip.green {
+            color: #34d399;
+            border-color: rgba(16, 185, 129, 0.35);
+        }
+
+        /* Timeline Scrubber Bar (GIF / Video) */
+        .scrubber-bar {
+            display: none;
+            align-items: center;
+            gap: 10px;
+            padding: 7px 14px;
+            background: #0b1019;
+            border-top: 1px solid var(--border-subtle);
+            flex: 0 0 auto;
+        }
+
+        .scrubber-bar.show {
+            display: flex;
+        }
+
+        .scrubber-time {
+            font-family: var(--font-mono);
+            font-size: 11px;
+            color: var(--accent-cyan);
+            min-width: 96px;
+            text-align: right;
+        }
+
+        /* Bottom Status Bar */
+        .stage-footer {
+            flex: 0 0 auto;
+            padding: 6px 14px;
+            background: var(--bg-panel);
+            border-top: 1px solid var(--border-subtle);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            flex-wrap: wrap;
+            font-family: var(--font-mono);
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+
+        .stage-footer strong {
+            color: #e2e8f0;
+            font-weight: 600;
+        }
+
+        .stage-footer strong.hl {
+            color: #34d399;
+        }
+
+        .stage-footer strong.cy {
+            color: #22d3ee;
+        }
+
+        /* Toast Notification */
+        .toast {
+            position: fixed;
+            bottom: 22px;
+            right: 22px;
+            z-index: 999;
+            padding: 10px 14px;
+            border-radius: var(--radius-md);
+            background: #0f172a;
+            border: 1px solid rgba(16, 185, 129, 0.55);
+            color: #ecfdf5;
+            font-size: 12.5px;
+            font-weight: 600;
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.55);
+            transform: translateY(16px);
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.2s ease;
+            max-width: 360px;
+        }
+
+        .toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        .toast.warn {
+            border-color: rgba(245, 158, 11, 0.65);
+            color: #fef3c7;
+        }
+
+        .toast.err {
+            border-color: rgba(244, 63, 94, 0.7);
+            color: #ffe4e6;
+        }
+
+        /* Responsive Mobile / Tablet Layout */
+        @media (max-width: 920px) {
+            .workspace {
+                flex-direction: column-reverse;
+            }
+
+            .sidebar {
+                width: 100%;
+                flex: 0 0 46%;
+                border-right: none;
+                border-top: 1px solid var(--border-subtle);
+            }
+
+            .sidebar.collapsed {
+                margin-left: 0;
+                flex: 0 0 0;
+                height: 0;
+                padding: 0;
+                border: none;
+            }
+
+            .stage {
+                flex: 1 1 54%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-shell">
+        <!-- ======================================================================
+             TOP BAR
+             ====================================================================== -->
+        <header class="topbar">
+            <div class="brand">
+                <button id="btnToggleSidebar" type="button" class="btn btn-sm" title="Ẩn/Hiện bảng điều khiển">☰</button>
+                <div class="brand-logo">#@</div>
+                <div>
+                    <div class="brand-title">ASCII Color Studio Ultra HD</div>
+                    <div class="brand-sub">
+                        <span id="engineBadge" class="badge">WebGL2 HiDPI Atlas</span>
+                        <span class="badge badge-cyan">Màu Tự Nhiên • 100% Offline</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="topbar-center">
+                <div class="segmented" role="tablist" aria-label="Chế độ kết xuất">
+                    <button id="btnModeGpu" type="button" class="seg-btn active">⚡ WebGL2 HiDPI (60 FPS)</button>
+                    <button id="btnModeDom" type="button" class="seg-btn">🔤 Ký tự thật (DOM Text)</button>
+                </div>
+                <label id="domSelectToggleWrap" class="dom-select-toggle">
+                    <input id="domAllowSelect" type="checkbox">
+                    <span>Cho phép bôi đen / Copy</span>
+                </label>
+            </div>
+
+            <div class="topbar-actions">
+                <button id="btnQuickPng" type="button" class="btn btn-sm btn-primary">🖼 Xuất PNG 4K</button>
+                <button id="btnQuickAnsi" type="button" class="btn btn-sm">📋 Copy ANSI</button>
+            </div>
+        </header>
+
+        <!-- ======================================================================
+             MAIN WORKSPACE
+             ====================================================================== -->
+        <div class="workspace">
+            <!-- LEFT CONTROL SIDEBAR -->
+            <aside id="sidebar" class="sidebar">
+                <!-- 1. NGUỒN MEDIA -->
+                <details class="ctrl-group" open>
+                    <summary>
+                        <span>1. Nguồn Ảnh / GIF / Video</span>
+                        <span class="chevron">▶</span>
+                    </summary>
+                    <div class="group-body">
+                        <input id="fileInput" type="file" accept="image/*,video/mp4,video/webm,.gif" class="hidden">
+                        <div id="dropZone" class="drop-zone">
+                            <div class="preview-thumb-wrap">
+                                <img id="sourcePreview" alt="Xem trước nguồn">
+                                <span id="mediaTypeBadge" class="media-badge">DEMO</span>
+                            </div>
+                            <div class="drop-info">
+                                <div id="fileNameLabel" class="drop-filename">daytime_garden_hd.png</div>
+                                <div class="drop-hint">Kéo thả hoặc <span>chọn tệp</span></div>
+                                <div class="drop-sub">PNG, JPG, WEBP, GIF động, MP4/WEBM</div>
+                            </div>
+                        </div>
+
+                        <div class="demo-row">
+                            <button id="btnDemoGarden" type="button" class="btn btn-sm">🌿 Thiên Nhiên Ban Ngày</button>
+                            <button id="btnDemoTree" type="button" class="btn btn-sm">🎄 Cây Thông Noel</button>
+                        </div>
+                    </div>
+                </details>
+
+                <!-- 2. MA TRẬN KÝ TỰ & ĐỘ SẮC NÉT -->
+                <details class="ctrl-group" open>
+                    <summary>
+                        <span>2. Ma Trận Ký Tự &amp; Phông Chữ</span>
+                        <span class="chevron">▶</span>
+                    </summary>
+                    <div class="group-body">
+                        <div class="field">
+                            <div class="field-row">
+                                <span class="field-label">Độ rộng ma trận (Cột)</span>
+                                <span id="colsVal" class="field-val">180 cột</span>
+                            </div>
+                            <input id="colsSlider" type="range" min="40" max="360" value="180" step="2">
+                            <div class="grid-4" id="colPresets">
+                                <button type="button" data-cols="100" class="pill-btn">100<span class="pill-sub">Nhanh</span></button>
+                                <button type="button" data-cols="180" class="pill-btn active">180<span class="pill-sub">Chuẩn HD</span></button>
+                                <button type="button" data-cols="260" class="pill-btn">260<span class="pill-sub">Siêu nét</span></button>
+                                <button type="button" data-cols="360" class="pill-btn">360<span class="pill-sub">Ultra HD</span></button>
+                            </div>
+                        </div>
+
+                        <div class="field">
+                            <div class="field-row">
+                                <span class="field-label">Cỡ chữ gốc (100% Zoom)</span>
+                                <span id="fontSizeVal" class="field-val">11px</span>
+                            </div>
+                            <input id="fontSizeSlider" type="range" min="6" max="22" value="11" step="1">
+                        </div>
+
+                        <div class="field">
+                            <div class="field-row">
+                                <span class="field-label">Độ đậm nét chữ (Font Weight)</span>
+                            </div>
+                            <div class="grid-4" id="fontWeightGroup">
+                                <button type="button" data-weight="400" class="pill-btn">400</button>
+                                <button type="button" data-weight="600" class="pill-btn">600</button>
+                                <button type="button" data-weight="700" class="pill-btn active">700</button>
+                                <button type="button" data-weight="800" class="pill-btn">800</button>
+                            </div>
+                        </div>
+
+                        <div class="field">
+                            <div class="field-row">
+                                <span class="field-label">Bộ ký tự (Charset)</span>
+                            </div>
+                            <select id="charsetSelect">
+                                <option value="dense" selected>Đậm sắc nét (Khuyên dùng - không trống tối)</option>
+                                <option value="ultra">Chi tiết đầy đủ (70 ký tự)</option>
+                                <option value="blocks">Khối Unicode ( ░▒▓█)</option>
+                                <option value="matrix">Kỹ thuật / Code (01/\{}[]#$@)</option>
+                                <option value="custom">Tùy chỉnh ký tự riêng...</option>
+                            </select>
+                            <input id="customCharsetInput" type="text" class="mono hidden"
+                                value=".,:-=+*#%@"
+                                placeholder="Nhập ký tự từ tối đến sáng...">
+                        </div>
+                    </div>
+                </details>
+
+                <!-- 3. BỘ MÁY MÀU SẮC TỰ NHIÊN -->
+                <details class="ctrl-group" open>
+                    <summary>
+                        <span>3. Màu Sắc &amp; Ánh Sáng</span>
+                        <span class="chevron">▶</span>
+                    </summary>
+                    <div class="group-body">
+                        <div class="field">
+                            <div class="field-row">
+                                <span class="field-label">Cấu hình màu 1-Click</span>
+                            </div>
+                            <div class="profile-grid" id="colorProfileGroup">
+                                <button type="button" data-profile="natural" class="profile-btn active">
+                                    🎯 Giữ Màu Ảnh Gốc
+                                    <small>Tự nhiên • Nền 50% • Không rực</small>
+                                </button>
+                                <button type="button" data-profile="soft" class="profile-btn">
+                                    🌤 Nền Tối Nhẹ
+                                    <small>Nền 28% • Cân bằng</small>
+                                </button>
+                                <button type="button" data-profile="terminal" class="profile-btn">
+                                    💻 Terminal Nền Đen
+                                    <small>Nền 0% • Bù sáng vùng tối</small>
+                                </button>
+                                <button type="button" data-profile="vivid" class="profile-btn">
+                                    🌈 Rực Rỡ
+                                    <small>Nền 40% • Đậm màu</small>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="grid-2" id="colorModeGroup">
+                            <button type="button" data-mode="truecolor" class="color-btn active">
+                                <span class="swatch" style="background: linear-gradient(135deg,#f43f5e,#facc15,#22d3ee)"></span>
+                                Màu gốc
+                            </button>
+                            <button type="button" data-mode="vivid" class="color-btn">
+                                <span class="swatch" style="background: linear-gradient(135deg,#e879f9,#fde047,#34d399)"></span>
+                                Rực rỡ Neon
+                            </button>
+                            <button type="button" data-mode="matrix" class="color-btn">
+                                <span class="swatch" style="background:#10b981"></span>
+                                Matrix
+                            </button>
+                            <button type="button" data-mode="amber" class="color-btn">
+                                <span class="swatch" style="background:#f59e0b"></span>
+                                Hổ phách
+                            </button>
+                            <button type="button" data-mode="mono" class="color-btn" style="grid-column: span 2;">
+                                <span class="swatch" style="background:#e2e8f0"></span>
+                                Trắng đen (Đơn sắc)
+                            </button>
+                        </div>
+
+                        <div class="field">
+                            <div class="field-row">
+                                <span class="field-label">Nền ô theo ảnh (Cell BG)</span>
+                                <span id="cellBgVal" class="field-val">50%</span>
+                            </div>
+                            <input id="cellBgSlider" type="range" min="0" max="100" value="50" step="2">
+                        </div>
+
+                        <div class="grid-2">
+                            <div class="field">
+                                <div class="field-row">
+                                    <span class="field-label">Gamma sáng</span>
+                                    <span id="gammaVal" class="field-val">1.08</span>
+                                </div>
+                                <input id="gammaSlider" type="range" min="0.6" max="2.5" value="1.08" step="0.02">
+                            </div>
+                            <div class="field">
+                                <div class="field-row">
+                                    <span class="field-label">Bù sáng chữ</span>
+                                    <span id="fgGainVal" class="field-val">128%</span>
+                                </div>
+                                <input id="fgGainSlider" type="range" min="80" max="250" value="128" step="2">
+                            </div>
+                        </div>
+
+                        <div class="field">
+                            <div class="field-row">
+                                <span class="field-label">Nâng vùng tối giữ màu (Color Lift)</span>
+                                <span id="colorLiftVal" class="field-val">0</span>
+                            </div>
+                            <input id="colorLiftSlider" type="range" min="0" max="80" value="0" step="2">
+                        </div>
+
+                        <label class="toggle-row" title="Bù sáng tỷ lệ nghịch với độ mảnh của nét chữ">
+                            <span>Tách màu &amp; mật độ chữ</span>
+                            <span class="switch">
+                                <input id="separateDensityToggle" type="checkbox">
+                                <span class="slider-track"></span>
+                            </span>
+                        </label>
+
+                        <div class="grid-2">
+                            <div class="field">
+                                <div class="field-row">
+                                    <span class="field-label">Sắc nét (Unsharp)</span>
+                                    <span id="sharpenVal" class="field-val">20%</span>
+                                </div>
+                                <input id="sharpenSlider" type="range" min="0" max="100" value="20" step="5">
+                            </div>
+                            <div class="field">
+                                <div class="field-row">
+                                    <span class="field-label">Bão hòa màu</span>
+                                    <span id="saturationVal" class="field-val">100%</span>
+                                </div>
+                                <input id="saturationSlider" type="range" min="0" max="220" value="100" step="5">
+                            </div>
+                        </div>
+
+                        <div class="grid-2">
+                            <div class="field">
+                                <div class="field-row">
+                                    <span class="field-label">Độ sáng</span>
+                                    <span id="brightnessVal" class="field-val">0</span>
+                                </div>
+                                <input id="brightnessSlider" type="range" min="-100" max="100" value="0" step="1">
+                            </div>
+                            <div class="field">
+                                <div class="field-row">
+                                    <span class="field-label">Tương phản</span>
+                                    <span id="contrastVal" class="field-val">0</span>
+                                </div>
+                                <input id="contrastSlider" type="range" min="-100" max="100" value="0" step="1">
+                            </div>
+                        </div>
+
+                        <div class="field">
+                            <div class="field-row">
+                                <span class="field-label">Phát sáng nhẹ (Glow)</span>
+                                <span id="glowVal" class="field-val">0% (Tắt)</span>
+                            </div>
+                            <input id="glowSlider" type="range" min="0" max="100" value="0" step="5">
+                        </div>
+
+                        <label class="toggle-row">
+                            <span>Đảo ngược độ sáng (Invert)</span>
+                            <span class="switch">
+                                <input id="invertToggle" type="checkbox">
+                                <span class="slider-track"></span>
+                            </span>
+                        </label>
+
+                        <button id="btnResetTune" type="button" class="btn btn-sm">↺ Đặt lại Giữ Màu Ảnh Gốc</button>
+                    </div>
+                </details>
+
+                <!-- 4. ANIMATION & HUD -->
+                <details class="ctrl-group">
+                    <summary>
+                        <span>4. Animation Thời Gian Thực &amp; HUD</span>
+                        <span class="chevron">▶</span>
+                    </summary>
+                    <div class="group-body">
+                        <div class="field">
+                            <div class="field-row">
+                                <span class="field-label">Chế độ hiệu ứng</span>
+                            </div>
+                            <select id="animModeSelect">
+                                <option value="none" selected>Tắt (Ảnh tĩnh sắc nét)</option>
+                                <option value="sparkle">✨ Lấp lánh &amp; Tuyết rơi</option>
+                                <option value="rotate3d">🌀 Xoay 3D trục Y</option>
+                                <option value="wave">🌊 Sóng động</option>
+                                <option value="glitch">⚡ Glitch / Hacker</option>
+                                <option value="matrixRain">🌧 Mưa Matrix</option>
+                                <option value="neonPulse">🌈 Nhịp thở Neon</option>
+                            </select>
+                        </div>
+
+                        <div class="grid-2">
+                            <div class="field">
+                                <div class="field-row">
+                                    <span class="field-label">FPS mục tiêu</span>
+                                    <span id="fpsVal" class="field-val">30 fps</span>
+                                </div>
+                                <input id="fpsSlider" type="range" min="5" max="60" value="30" step="1">
+                            </div>
+                            <div class="field">
+                                <div class="field-row">
+                                    <span class="field-label">Tốc độ</span>
+                                    <span id="animSpeedVal" class="field-val">1.0x</span>
+                                </div>
+                                <input id="animSpeedSlider" type="range" min="0.2" max="3.0" value="1.0" step="0.1">
+                            </div>
+                        </div>
+
+                        <div class="field">
+                            <div class="field-row">
+                                <span class="field-label">Cường độ hiệu ứng</span>
+                                <span id="animIntensityVal" class="field-val">70%</span>
+                            </div>
+                            <input id="animIntensitySlider" type="range" min="10" max="100" value="70" step="5">
+                        </div>
+
+                        <div class="grid-2">
+                            <button id="btnPlayPause" type="button" class="btn btn-sm">⏸ Tạm dừng</button>
+                            <label class="toggle-row" style="justify-content: flex-end; gap: 8px;">
+                                <span>HUD Terminal</span>
+                                <span class="switch">
+                                    <input id="hudToggle" type="checkbox" checked>
+                                    <span class="slider-track"></span>
+                                </span>
+                            </label>
+                        </div>
+                    </div>
+                </details>
+
+                <!-- 5. XUẤT ĐA ĐỊNH DẠNG -->
+                <details class="ctrl-group" open>
+                    <summary>
+                        <span>5. Xuất Tệp (PNG 4K / GIF89a / HTML / ANSI)</span>
+                        <span class="chevron">▶</span>
+                    </summary>
+                    <div class="group-body">
+                        <div class="grid-2">
+                            <button id="btnExportPng" type="button" class="btn btn-primary">🖼 Tải PNG 4K</button>
+                            <button id="btnExportHtml" type="button" class="btn btn-cyan">🌐 Tải HTML</button>
+                            <button id="btnCopyAnsi" type="button" class="btn">💻 Copy ANSI</button>
+                            <button id="btnCopyText" type="button" class="btn">📄 Copy Text</button>
+                        </div>
+
+                        <div style="border-top: 1px solid var(--border-subtle); padding-top: 10px; display: flex; flex-direction: column; gap: 8px;">
+                            <div class="field-row">
+                                <span class="field-label" style="color:#fbbf24; font-weight:700;">🎞 Xuất Ảnh Động GIF89a (Thuần JS)</span>
+                            </div>
+                            <div class="grid-2">
+                                <div class="field">
+                                    <div class="field-row">
+                                        <span class="field-label">Thời lượng</span>
+                                        <span id="gifDurVal" class="field-val">2.0s</span>
+                                    </div>
+                                    <input id="gifDurSlider" type="range" min="1" max="5" value="2" step="0.5">
+                                </div>
+                                <div class="field">
+                                    <div class="field-row">
+                                        <span class="field-label">FPS xuất</span>
+                                        <span id="gifFpsVal" class="field-val">12 fps</span>
+                                    </div>
+                                    <input id="gifFpsSlider" type="range" min="8" max="24" value="12" step="2">
+                                </div>
+                            </div>
+
+                            <div class="field">
+                                <div class="field-row">
+                                    <span class="field-label">Tỷ lệ kích thước GIF</span>
+                                </div>
+                                <select id="gifScaleSelect">
+                                    <option value="0.55">Nhỏ gọn (Nhanh - ~600px)</option>
+                                    <option value="0.8" selected>Tiêu chuẩn HD (~900px)</option>
+                                    <option value="1.05">Sắc nét cao (~1200px)</option>
+                                </select>
+                            </div>
+
+                            <button id="btnExportGif" type="button" class="btn btn-amber">🎞 Tạo &amp; Tải Tệp .GIF</button>
+
+                            <div id="gifProgressWrap" class="progress-wrap">
+                                <div class="progress-label">
+                                    <span id="gifProgressText">Đang ghi khung hình...</span>
+                                    <span id="gifProgressPct">0%</span>
+                                </div>
+                                <div class="progress-bar-bg">
+                                    <div id="gifProgressFill" class="progress-bar-fill"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </details>
+            </aside>
+
+            <!-- RIGHT MAIN VIEWPORT STAGE -->
+            <main class="stage">
+                <!-- Floating / Top Viewport Toolbar -->
+                <div class="stage-toolbar">
+                    <div class="toolbar-group">
+                        <button id="btnHoldOriginal" type="button" class="btn btn-sm" title="Nhấn giữ để xem ảnh gốc đối chiếu màu sắc">
+                            👁 Giữ xem ảnh gốc
+                        </button>
+                        <button id="btnSplitCompare" type="button" class="btn btn-sm" title="Bật/tắt rèm chia đôi so sánh ảnh gốc và ASCII">
+                            ◧ Chia đôi
+                        </button>
+                    </div>
+
+                    <div class="toolbar-group">
+                        <div class="zoom-bar">
+                            <button id="btnZoomOut" type="button" class="zoom-btn" title="Thu nhỏ">−</button>
+                            <span id="zoomLabel" class="zoom-val">100%</span>
+                            <button id="btnZoomIn" type="button" class="zoom-btn" title="Phóng to">+</button>
+                            <button id="btnZoom100" type="button" class="zoom-btn" title="Tỷ lệ 1:1 chuẩn pixel">100%</button>
+                            <button id="btnZoomFit" type="button" class="zoom-btn accent" title="Vừa khung nhìn">Vừa màn hình</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Main Interactive Viewport -->
+                <div id="viewport" class="viewport">
+                    <canvas id="gpuCanvas"></canvas>
+
+                    <div id="domTextLayer">
+                        <pre id="domAsciiPre"></pre>
+                    </div>
+
+                    <!-- Original Image Comparison Layer -->
+                    <div id="compareLayer">
+                        <canvas id="compareCanvas"></canvas>
+                    </div>
+                    <div id="compareDivider" title="Kéo qua lại để so sánh Ảnh gốc và ASCII">
+                        <div id="compareHandle">⇔</div>
+                    </div>
+                    <div id="compareTag" class="compare-tag">ẢNH GỐC</div>
+
+                    <!-- Terminal HUD Overlay -->
+                    <div id="hudOverlay" class="hud-overlay">
+                        <div class="hud-row">
+                            <span id="hudInfo" class="hud-chip">180 × 100 • 18,000 ký tự • Zoom 100%</span>
+                            <span id="hudTime" class="hud-chip amber">t 0.00s</span>
+                        </div>
+                        <div class="hud-row">
+                            <span id="hudFile" class="hud-chip">daytime_garden_hd.png</span>
+                            <span id="hudFps" class="hud-chip green">running • 60 fps</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Timeline Scrubber (GIF / Video) -->
+                <div id="scrubberBar" class="scrubber-bar">
+                    <button id="btnMediaPlayPause" type="button" class="btn btn-sm">⏸</button>
+                    <input id="mediaScrubber" type="range" min="0" max="100" value="0" step="1">
+                    <span id="scrubberTime" class="scrubber-time">0 / 0</span>
+                </div>
+
+                <!-- Bottom Status Bar -->
+                <footer class="stage-footer">
+                    <div style="display:flex; flex-wrap:wrap; gap:14px;">
+                        <span>Ma trận: <strong id="statMatrix">180 × 100</strong></span>
+                        <span>Thời gian render: <strong id="statRenderMs" class="hl">0.0 ms</strong></span>
+                        <span>DPR: <strong id="statDpr" class="cy">1x</strong></span>
+                    </div>
+                    <div id="statFileLabel">daytime_garden_hd.png</div>
+                </footer>
+            </main>
+        </div>
+    </div>
+
+    <!-- Hidden Media Helper Elements -->
+    <video id="hiddenVideo" class="hidden" muted loop playsinline crossorigin="anonymous"></video>
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+    <script>
+    (function () {
+        'use strict';
+
+        // ============================================================================
+        // 1. CONSTANTS, CHARSETS & 1-CLICK COLOR PROFILES
+        // ============================================================================
+        const FONT_FAMILY_STACK = '"Cascadia Mono", "Consolas", "SFMono-Regular", "Liberation Mono", "Courier New", monospace';
+        const CELL_ASPECT = 0.58; // Tỷ lệ rộng/cao chuẩn của ký tự monospace
+
+        const CHARSETS = {
+            dense: ".,:-=+*#%@",
+            ultra: " .'`^\",:;Il!i><~+_-?][}{1)(|\\/tfjrxnuvczXYUJCLQ0OZmwqpdbkhao*#MW&8%B@$",
+            blocks: " ░▒▓█",
+            matrix: ".'`01/\\|(){}[]<>+-=*#%@$"
+        };
+
+        const EXTRA_FX_CHARS = "*+.01#$%@";
+
+        const COLOR_PROFILES = {
+            natural: {
+                gamma: 1.08,
+                fgGain: 1.28,
+                colorLift: 0,
+                cellBgTint: 0.50,
+                saturation: 1.00,
+                brightness: 0,
+                contrast: 0,
+                separateColorDensity: false,
+                colorMode: 'truecolor'
+            },
+            soft: {
+                gamma: 1.15,
+                fgGain: 1.32,
+                colorLift: 8,
+                cellBgTint: 0.28,
+                saturation: 1.02,
+                brightness: 0,
+                contrast: 4,
+                separateColorDensity: false,
+                colorMode: 'truecolor'
+            },
+            terminal: {
+                gamma: 1.30,
+                fgGain: 1.40,
+                colorLift: 18,
+                cellBgTint: 0.0,
+                saturation: 1.05,
+                brightness: 0,
+                contrast: 8,
+                separateColorDensity: true,
+                colorMode: 'truecolor'
+            },
+            vivid: {
+                gamma: 1.25,
+                fgGain: 1.38,
+                colorLift: 16,
+                cellBgTint: 0.40,
+                saturation: 1.32,
+                brightness: 2,
+                contrast: 14,
+                separateColorDensity: false,
+                colorMode: 'truecolor'
+            }
+        };
+
+        // ============================================================================
+        // 2. WEBGL2 CRISP HIDPI GLYPH ATLAS RENDERER (+ 2D FALLBACK)
+        // ============================================================================
+        class CrispAsciiRenderer {
+            constructor(canvas) {
+                this.canvas = canvas;
+                this.gl = null;
+                this.ctx2d = null;
+                this.isWebGL2 = false;
+
+                this.atlasCellW = 48;
+                this.atlasCellH = 80;
+                this.atlasCols = 16;
+                this.atlasRows = 8;
+                this.glyphList = [' '];
+                this.charToIdx = new Map([[' ', 0]]);
+                this.atlasKey = '';
+
+                this.gridTexCols = 0;
+                this.gridTexRows = 0;
+
+                this.initContext();
+            }
+
+            initContext() {
+                try {
+                    const gl = this.canvas.getContext('webgl2', {
+                        alpha: false,
+                        antialias: false,
+                        depth: false,
+                        stencil: false,
+                        preserveDrawingBuffer: false,
+                        powerPreference: 'high-performance'
+                    });
+                    if (gl) {
+                        this.gl = gl;
+                        this.isWebGL2 = this.initWebGL2Pipeline();
+                    }
+                } catch (e) {
+                    this.isWebGL2 = false;
+                }
+
+                if (!this.isWebGL2) {
+                    this.gl = null;
+                    this.ctx2d = this.canvas.getContext('2d', { alpha: false });
+                }
+            }
+
+            compileShader(gl, type, source) {
+                const sh = gl.createShader(type);
+                gl.shaderSource(sh, source);
+                gl.compileShader(sh);
+                if (!gl.getShaderParameter(sh, gl.COMPILE_STATUS)) {
+                    console.error('Shader error:', gl.getShaderInfoLog(sh));
+                    gl.deleteShader(sh);
+                    return null;
+                }
+                return sh;
+            }
+
+            initWebGL2Pipeline() {
+                const gl = this.gl;
+                const vsSource = `#version 300 es
+                const vec2 POS[4] = vec2[4](
+                    vec2(-1.0, -1.0),
+                    vec2( 1.0, -1.0),
+                    vec2(-1.0,  1.0),
+                    vec2( 1.0,  1.0)
+                );
+                void main() {
+                    gl_Position = vec4(POS[gl_VertexID], 0.0, 1.0);
+                }`;
+
+                const fsSource = `#version 300 es
+                precision highp float;
+
+                uniform sampler2D u_gridTex;
+                uniform sampler2D u_bgTex;
+                uniform sampler2D u_atlasTex;
+                uniform vec2 u_resolution;
+                uniform float u_dpr;
+                uniform vec2 u_pan;
+                uniform float u_zoom;
+                uniform vec2 u_cellSize;
+                uniform vec2 u_gridSize;
+                uniform vec2 u_atlasGrid;
+                uniform vec2 u_atlasPx;
+                uniform float u_glow;
+
+                out vec4 outColor;
+
+                const vec3 BG_OUTER = vec3(0.0235, 0.0314, 0.0471);
+
+                float sampleGlyphAlpha(float glyphIdx, vec2 localUV) {
+                    if (glyphIdx < 0.5) return 0.0;
+                    float aCol = mod(glyphIdx, u_atlasGrid.x);
+                    float aRow = floor(glyphIdx / u_atlasGrid.x);
+
+                    vec2 cellTexSize = u_atlasPx / u_atlasGrid;
+                    vec2 pad = vec2(0.8) / cellTexSize;
+                    vec2 safeUV = mix(pad, vec2(1.0) - pad, clamp(localUV, 0.0, 1.0));
+                    vec2 uv = (vec2(aCol, aRow) + safeUV) / u_atlasGrid;
+
+                    float rawAlpha = texture(u_atlasTex, uv).a;
+                    // Zoom-compensated alpha: giữ chữ sáng và sắc nét cả khi thu nhỏ 30-40%
+                    float zoomBoost = clamp(pow(max(rawAlpha, 0.0), 0.72) * 1.15, 0.0, 1.0);
+                    float screenCellH = u_cellSize.y * u_zoom * u_dpr;
+                    float sharpMix = clamp((screenCellH - 12.0) / 18.0, 0.0, 1.0);
+                    float crispAlpha = smoothstep(0.10, 0.78, zoomBoost);
+                    return mix(zoomBoost, crispAlpha, sharpMix);
+                }
+
+                void main() {
+                    vec2 cssFrag = vec2(gl_FragCoord.x, u_resolution.y - gl_FragCoord.y) / u_dpr;
+                    vec2 worldPos = (cssFrag - u_pan) / u_zoom;
+                    vec2 gridF = worldPos / u_cellSize;
+
+                    if (gridF.x < 0.0 || gridF.y < 0.0 || gridF.x >= u_gridSize.x || gridF.y >= u_gridSize.y) {
+                        vec2 worldSize = u_gridSize * u_cellSize;
+                        float distX = max(-worldPos.x, worldPos.x - worldSize.x) * u_zoom;
+                        float distY = max(-worldPos.y, worldPos.y - worldSize.y) * u_zoom;
+                        float border = step(max(distX, distY), 1.0);
+                        vec3 col = mix(BG_OUTER, vec3(0.12, 0.18, 0.27), border * 0.85);
+                        outColor = vec4(col, 1.0);
+                        return;
+                    }
+
+                    ivec2 cellCoord = ivec2(floor(gridF));
+                    vec2 localUV = fract(gridF);
+
+                    vec4 cellData = texelFetch(u_gridTex, cellCoord, 0);
+                    vec3 bgColor = texelFetch(u_bgTex, cellCoord, 0).rgb;
+                    float glyphIdx = floor(cellData.a * 255.0 + 0.5);
+                    float alpha = sampleGlyphAlpha(glyphIdx, localUV);
+
+                    vec3 finalRgb = mix(bgColor, cellData.rgb, alpha);
+
+                    if (u_glow > 0.005) {
+                        vec3 halo = vec3(0.0);
+                        ivec2 maxC = ivec2(u_gridSize) - ivec2(1);
+                        for (int dy = -1; dy <= 1; dy++) {
+                            for (int dx = -1; dx <= 1; dx++) {
+                                ivec2 nc = clamp(cellCoord + ivec2(dx, dy), ivec2(0), maxC);
+                                vec4 nd = texelFetch(u_gridTex, nc, 0);
+                                float w = (dx == 0 && dy == 0) ? 0.34 : ((dx == 0 || dy == 0) ? 0.11 : 0.055);
+                                halo += nd.rgb * w * step(0.5, floor(nd.a * 255.0 + 0.5));
+                            }
+                        }
+                        finalRgb += halo * (u_glow * 0.72);
+                    }
+
+                    outColor = vec4(clamp(finalRgb, 0.0, 1.0), 1.0);
+                }`;
+
+                const vs = this.compileShader(gl, gl.VERTEX_SHADER, vsSource);
+                const fs = this.compileShader(gl, gl.FRAGMENT_SHADER, fsSource);
+                if (!vs || !fs) return false;
+
+                const prog = gl.createProgram();
+                gl.attachShader(prog, vs);
+                gl.attachShader(prog, fs);
+                gl.linkProgram(prog);
+                if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) {
+                    console.error('Program link error:', gl.getProgramInfoLog(prog));
+                    return false;
+                }
+                this.program = prog;
+                this.vao = gl.createVertexArray();
+
+                this.loc = {
+                    u_gridTex: gl.getUniformLocation(prog, 'u_gridTex'),
+                    u_bgTex: gl.getUniformLocation(prog, 'u_bgTex'),
+                    u_atlasTex: gl.getUniformLocation(prog, 'u_atlasTex'),
+                    u_resolution: gl.getUniformLocation(prog, 'u_resolution'),
+                    u_dpr: gl.getUniformLocation(prog, 'u_dpr'),
+                    u_pan: gl.getUniformLocation(prog, 'u_pan'),
+                    u_zoom: gl.getUniformLocation(prog, 'u_zoom'),
+                    u_cellSize: gl.getUniformLocation(prog, 'u_cellSize'),
+                    u_gridSize: gl.getUniformLocation(prog, 'u_gridSize'),
+                    u_atlasGrid: gl.getUniformLocation(prog, 'u_atlasGrid'),
+                    u_atlasPx: gl.getUniformLocation(prog, 'u_atlasPx'),
+                    u_glow: gl.getUniformLocation(prog, 'u_glow')
+                };
+
+                this.gridTex = gl.createTexture();
+                gl.bindTexture(gl.TEXTURE_2D, this.gridTex);
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+
+                this.bgTex = gl.createTexture();
+                gl.bindTexture(gl.TEXTURE_2D, this.bgTex);
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+
+                this.atlasTex = gl.createTexture();
+                gl.bindTexture(gl.TEXTURE_2D, this.atlasTex);
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+
+                const anisoExt = gl.getExtension('EXT_texture_filter_anisotropic') ||
+                                 gl.getExtension('WEBKIT_EXT_texture_filter_anisotropic');
+                if (anisoExt) {
+                    const maxAniso = gl.getParameter(anisoExt.MAX_TEXTURE_MAX_ANISOTROPY_EXT);
+                    gl.texParameterf(gl.TEXTURE_2D, anisoExt.TEXTURE_MAX_ANISOTROPY_EXT, Math.min(8, maxAniso));
+                }
+
+                return true;
+            }
+
+            ensureAtlas(charsetStr, fontWeight) {
+                const key = `${fontWeight}|${charsetStr}`;
+                if (this.atlasKey === key) return;
+                this.atlasKey = key;
+
+                const unique = [' '];
+                const map = new Map([[' ', 0]]);
+                const combined = charsetStr + EXTRA_FX_CHARS;
+                for (const ch of combined) {
+                    if (!map.has(ch) && unique.length < 254) {
+                        map.set(ch, unique.length);
+                        unique.push(ch);
+                    }
+                }
+                this.glyphList = unique;
+                this.charToIdx = map;
+
+                if (!this.isWebGL2) return;
+
+                this.atlasCols = 16;
+                this.atlasRows = Math.max(1, Math.ceil(unique.length / this.atlasCols));
+                const cw = this.atlasCellW;
+                const ch = this.atlasCellH;
+
+                const atlasCanvas = document.createElement('canvas');
+                atlasCanvas.width = this.atlasCols * cw;
+                atlasCanvas.height = this.atlasRows * ch;
+                const ctx = atlasCanvas.getContext('2d');
+                ctx.clearRect(0, 0, atlasCanvas.width, atlasCanvas.height);
+
+                ctx.font = `${fontWeight} ${Math.round(ch * 0.86)}px ${FONT_FAMILY_STACK}`;
+                ctx.fillStyle = '#ffffff';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+
+                for (let i = 1; i < unique.length; i++) {
+                    const gx = (i % this.atlasCols) * cw + cw * 0.5;
+                    const gy = Math.floor(i / this.atlasCols) * ch + ch * 0.52;
+                    ctx.fillText(unique[i], gx, gy);
+                }
+
+                const gl = this.gl;
+                gl.bindTexture(gl.TEXTURE_2D, this.atlasTex);
+                gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, false);
+                gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, atlasCanvas);
+                gl.generateMipmap(gl.TEXTURE_2D);
+            }
+
+            uploadGrid(cols, rows, gridRGBA, gridBgRGBA) {
+                if (!this.isWebGL2) return;
+                const gl = this.gl;
+                gl.pixelStorei(gl.UNPACK_ALIGNMENT, 1);
+                if (this.gridTexCols !== cols || this.gridTexRows !== rows) {
+                    gl.bindTexture(gl.TEXTURE_2D, this.gridTex);
+                    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA8, cols, rows, 0, gl.RGBA, gl.UNSIGNED_BYTE, gridRGBA);
+                    gl.bindTexture(gl.TEXTURE_2D, this.bgTex);
+                    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA8, cols, rows, 0, gl.RGBA, gl.UNSIGNED_BYTE, gridBgRGBA);
+                    this.gridTexCols = cols;
+                    this.gridTexRows = rows;
+                } else {
+                    gl.bindTexture(gl.TEXTURE_2D, this.gridTex);
+                    gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, cols, rows, gl.RGBA, gl.UNSIGNED_BYTE, gridRGBA);
+                    gl.bindTexture(gl.TEXTURE_2D, this.bgTex);
+                    gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, cols, rows, gl.RGBA, gl.UNSIGNED_BYTE, gridBgRGBA);
+                }
+            }
+
+            render(cols, rows, gridRGBA, gridBgRGBA, cellW, cellH, view, glowAmount, fontWeight) {
+                const dpr = window.devicePixelRatio || 1;
+                const physW = this.canvas.width;
+                const physH = this.canvas.height;
+                if (physW === 0 || physH === 0 || cols === 0 || rows === 0) return;
+
+                if (this.isWebGL2) {
+                    const gl = this.gl;
+                    gl.viewport(0, 0, physW, physH);
+                    gl.useProgram(this.program);
+                    gl.bindVertexArray(this.vao);
+
+                    gl.activeTexture(gl.TEXTURE0);
+                    gl.bindTexture(gl.TEXTURE_2D, this.gridTex);
+                    gl.uniform1i(this.loc.u_gridTex, 0);
+
+                    gl.activeTexture(gl.TEXTURE1);
+                    gl.bindTexture(gl.TEXTURE_2D, this.bgTex);
+                    gl.uniform1i(this.loc.u_bgTex, 1);
+
+                    gl.activeTexture(gl.TEXTURE2);
+                    gl.bindTexture(gl.TEXTURE_2D, this.atlasTex);
+                    gl.uniform1i(this.loc.u_atlasTex, 2);
+
+                    gl.uniform2f(this.loc.u_resolution, physW, physH);
+                    gl.uniform1f(this.loc.u_dpr, dpr);
+                    gl.uniform2f(this.loc.u_pan, view.tx, view.ty);
+                    gl.uniform1f(this.loc.u_zoom, view.scale);
+                    gl.uniform2f(this.loc.u_cellSize, cellW, cellH);
+                    gl.uniform2f(this.loc.u_gridSize, cols, rows);
+                    gl.uniform2f(this.loc.u_atlasGrid, this.atlasCols, this.atlasRows);
+                    gl.uniform2f(this.loc.u_atlasPx, this.atlasCols * this.atlasCellW, this.atlasRows * this.atlasCellH);
+                    gl.uniform1f(this.loc.u_glow, glowAmount);
+
+                    gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+                    return;
+                }
+
+                // HiDPI Canvas 2D Fallback (Frustum-culled direct vector text + cell background)
+                const ctx = this.ctx2d;
+                ctx.setTransform(1, 0, 0, 1, 0, 0);
+                ctx.fillStyle = '#06080c';
+                ctx.fillRect(0, 0, physW, physH);
+
+                const cssW = physW / dpr;
+                const cssH = physH / dpr;
+                const scaledCW = cellW * view.scale;
+                const scaledCH = cellH * view.scale;
+
+                const startCol = Math.max(0, Math.floor(-view.tx / scaledCW));
+                const endCol = Math.min(cols - 1, Math.ceil((cssW - view.tx) / scaledCW));
+                const startRow = Math.max(0, Math.floor(-view.ty / scaledCH));
+                const endRow = Math.min(rows - 1, Math.ceil((cssH - view.ty) / scaledCH));
+
+                ctx.scale(dpr, dpr);
+                const drawFontPx = Math.max(3, scaledCH * 0.94);
+                ctx.font = `${fontWeight} ${drawFontPx}px ${FONT_FAMILY_STACK}`;
+                ctx.textBaseline = 'top';
+                ctx.textAlign = 'left';
+
+                for (let y = startRow; y <= endRow; y++) {
+                    const py = view.ty + y * scaledCH;
+                    const rowOff = y * cols;
+                    for (let x = startCol; x <= endCol; x++) {
+                        const off = (rowOff + x) * 4;
+                        const px = view.tx + x * scaledCW;
+                        const br = gridBgRGBA[off], bg = gridBgRGBA[off + 1], bb = gridBgRGBA[off + 2];
+                        if (br > 6 || bg > 8 || bb > 12) {
+                            ctx.shadowBlur = 0;
+                            ctx.fillStyle = `rgb(${br},${bg},${bb})`;
+                            ctx.fillRect(px, py, scaledCW + 0.5, scaledCH + 0.5);
+                        }
+                        const gIdx = gridRGBA[off + 3];
+                        if (gIdx === 0) continue;
+                        const color = `rgb(${gridRGBA[off]},${gridRGBA[off + 1]},${gridRGBA[off + 2]})`;
+                        ctx.fillStyle = color;
+                        if (glowAmount > 0.01) {
+                            ctx.shadowBlur = glowAmount * 10;
+                            ctx.shadowColor = color;
+                        } else {
+                            ctx.shadowBlur = 0;
+                        }
+                        ctx.fillText(this.glyphList[gIdx] || ' ', px, py);
+                    }
+                }
+                ctx.shadowBlur = 0;
+            }
+        }
+
+        // ============================================================================
+        // 3. PURE-JS GIF89a LZW ENCODER (ZERO EXTERNAL LIBRARIES)
+        // ============================================================================
+        class PureGifEncoder {
+            constructor(width, height) {
+                this.width = width;
+                this.height = height;
+                this.bytes = [];
+                this.palette = new Uint8Array(256 * 3);
+                this.buildPalette666();
+            }
+
+            buildPalette666() {
+                // Bảng màu 6x6x6 = 216 màu web-safe + 40 mức xám chi tiết
+                let idx = 0;
+                for (let r = 0; r < 6; r++) {
+                    for (let g = 0; g < 6; g++) {
+                        for (let b = 0; b < 6; b++) {
+                            this.palette[idx * 3] = Math.round(r * 51);
+                            this.palette[idx * 3 + 1] = Math.round(g * 51);
+                            this.palette[idx * 3 + 2] = Math.round(b * 51);
+                            idx++;
+                        }
+                    }
+                }
+                for (let i = 0; i < 40; i++) {
+                    const v = Math.round((i / 39) * 255);
+                    this.palette[idx * 3] = v;
+                    this.palette[idx * 3 + 1] = v;
+                    this.palette[idx * 3 + 2] = v;
+                    idx++;
+                }
+            }
+
+            writeByte(b) { this.bytes.push(b & 0xFF); }
+            writeShort(s) { this.bytes.push(s & 0xFF, (s >> 8) & 0xFF); }
+            writeString(str) {
+                for (let i = 0; i < str.length; i++) this.bytes.push(str.charCodeAt(i));
+            }
+
+            start() {
+                this.writeString('GIF89a');
+                this.writeShort(this.width);
+                this.writeShort(this.height);
+                this.writeByte(0xF7); // Global Color Table Flag + 8-bit color (256 colors)
+                this.writeByte(0);    // Background color index
+                this.writeByte(0);    // Pixel aspect ratio
+                for (let i = 0; i < this.palette.length; i++) {
+                    this.writeByte(this.palette[i]);
+                }
+                // Netscape 2.0 Application Extension (Infinite Loop)
+                this.writeByte(0x21);
+                this.writeByte(0xFF);
+                this.writeByte(11);
+                this.writeString('NETSCAPE2.0');
+                this.writeByte(3);
+                this.writeByte(1);
+                this.writeShort(0);
+                this.writeByte(0);
+            }
+
+            rgbaToIndexed(rgba) {
+                const len = this.width * this.height;
+                const indexed = new Uint8Array(len);
+                for (let i = 0; i < len; i++) {
+                    const o = i * 4;
+                    const r = rgba[o], g = rgba[o + 1], b = rgba[o + 2];
+                    // Nếu gần như xám thì ánh xạ sang dải 40 mức xám (216..255)
+                    const maxC = Math.max(r, g, b);
+                    const minC = Math.min(r, g, b);
+                    if (maxC - minC < 10) {
+                        const l = ((r + g + b) / 3) | 0;
+                        indexed[i] = 216 + Math.round((l / 255) * 39);
+                    } else {
+                        const ri = Math.round(r / 51);
+                        const gi = Math.round(g / 51);
+                        const bi = Math.round(b / 51);
+                        indexed[i] = ri * 36 + gi * 6 + bi;
+                    }
+                }
+                return indexed;
+            }
+
+            addFrame(rgba, delayMs) {
+                const indexed = this.rgbaToIndexed(rgba);
+                const delayCs = Math.max(2, Math.round(delayMs / 10));
+
+                // Graphic Control Extension
+                this.writeByte(0x21);
+                this.writeByte(0xF9);
+                this.writeByte(4);
+                this.writeByte(0x04); // Disposal: do not dispose
+                this.writeShort(delayCs);
+                this.writeByte(0);
+                this.writeByte(0);
+
+                // Image Descriptor
+                this.writeByte(0x2C);
+                this.writeShort(0);
+                this.writeShort(0);
+                this.writeShort(this.width);
+                this.writeShort(this.height);
+                this.writeByte(0);
+
+                // LZW Image Data
+                const minCodeSize = 8;
+                this.writeByte(minCodeSize);
+                this.encodeLZW(indexed, minCodeSize);
+                this.writeByte(0); // Block terminator
+            }
+
+            encodeLZW(pixels, minCodeSize) {
+                const clearCode = 1 << minCodeSize;
+                const eoiCode = clearCode + 1;
+                let codeSize = minCodeSize + 1;
+                let nextCode = eoiCode + 1;
+                const maxTableSize = 4096;
+
+                let dict = new Int32Array(maxTableSize);
+                let keys = new Int32Array(maxTableSize);
+                const hashSize = 8191;
+                let hashTable = new Int32Array(hashSize);
+                hashTable.fill(-1);
+
+                const resetTable = () => {
+                    hashTable.fill(-1);
+                    codeSize = minCodeSize + 1;
+                    nextCode = eoiCode + 1;
+                };
+
+                const subBlock = new Uint8Array(255);
+                let subIdx = 0;
+                let bitBuf = 0;
+                let bitCount = 0;
+
+                const flushSubBlock = () => {
+                    if (subIdx > 0) {
+                        this.writeByte(subIdx);
+                        for (let i = 0; i < subIdx; i++) this.writeByte(subBlock[i]);
+                        subIdx = 0;
+                    }
+                };
+
+                const emitCode = (code) => {
+                    bitBuf |= (code << bitCount);
+                    bitCount += codeSize;
+                    while (bitCount >= 8) {
+                        subBlock[subIdx++] = bitBuf & 0xFF;
+                        bitBuf >>= 8;
+                        bitCount -= 8;
+                        if (subIdx === 255) flushSubBlock();
+                    }
+                };
+
+                emitCode(clearCode);
+                if (pixels.length === 0) {
+                    emitCode(eoiCode);
+                    if (bitCount > 0) subBlock[subIdx++] = bitBuf & 0xFF;
+                    flushSubBlock();
+                    return;
+                }
+
+                let prefix = pixels[0];
+                for (let i = 1; i < pixels.length; i++) {
+                    const k = pixels[i];
+                    const combined = (prefix << 8) | k;
+                    let h = ((combined * 2654435761) >>> 0) % hashSize;
+                    let found = -1;
+
+                    while (hashTable[h] !== -1) {
+                        const slot = hashTable[h];
+                        if (keys[slot] === combined) {
+                            found = dict[slot];
+                            break;
+                        }
+                        h = (h + 1) % hashSize;
+                    }
+
+                    if (found !== -1) {
+                        prefix = found;
+                    } else {
+                        emitCode(prefix);
+                        if (nextCode < maxTableSize) {
+                            const slot = nextCode;
+                            keys[slot] = combined;
+                            dict[slot] = nextCode;
+                            hashTable[h] = slot;
+                            nextCode++;
+                            if (nextCode > (1 << codeSize) && codeSize < 12) {
+                                codeSize++;
+                            }
+                        } else {
+                            emitCode(clearCode);
+                            resetTable();
+                        }
+                        prefix = k;
+                    }
+                }
+
+                emitCode(prefix);
+                emitCode(eoiCode);
+                if (bitCount > 0) {
+                    subBlock[subIdx++] = bitBuf & 0xFF;
+                }
+                flushSubBlock();
+            }
+
+            finish() {
+                this.writeByte(0x3B); // GIF Trailer
+                return new Uint8Array(this.bytes);
+            }
+        }
+
+        // ============================================================================
+        // 4. APPLICATION STATE & DOM REFERENCES
+        // ============================================================================
+        const state = {
+            renderMode: 'gpu', // 'gpu' | 'dom'
+            domAllowSelect: false,
+
+            mediaType: 'demo', // 'demo' | 'image' | 'gif' | 'video'
+            sourceImage: null,
+            gifFrames: [],
+            gifTotalDurMs: 1,
+            gifFrameIdx: 0,
+            fileName: 'daytime_garden_hd.png',
+
+            cols: 180,
+            fontSize: 11,
+            fontWeight: 700,
+            charsetType: 'dense',
+            customCharset: CHARSETS.dense,
+
+            colorProfile: 'natural',
+            colorMode: 'truecolor',
+            cellBgTint: 0.50,
+            gamma: 1.08,
+            fgGain: 1.28,
+            colorLift: 0,
+            separateColorDensity: false,
+            sharpen: 0.20,
+            saturation: 1.00,
+            brightness: 0,
+            contrast: 0,
+            glow: 0.0,
+            invert: false,
+            showHud: true,
+
+            compareHold: false,
+            compareSplit: false,
+            compareSplitPct: 50,
+            isDraggingSplit: false,
+
+            animMode: 'none',
+            targetFps: 30,
+            animSpeed: 1.0,
+            animIntensity: 0.70,
+            isPlaying: true,
+            elapsedSec: 0,
+            lastTickMs: 0,
+            lastRenderMs: 0,
+            fpsFrames: 0,
+            fpsLastSampleMs: 0,
+            measuredFps: 60,
+
+            view: { scale: 1, tx: 0, ty: 0 },
+            isPanning: false,
+            panStartX: 0,
+            panStartY: 0,
+            panOrigTx: 0,
+            panOrigTy: 0,
+            pinchDist: 0,
+
+            gridCols: 0,
+            gridRows: 0,
+            gridRGBA: null,
+            gridBgRGBA: null,
+            sharpBuf: null,
+            staticCacheKey: '',
+            staticPixels: null,
+            matrixDrops: [],
+            snowflakes: [],
+
+            sampleCanvas: document.createElement('canvas'),
+            sampleCtx: null,
+            isExportingGif: false
+        };
+        state.sampleCtx = state.sampleCanvas.getContext('2d', { willReadFrequently: true });
+
+        const dom = {
+            sidebar: document.getElementById('sidebar'),
+            btnToggleSidebar: document.getElementById('btnToggleSidebar'),
+            engineBadge: document.getElementById('engineBadge'),
+
+            btnModeGpu: document.getElementById('btnModeGpu'),
+            btnModeDom: document.getElementById('btnModeDom'),
+            domSelectToggleWrap: document.getElementById('domSelectToggleWrap'),
+            domAllowSelect: document.getElementById('domAllowSelect'),
+
+            btnQuickPng: document.getElementById('btnQuickPng'),
+            btnQuickAnsi: document.getElementById('btnQuickAnsi'),
+
+            fileInput: document.getElementById('fileInput'),
+            dropZone: document.getElementById('dropZone'),
+            sourcePreview: document.getElementById('sourcePreview'),
+            mediaTypeBadge: document.getElementById('mediaTypeBadge'),
+            fileNameLabel: document.getElementById('fileNameLabel'),
+            btnDemoGarden: document.getElementById('btnDemoGarden'),
+            btnDemoTree: document.getElementById('btnDemoTree'),
+
+            colsSlider: document.getElementById('colsSlider'),
+            colsVal: document.getElementById('colsVal'),
+            colPresetBtns: document.querySelectorAll('#colPresets .pill-btn'),
+            fontSizeSlider: document.getElementById('fontSizeSlider'),
+            fontSizeVal: document.getElementById('fontSizeVal'),
+            fontWeightBtns: document.querySelectorAll('#fontWeightGroup .pill-btn'),
+            charsetSelect: document.getElementById('charsetSelect'),
+            customCharsetInput: document.getElementById('customCharsetInput'),
+
+            colorProfileBtns: document.querySelectorAll('#colorProfileGroup .profile-btn'),
+            colorModeBtns: document.querySelectorAll('#colorModeGroup .color-btn'),
+            cellBgSlider: document.getElementById('cellBgSlider'),
+            cellBgVal: document.getElementById('cellBgVal'),
+            gammaSlider: document.getElementById('gammaSlider'),
+            gammaVal: document.getElementById('gammaVal'),
+            fgGainSlider: document.getElementById('fgGainSlider'),
+            fgGainVal: document.getElementById('fgGainVal'),
+            colorLiftSlider: document.getElementById('colorLiftSlider'),
+            colorLiftVal: document.getElementById('colorLiftVal'),
+            separateDensityToggle: document.getElementById('separateDensityToggle'),
+            sharpenSlider: document.getElementById('sharpenSlider'),
+            sharpenVal: document.getElementById('sharpenVal'),
+            saturationSlider: document.getElementById('saturationSlider'),
+            saturationVal: document.getElementById('saturationVal'),
+            brightnessSlider: document.getElementById('brightnessSlider'),
+            brightnessVal: document.getElementById('brightnessVal'),
+            contrastSlider: document.getElementById('contrastSlider'),
+            contrastVal: document.getElementById('contrastVal'),
+            glowSlider: document.getElementById('glowSlider'),
+            glowVal: document.getElementById('glowVal'),
+            invertToggle: document.getElementById('invertToggle'),
+            btnResetTune: document.getElementById('btnResetTune'),
+
+            animModeSelect: document.getElementById('animModeSelect'),
+            fpsSlider: document.getElementById('fpsSlider'),
+            fpsVal: document.getElementById('fpsVal'),
+            animSpeedSlider: document.getElementById('animSpeedSlider'),
+            animSpeedVal: document.getElementById('animSpeedVal'),
+            animIntensitySlider: document.getElementById('animIntensitySlider'),
+            animIntensityVal: document.getElementById('animIntensityVal'),
+            btnPlayPause: document.getElementById('btnPlayPause'),
+            hudToggle: document.getElementById('hudToggle'),
+
+            btnExportPng: document.getElementById('btnExportPng'),
+            btnExportHtml: document.getElementById('btnExportHtml'),
+            btnCopyAnsi: document.getElementById('btnCopyAnsi'),
+            btnCopyText: document.getElementById('btnCopyText'),
+            gifDurSlider: document.getElementById('gifDurSlider'),
+            gifDurVal: document.getElementById('gifDurVal'),
+            gifFpsSlider: document.getElementById('gifFpsSlider'),
+            gifFpsVal: document.getElementById('gifFpsVal'),
+            gifScaleSelect: document.getElementById('gifScaleSelect'),
+            btnExportGif: document.getElementById('btnExportGif'),
+            gifProgressWrap: document.getElementById('gifProgressWrap'),
+            gifProgressText: document.getElementById('gifProgressText'),
+            gifProgressPct: document.getElementById('gifProgressPct'),
+            gifProgressFill: document.getElementById('gifProgressFill'),
+
+            viewport: document.getElementById('viewport'),
+            gpuCanvas: document.getElementById('gpuCanvas'),
+            domTextLayer: document.getElementById('domTextLayer'),
+            domAsciiPre: document.getElementById('domAsciiPre'),
+            compareLayer: document.getElementById('compareLayer'),
+            compareCanvas: document.getElementById('compareCanvas'),
+            compareDivider: document.getElementById('compareDivider'),
+            compareTag: document.getElementById('compareTag'),
+
+            btnHoldOriginal: document.getElementById('btnHoldOriginal'),
+            btnSplitCompare: document.getElementById('btnSplitCompare'),
+            btnZoomOut: document.getElementById('btnZoomOut'),
+            btnZoomIn: document.getElementById('btnZoomIn'),
+            btnZoom100: document.getElementById('btnZoom100'),
+            btnZoomFit: document.getElementById('btnZoomFit'),
+            zoomLabel: document.getElementById('zoomLabel'),
+
+            hudOverlay: document.getElementById('hudOverlay'),
+            hudInfo: document.getElementById('hudInfo'),
+            hudTime: document.getElementById('hudTime'),
+            hudFile: document.getElementById('hudFile'),
+            hudFps: document.getElementById('hudFps'),
+
+            scrubberBar: document.getElementById('scrubberBar'),
+            btnMediaPlayPause: document.getElementById('btnMediaPlayPause'),
+            mediaScrubber: document.getElementById('mediaScrubber'),
+            scrubberTime: document.getElementById('scrubberTime'),
+
+            statMatrix: document.getElementById('statMatrix'),
+            statRenderMs: document.getElementById('statRenderMs'),
+            statDpr: document.getElementById('statDpr'),
+            statFileLabel: document.getElementById('statFileLabel'),
+
+            hiddenVideo: document.getElementById('hiddenVideo'),
+            toast: document.getElementById('toast')
+        };
+
+        const renderer = new CrispAsciiRenderer(dom.gpuCanvas);
+        let toastTimer = null;
+
+        function showToast(message, type = 'ok') {
+            dom.toast.textContent = message;
+            dom.toast.className = 'toast show' + (type === 'warn' ? ' warn' : type === 'err' ? ' err' : '');
+            if (toastTimer) clearTimeout(toastTimer);
+            toastTimer = setTimeout(() => dom.toast.classList.remove('show'), 2800);
+        }
+
+        function escapeHtml(ch) {
+            if (ch === '&') return '&amp;';
+            if (ch === '<') return '&lt;';
+            if (ch === '>') return '&gt;';
+            if (ch === '"') return '&quot;';
+            return ch;
+        }
+
+        function clamp255(v) {
+            return v < 0 ? 0 : (v > 255 ? 255 : v | 0);
+        }
+
+        function rotateHueRGB(r, g, b, cosA, sinA) {
+            const k = 1 / 3;
+            const s = Math.sqrt(k);
+            const nr = r * (cosA + (1 - cosA) * k) + g * (k * (1 - cosA) - s * sinA) + b * (k * (1 - cosA) + s * sinA);
+            const ng = r * (k * (1 - cosA) + s * sinA) + g * (cosA + k * (1 - cosA)) + b * (k * (1 - cosA) - s * sinA);
+            const nb = r * (k * (1 - cosA) - s * sinA) + g * (k * (1 - cosA) + s * sinA) + b * (cosA + k * (1 - cosA));
+            return [nr, ng, nb];
+        }
+
+        // ============================================================================
+        // 5. PROCEDURAL HIGH-DETAIL SAMPLE SCENES (INSTANT PREVIEW)
+        // ============================================================================
+        function createDaytimeGardenDemo() {
+            const c = document.createElement('canvas');
+            const w = 900, h = 660;
+            c.width = w; c.height = h;
+            const ctx = c.getContext('2d');
+
+            const sky = ctx.createLinearGradient(0, 0, 0, h * 0.55);
+            sky.addColorStop(0, '#0284c7');
+            sky.addColorStop(0.55, '#7dd3fc');
+            sky.addColorStop(1, '#fef9c3');
+            ctx.fillStyle = sky;
+            ctx.fillRect(0, 0, w, h);
+
+            const sun = ctx.createRadialGradient(w * 0.78, h * 0.18, 12, w * 0.78, h * 0.18, 130);
+            sun.addColorStop(0, '#ffffff');
+            sun.addColorStop(0.32, '#fde047');
+            sun.addColorStop(1, 'rgba(253, 224, 71, 0)');
+            ctx.fillStyle = sun;
+            ctx.beginPath();
+            ctx.arc(w * 0.78, h * 0.18, 130, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.fillStyle = '#3b82f6';
+            ctx.beginPath();
+            ctx.moveTo(0, 360);
+            ctx.quadraticCurveTo(220, 215, 460, 325);
+            ctx.quadraticCurveTo(700, 205, 900, 340);
+            ctx.lineTo(900, 500);
+            ctx.lineTo(0, 500);
+            ctx.closePath();
+            ctx.fill();
+
+            const foliage = ctx.createLinearGradient(0, 280, 0, 540);
+            foliage.addColorStop(0, '#16a34a');
+            foliage.addColorStop(0.55, '#15803d');
+            foliage.addColorStop(1, '#14532d');
+            ctx.fillStyle = foliage;
+            ctx.fillRect(0, 310, w, 240);
+
+            let seed = 8821;
+            const rnd = () => { seed = (seed * 1664525 + 1013904223) % 4294967296; return seed / 4294967296; };
+
+            const leafColors = ['#22c55e', '#4ade80', '#84cc16', '#16a34a', '#15803d', '#bef264'];
+            for (let i = 0; i < 340; i++) {
+                ctx.save();
+                ctx.translate(rnd() * w, 265 + rnd() * 290);
+                ctx.rotate(rnd() * Math.PI);
+                ctx.fillStyle = leafColors[(rnd() * leafColors.length) | 0];
+                ctx.beginPath();
+                ctx.ellipse(0, 0, 14 + rnd() * 24, 8 + rnd() * 14, 0, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+            }
+
+            const ground = ctx.createLinearGradient(0, 525, 0, h);
+            ground.addColorStop(0, '#e7d8c5');
+            ground.addColorStop(1, '#a89276');
+            ctx.fillStyle = ground;
+            ctx.fillRect(0, 525, w, h - 525);
+            for (let i = 0; i < 220; i++) {
+                ctx.fillStyle = ['#faf5ee', '#d6c5ae', '#a1887f', '#e7d8c5', '#8d6e63'][(rnd() * 5) | 0];
+                ctx.beginPath();
+                ctx.ellipse(rnd() * w, 535 + rnd() * 115, 6 + rnd() * 14, 4 + rnd() * 8, rnd() * 3, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            const flowers = [
+                { x: 180, y: 455, r: 44, petal: '#fb7185', core: '#fef08a' },
+                { x: 345, y: 410, r: 52, petal: '#facc15', core: '#b45309' },
+                { x: 520, y: 445, r: 48, petal: '#f472b6', core: '#fef9c3' },
+                { x: 695, y: 400, r: 54, petal: '#fb923c', core: '#fffbeb' },
+                { x: 265, y: 505, r: 38, petal: '#ffffff', core: '#facc15' },
+                { x: 610, y: 505, r: 42, petal: '#c084fc', core: '#fef08a' }
+            ];
+            flowers.forEach(f => {
+                ctx.fillStyle = f.petal;
+                for (let p = 0; p < 8; p++) {
+                    const ang = (p / 8) * Math.PI * 2;
+                    ctx.beginPath();
+                    ctx.arc(f.x + Math.cos(ang) * f.r * 0.55, f.y + Math.sin(ang) * f.r * 0.55, f.r * 0.44, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+                ctx.fillStyle = f.core;
+                ctx.beginPath();
+                ctx.arc(f.x, f.y, f.r * 0.36, 0, Math.PI * 2);
+                ctx.fill();
+            });
+
+            return c;
+        }
+
+        function createChristmasTreeDemo() {
+            const c = document.createElement('canvas');
+            const w = 780, h = 900;
+            c.width = w; c.height = h;
+            const ctx = c.getContext('2d');
+
+            const bg = ctx.createRadialGradient(w * 0.5, h * 0.42, 40, w * 0.5, h * 0.5, 580);
+            bg.addColorStop(0, '#0f172a');
+            bg.addColorStop(1, '#020408');
+            ctx.fillStyle = bg;
+            ctx.fillRect(0, 0, w, h);
+
+            let seed = 2026;
+            const rnd = () => { seed = (seed * 1664525 + 1013904223) % 4294967296; return seed / 4294967296; };
+
+            for (let i = 0; i < 160; i++) {
+                ctx.fillStyle = `rgba(226, 232, 240, ${0.35 + rnd() * 0.65})`;
+                ctx.beginPath();
+                ctx.arc(rnd() * w, rnd() * h * 0.75, 1 + rnd() * 2.2, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            // Các tầng lá cây thông
+            const layers = [
+                { y: 150, halfW: 95, h: 135 },
+                { y: 245, halfW: 150, h: 160 },
+                { y: 365, halfW: 210, h: 185 },
+                { y: 500, halfW: 270, h: 205 }
+            ];
+            layers.forEach((l, idx) => {
+                const grad = ctx.createLinearGradient(w * 0.5 - l.halfW, l.y, w * 0.5 + l.halfW, l.y + l.h);
+                grad.addColorStop(0, '#16a34a');
+                grad.addColorStop(0.5, idx % 2 === 0 ? '#22c55e' : '#15803d');
+                grad.addColorStop(1, '#14532d');
+                ctx.fillStyle = grad;
+                ctx.beginPath();
+                ctx.moveTo(w * 0.5, l.y);
+                ctx.lineTo(w * 0.5 - l.halfW, l.y + l.h);
+                ctx.lineTo(w * 0.5 + l.halfW, l.y + l.h);
+                ctx.closePath();
+                ctx.fill();
+            });
+
+            // Thân cây
+            ctx.fillStyle = '#92400e';
+            ctx.fillRect(w * 0.5 - 38, 700, 76, 105);
+
+            // Hộp quà nhiều màu dưới gốc
+            const gifts = [
+                { x: 185, y: 715, w: 92, h: 82, c: '#2563eb', r: '#facc15' },
+                { x: 295, y: 730, w: 105, h: 74, c: '#dc2626', r: '#ffffff' },
+                { x: 475, y: 722, w: 108, h: 80, c: '#16a34a', r: '#f43f5e' }
+            ];
+            gifts.forEach(g => {
+                ctx.fillStyle = g.c;
+                ctx.fillRect(g.x, g.y, g.w, g.h);
+                ctx.fillStyle = g.r;
+                ctx.fillRect(g.x + g.w * 0.44, g.y, g.w * 0.12, g.h);
+                ctx.fillRect(g.x, g.y + g.h * 0.42, g.w, g.h * 0.14);
+            });
+
+            // Đèn trang trí rực rỡ trên cây
+            const bulbColors = ['#fde047', '#f43f5e', '#38bdf8', '#fb923c', '#ffffff', '#e879f9'];
+            for (let i = 0; i < 85; i++) {
+                const ty = 190 + rnd() * 490;
+                const maxHalf = ((ty - 140) / 570) * 245;
+                const tx = w * 0.5 + (rnd() * 2 - 1) * maxHalf * 0.85;
+                const col = bulbColors[(rnd() * bulbColors.length) | 0];
+                const glow = ctx.createRadialGradient(tx, ty, 2, tx, ty, 18);
+                glow.addColorStop(0, '#ffffff');
+                glow.addColorStop(0.35, col);
+                glow.addColorStop(1, 'rgba(0,0,0,0)');
+                ctx.fillStyle = glow;
+                ctx.beginPath();
+                ctx.arc(tx, ty, 18, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            // Ngôi sao phát sáng đỉnh cây
+            const starGlow = ctx.createRadialGradient(w * 0.5, 130, 8, w * 0.5, 130, 75);
+            starGlow.addColorStop(0, '#ffffff');
+            starGlow.addColorStop(0.4, '#facc15');
+            starGlow.addColorStop(1, 'rgba(250, 204, 21, 0)');
+            ctx.fillStyle = starGlow;
+            ctx.beginPath();
+            ctx.arc(w * 0.5, 130, 75, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.fillStyle = '#fef08a';
+            ctx.beginPath();
+            for (let i = 0; i < 10; i++) {
+                const ang = (i * Math.PI) / 5 - Math.PI / 2;
+                const rad = i % 2 === 0 ? 44 : 18;
+                const sx = w * 0.5 + Math.cos(ang) * rad;
+                const sy = 130 + Math.sin(ang) * rad;
+                if (i === 0) ctx.moveTo(sx, sy); else ctx.lineTo(sx, sy);
+            }
+            ctx.closePath();
+            ctx.fill();
+
+            return c;
+        }
+
+        function stopVideoIfPlaying() {
+            if (!dom.hiddenVideo.paused) dom.hiddenVideo.pause();
+            if (dom.hiddenVideo.src && dom.hiddenVideo.src.startsWith('blob:')) {
+                URL.revokeObjectURL(dom.hiddenVideo.src);
+            }
+            dom.hiddenVideo.removeAttribute('src');
+        }
+
+        function loadDemoScene(type = 'garden') {
+            stopVideoIfPlaying();
+            const canvas = type === 'tree' ? createChristmasTreeDemo() : createDaytimeGardenDemo();
+            state.mediaType = 'demo';
+            state.sourceImage = canvas;
+            state.gifFrames = [];
+            state.staticCacheKey = '';
+            state.elapsedSec = 0;
+            state.fileName = type === 'tree' ? 'christmas_tree_hd.png' : 'daytime_garden_hd.png';
+
+            dom.sourcePreview.src = canvas.toDataURL('image/png');
+            dom.mediaTypeBadge.textContent = 'DEMO';
+            dom.fileNameLabel.textContent = state.fileName;
+            dom.statFileLabel.textContent = state.fileName;
+            dom.hudFile.textContent = state.fileName;
+            dom.scrubberBar.classList.remove('show');
+
+            renderFrame(0);
+            fitViewport();
+        }
+
+        // ============================================================================
+        // 6. MEDIA LOADER (IMAGE / ANIMATED GIF / SHORT VIDEO)
+        // ============================================================================
+        async function handleFileUpload(file) {
+            if (!file) return;
+            const name = file.name || 'media_file';
+            const lower = name.toLowerCase();
+            stopVideoIfPlaying();
+
+            try {
+                // 1. Video (MP4 / WebM)
+                if (file.type.startsWith('video/') || lower.endsWith('.mp4') || lower.endsWith('.webm')) {
+                    const url = URL.createObjectURL(file);
+                    dom.hiddenVideo.src = url;
+                    dom.hiddenVideo.muted = true;
+                    dom.hiddenVideo.loop = true;
+                    await new Promise((resolve, reject) => {
+                        dom.hiddenVideo.onloadeddata = () => resolve();
+                        dom.hiddenVideo.onerror = () => reject(new Error('Không thể đọc tệp video này.'));
+                    });
+                    await dom.hiddenVideo.play().catch(() => {});
+
+                    state.mediaType = 'video';
+                    state.sourceImage = null;
+                    state.gifFrames = [];
+                    state.fileName = name;
+                    state.isPlaying = true;
+                    dom.btnPlayPause.textContent = '⏸ Tạm dừng';
+                    dom.btnMediaPlayPause.textContent = '⏸';
+
+                    // Tạo ảnh thumbnail từ khung đầu
+                    const thumbC = document.createElement('canvas');
+                    thumbC.width = 160;
+                    thumbC.height = Math.max(90, Math.round(160 * (dom.hiddenVideo.videoHeight / Math.max(1, dom.hiddenVideo.videoWidth))));
+                    thumbC.getContext('2d').drawImage(dom.hiddenVideo, 0, 0, thumbC.width, thumbC.height);
+                    dom.sourcePreview.src = thumbC.toDataURL('image/jpeg', 0.8);
+
+                    dom.mediaTypeBadge.textContent = 'VIDEO';
+                    dom.fileNameLabel.textContent = name;
+                    dom.statFileLabel.textContent = name;
+                    dom.hudFile.textContent = name;
+                    dom.scrubberBar.classList.add('show');
+                    dom.mediaScrubber.min = 0;
+                    dom.mediaScrubber.max = Math.max(1, Math.round(dom.hiddenVideo.duration * 100));
+                    dom.mediaScrubber.value = 0;
+
+                    renderFrame(0);
+                    fitViewport();
+                    showToast(`Đã nạp video: ${name}`);
+                    return;
+                }
+
+                // 2. Animated GIF (ImageDecoder API + fallback ảnh tĩnh)
+                if (file.type === 'image/gif' || lower.endsWith('.gif')) {
+                    const buf = await file.arrayBuffer();
+                    if (typeof ImageDecoder !== 'undefined') {
+                        try {
+                            const decoder = new ImageDecoder({ data: buf, type: 'image/gif' });
+                            await decoder.tracks.ready;
+                            const track = decoder.tracks.selectedTrack;
+                            const count = Math.min(track.frameCount || 1, 180);
+
+                            if (count > 1) {
+                                const frames = [];
+                                let totalDur = 0;
+                                for (let i = 0; i < count; i++) {
+                                    const res = await decoder.decode({ frameIndex: i });
+                                    const vf = res.image;
+                                    const fc = document.createElement('canvas');
+                                    fc.width = vf.displayWidth || vf.codedWidth;
+                                    fc.height = vf.displayHeight || vf.codedHeight;
+                                    fc.getContext('2d').drawImage(vf, 0, 0);
+                                    const durMs = Math.max(20, Math.round((vf.duration || 80000) / 1000));
+                                    vf.close();
+                                    frames.push({ canvas: fc, durMs, cumMs: totalDur });
+                                    totalDur += durMs;
+                                }
+                                decoder.close();
+
+                                state.mediaType = 'gif';
+                                state.gifFrames = frames;
+                                state.gifTotalDurMs = Math.max(1, totalDur);
+                                state.gifFrameIdx = 0;
+                                state.sourceImage = frames[0].canvas;
+                                state.staticCacheKey = '';
+                                state.fileName = name;
+                                state.isPlaying = true;
+                                dom.btnPlayPause.textContent = '⏸ Tạm dừng';
+                                dom.btnMediaPlayPause.textContent = '⏸';
+
+                                dom.sourcePreview.src = frames[0].canvas.toDataURL('image/png');
+                                dom.mediaTypeBadge.textContent = `GIF (${frames.length}f)`;
+                                dom.fileNameLabel.textContent = name;
+                                dom.statFileLabel.textContent = name;
+                                dom.hudFile.textContent = name;
+                                dom.scrubberBar.classList.add('show');
+                                dom.mediaScrubber.min = 0;
+                                dom.mediaScrubber.max = frames.length - 1;
+                                dom.mediaScrubber.value = 0;
+                                dom.scrubberTime.textContent = `1 / ${frames.length}`;
+
+                                renderFrame(0);
+                                fitViewport();
+                                showToast(`Đã tách ${frames.length} khung hình GIF động!`);
+                                return;
+                            }
+                            decoder.close();
+                        } catch (gifErr) {
+                            console.warn('ImageDecoder fallback to static image:', gifErr);
+                        }
+                    }
+                }
+
+                // 3. Static Image (PNG, JPG, WEBP, or GIF fallback)
+                const imgUrl = URL.createObjectURL(file);
+                const img = new Image();
+                await new Promise((resolve, reject) => {
+                    img.onload = () => resolve();
+                    img.onerror = () => reject(new Error('Không thể giải mã tệp ảnh này.'));
+                    img.src = imgUrl;
+                });
+
+                state.mediaType = 'image';
+                state.sourceImage = img;
+                state.gifFrames = [];
+                state.staticCacheKey = '';
+                state.fileName = name;
+
+                dom.sourcePreview.src = imgUrl;
+                dom.mediaTypeBadge.textContent = 'IMG';
+                dom.fileNameLabel.textContent = name;
+                dom.statFileLabel.textContent = name;
+                dom.hudFile.textContent = name;
+                dom.scrubberBar.classList.remove('show');
+
+                renderFrame(state.elapsedSec);
+                fitViewport();
+                showToast(`Đã nạp ảnh: ${name}`);
+            } catch (err) {
+                console.error(err);
+                showToast(err.message || 'Lỗi khi nạp tệp media.', 'err');
+            }
+        }
+
+        // ============================================================================
+        // 7. PIXEL COMPILER (ANTI-DOUBLE-DARKENING + UNSHARP MASK + ANIMATIONS)
+        // ============================================================================
+        function getActiveCharset() {
+            if (state.charsetType === 'custom') {
+                return state.customCharset && state.customCharset.length >= 2 ? state.customCharset : CHARSETS.dense;
+            }
+            return CHARSETS[state.charsetType] || CHARSETS.dense;
+        }
+
+        function getBaseCellMetrics() {
+            const cellH = state.fontSize * 1.05;
+            const cellW = cellH * CELL_ASPECT;
+            return { cellW, cellH };
+        }
+
+        function ensureBuffers(cols, rows) {
+            const total = cols * rows;
+            if (state.gridCols !== cols || state.gridRows !== rows) {
+                state.gridCols = cols;
+                state.gridRows = rows;
+                state.gridRGBA = new Uint8Array(total * 4);
+                state.gridBgRGBA = new Uint8Array(total * 4);
+                state.sharpBuf = new Uint8ClampedArray(total * 4);
+
+                state.matrixDrops = new Array(cols);
+                for (let x = 0; x < cols; x++) {
+                    state.matrixDrops[x] = {
+                        phase: Math.random() * 1.4,
+                        speed: 0.45 + Math.random() * 0.95,
+                        length: 6 + Math.floor(Math.random() * 16)
+                    };
+                }
+                state.snowflakes = [];
+                for (let i = 0; i < Math.min(90, Math.floor(cols * 0.45)); i++) {
+                    state.snowflakes.push({
+                        x: Math.random() * cols,
+                        y: Math.random() * rows,
+                        vy: 4 + Math.random() * 10,
+                        vx: (Math.random() - 0.5) * 3,
+                        phase: Math.random() * Math.PI * 2
+                    });
+                }
+            }
+        }
+
+        function applyUnsharpMask(src, dst, w, h, amount) {
+            if (amount <= 0.01) {
+                dst.set(src);
+                return;
+            }
+            const k = amount * 1.35;
+            for (let y = 0; y < h; y++) {
+                const yUp = y > 0 ? y - 1 : 0;
+                const yDn = y < h - 1 ? y + 1 : h - 1;
+                for (let x = 0; x < w; x++) {
+                    const xLt = x > 0 ? x - 1 : 0;
+                    const xRt = x < w - 1 ? x + 1 : w - 1;
+                    const c = (y * w + x) * 4;
+                    const u = (yUp * w + x) * 4;
+                    const d = (yDn * w + x) * 4;
+                    const l = (y * w + xLt) * 4;
+                    const r = (y * w + xRt) * 4;
+
+                    for (let ch = 0; ch < 3; ch++) {
+                        const blur = (src[u + ch] + src[d + ch] + src[l + ch] + src[r + ch]) * 0.25;
+                        dst[c + ch] = clamp255(src[c + ch] + (src[c + ch] - blur) * k);
+                    }
+                    dst[c + 3] = src[c + 3];
+                }
+            }
+        }
+
+        function sampleCurrentSourcePixels(cols) {
+            let src = state.sourceImage;
+            let cacheId = state.fileName;
+
+            if (state.mediaType === 'video') {
+                if (dom.hiddenVideo.readyState < 2) return null;
+                src = dom.hiddenVideo;
+                cacheId = null;
+            } else if (state.mediaType === 'gif' && state.gifFrames.length > 0) {
+                const f = state.gifFrames[state.gifFrameIdx] || state.gifFrames[0];
+                src = f.canvas;
+                cacheId = `${state.fileName}#${state.gifFrameIdx}`;
+            }
+
+            if (!src) return null;
+            const sw = src.videoWidth || src.naturalWidth || src.width;
+            const sh = src.videoHeight || src.naturalHeight || src.height;
+            if (!sw || !sh) return null;
+
+            const rows = Math.max(12, Math.round(cols * (sh / sw) * CELL_ASPECT));
+            const cacheKey = cacheId ? `${cacheId}|${cols}x${rows}` : '';
+
+            if (cacheKey && state.staticCacheKey === cacheKey && state.staticPixels) {
+                return { cols, rows, raw: state.staticPixels };
+            }
+
+            if (state.sampleCanvas.width !== cols || state.sampleCanvas.height !== rows) {
+                state.sampleCanvas.width = cols;
+                state.sampleCanvas.height = rows;
+            }
+            const sctx = state.sampleCtx;
+            sctx.imageSmoothingEnabled = true;
+            sctx.imageSmoothingQuality = 'high';
+            sctx.clearRect(0, 0, cols, rows);
+            sctx.drawImage(src, 0, 0, cols, rows);
+            const raw = sctx.getImageData(0, 0, cols, rows).data;
+
+            if (cacheKey) {
+                state.staticCacheKey = cacheKey;
+                state.staticPixels = raw;
+            }
+            return { cols, rows, raw };
+        }
+
+        function compileGrid(timeSec) {
+            const sampled = sampleCurrentSourcePixels(state.cols);
+            if (!sampled) return false;
+
+            const { cols, rows, raw } = sampled;
+            ensureBuffers(cols, rows);
+
+            const charset = getActiveCharset();
+            renderer.ensureAtlas(charset, state.fontWeight);
+            const charToIdx = renderer.charToIdx;
+            const charLen = charset.length;
+            const rampIndices = new Uint8Array(charLen);
+            for (let i = 0; i < charLen; i++) {
+                rampIndices[i] = charToIdx.get(charset[i]) || 0;
+            }
+
+            const imgData = state.sharpBuf;
+            applyUnsharpMask(raw, imgData, cols, rows, state.sharpen);
+
+            const brightness = state.brightness;
+            const contrastF = (259 * (state.contrast + 255)) / (255 * (259 - state.contrast));
+            const satF = state.colorMode === 'vivid' ? state.saturation * 1.48 : state.saturation;
+            const colorMode = state.colorMode;
+            const invert = state.invert;
+
+            const invGamma = 1.0 / Math.max(0.2, state.gamma);
+            const gammaLUT = new Uint8Array(256);
+            for (let i = 0; i < 256; i++) {
+                gammaLUT[i] = clamp255(Math.pow(i / 255, invGamma) * 255 + 0.5);
+            }
+
+            const fgGain = state.fgGain;
+            const colorLift = state.colorLift;
+            const cellBgTint = state.cellBgTint;
+            const sepDensity = state.separateColorDensity;
+            const bgBaseR = 5, bgBaseG = 7, bgBaseB = 10;
+
+            const mode = state.animMode;
+            const t = timeSec * state.animSpeed;
+            const inten = state.animIntensity;
+
+            const rotAngle = (t * 1.3) % (Math.PI * 2);
+            const cosRot = Math.cos(rotAngle);
+            const sinRot = Math.sin(rotAngle);
+            const absCos = Math.max(0.08, Math.abs(cosRot));
+            const glitchOn = mode === 'glitch' && Math.sin(t * 9.5) > (0.55 - inten * 0.45);
+            const glitchShift = glitchOn ? Math.round(Math.sin(t * 47) * 6 * inten) : 0;
+            const hueCos = mode === 'neonPulse' ? Math.cos(t * 1.8 * inten) : 1;
+            const hueSin = mode === 'neonPulse' ? Math.sin(t * 1.8 * inten) : 0;
+            const neonPulse = mode === 'neonPulse' ? (0.88 + 0.22 * Math.sin(t * 4.0) * inten) : 1;
+
+            const halfCols = cols * 0.5;
+            const halfRows = rows * 0.5;
+            const gridRGBA = state.gridRGBA;
+            const gridBgRGBA = state.gridBgRGBA;
+            const matrixPool = '01#$%@*+';
+            const denomChar = Math.max(1, charLen - 1);
+
+            for (let y = 0; y < rows; y++) {
+                const rowWave = mode === 'wave' ? Math.sin(y * 0.24 - t * 4.0) * (4.0 * inten) : 0;
+                const rowGlitch = (glitchOn && ((y + ((t * 25) | 0)) % 7 < 2)) ? glitchShift : 0;
+                const rowOff = y * cols;
+
+                for (let x = 0; x < cols; x++) {
+                    const o4 = (rowOff + x) * 4;
+                    let sx = x, sy = y, shade = 1.0;
+
+                    if (mode === 'rotate3d') {
+                        const nx = (x - halfCols) / halfCols;
+                        const mx = nx / absCos;
+                        if (mx < -1 || mx > 1) {
+                            gridRGBA[o4] = 0; gridRGBA[o4 + 1] = 0; gridRGBA[o4 + 2] = 0; gridRGBA[o4 + 3] = 0;
+                            gridBgRGBA[o4] = bgBaseR; gridBgRGBA[o4 + 1] = bgBaseG; gridBgRGBA[o4 + 2] = bgBaseB; gridBgRGBA[o4 + 3] = 255;
+                            continue;
+                        }
+                        const persp = 1 + mx * sinRot * 0.12 * inten;
+                        sx = (((cosRot >= 0 ? mx : -mx) * 0.5 + 0.5) * (cols - 1)) | 0;
+                        sy = (((y - halfRows) / persp) + halfRows) | 0;
+                        if (sy < 0 || sy >= rows) {
+                            gridRGBA[o4] = 0; gridRGBA[o4 + 1] = 0; gridRGBA[o4 + 2] = 0; gridRGBA[o4 + 3] = 0;
+                            gridBgRGBA[o4] = bgBaseR; gridBgRGBA[o4 + 1] = bgBaseG; gridBgRGBA[o4 + 2] = bgBaseB; gridBgRGBA[o4 + 3] = 255;
+                            continue;
+                        }
+                        shade = 0.55 + 0.45 * absCos;
+                    } else if (mode === 'wave') {
+                        sx = (x + rowWave) | 0;
+                        sy = (y + Math.cos(x * 0.14 - t * 3.1) * (1.6 * inten)) | 0;
+                        if (sx < 0 || sx >= cols || sy < 0 || sy >= rows) {
+                            gridRGBA[o4] = 0; gridRGBA[o4 + 1] = 0; gridRGBA[o4 + 2] = 0; gridRGBA[o4 + 3] = 0;
+                            gridBgRGBA[o4] = bgBaseR; gridBgRGBA[o4 + 1] = bgBaseG; gridBgRGBA[o4 + 2] = bgBaseB; gridBgRGBA[o4 + 3] = 255;
+                            continue;
+                        }
+                    } else if (mode === 'glitch') {
+                        sx = x + rowGlitch;
+                        if (sx < 0) sx = 0; else if (sx >= cols) sx = cols - 1;
+                    }
+
+                    const pIdx = (sy * cols + sx) * 4;
+                    const a = imgData[pIdx + 3] * 0.00392157;
+                    let r = imgData[pIdx] * a;
+                    let g = imgData[pIdx + 1] * a;
+                    let b = imgData[pIdx + 2] * a;
+
+                    if (mode === 'glitch' && glitchOn) {
+                        const sh = Math.max(1, (2.5 * inten) | 0);
+                        const rx = sx - sh < 0 ? 0 : sx - sh;
+                        const bx = sx + sh >= cols ? cols - 1 : sx + sh;
+                        r = imgData[(sy * cols + rx) * 4] * a;
+                        b = imgData[(sy * cols + bx) * 4 + 2] * a;
+                    }
+
+                    // 1. Brightness, Contrast & Saturation
+                    r = (contrastF * (r + brightness - 128) + 128) * shade;
+                    g = (contrastF * (g + brightness - 128) + 128) * shade;
+                    b = (contrastF * (b + brightness - 128) + 128) * shade;
+
+                    if (satF !== 1.0 && colorMode !== 'mono' && colorMode !== 'matrix' && colorMode !== 'amber') {
+                        const gr = 0.299 * r + 0.587 * g + 0.114 * b;
+                        r = gr + (r - gr) * satF;
+                        g = gr + (g - gr) * satF;
+                        b = gr + (b - gr) * satF;
+                    }
+
+                    // 2. Gamma Brightening LUT
+                    r = gammaLUT[clamp255(r)];
+                    g = gammaLUT[clamp255(g)];
+                    b = gammaLUT[clamp255(b)];
+
+                    let lum = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+
+                    if (mode === 'sparkle' && lum > 90) {
+                        const h = Math.sin(x * 12.9898 + y * 78.233) * 43758.5453;
+                        const frac = h - Math.floor(h);
+                        if (frac > (0.955 - inten * 0.09)) {
+                            const pulse = 0.5 + 0.5 * Math.sin(t * 7.2 + frac * 40);
+                            const boost = pulse * 90 * inten;
+                            r = clamp255(r + boost);
+                            g = clamp255(g + boost * 0.96);
+                            b = clamp255(b + boost * 0.85);
+                            lum = Math.min(255, lum + boost);
+                        }
+                    }
+
+                    if (mode === 'neonPulse' && lum > 14) {
+                        const rot = rotateHueRGB(r, g, b, hueCos, hueSin);
+                        r = clamp255(rot[0] * neonPulse);
+                        g = clamp255(rot[1] * neonPulse);
+                        b = clamp255(rot[2] * neonPulse);
+                    }
+
+                    const mappedLum = invert ? (255 - lum) : lum;
+                    let cIdx = ((mappedLum / 255) * charLen) | 0;
+                    if (cIdx >= charLen) cIdx = charLen - 1;
+                    if (cIdx < 0) cIdx = 0;
+
+                    let gIdx = rampIndices[cIdx];
+
+                    if (mode === 'glitch' && rowGlitch !== 0 && lum > 24) {
+                        const rn = Math.abs((Math.sin(x * 19.1 + y * 31.7 + t * 60) * 100) | 0);
+                        if ((rn & 3) === 0) gIdx = rampIndices[rn % charLen];
+                    }
+
+                    // 3. Base Color Mode
+                    let baseR = r, baseG = g, baseB = b;
+                    if (colorMode === 'matrix') {
+                        const m = mappedLum | 0;
+                        baseR = (m * 0.10) | 0;
+                        baseG = clamp255(m * 1.15 + 18);
+                        baseB = (m * 0.24) | 0;
+                    } else if (colorMode === 'amber') {
+                        const m = mappedLum | 0;
+                        baseR = clamp255(m * 1.18 + 16);
+                        baseG = clamp255(m * 0.78);
+                        baseB = (m * 0.12) | 0;
+                    } else if (colorMode === 'mono') {
+                        const gr = mappedLum | 0;
+                        baseR = gr; baseG = gr; baseB = gr;
+                    } else if (invert) {
+                        baseR = 255 - r; baseG = 255 - g; baseB = 255 - b;
+                    }
+
+                    // 4. Tinted Cell Background
+                    const bgR = clamp255(bgBaseR + (baseR - bgBaseR) * cellBgTint);
+                    const bgG = clamp255(bgBaseG + (baseG - bgBaseG) * cellBgTint);
+                    const bgB = clamp255(bgBaseB + (baseB - bgBaseB) * cellBgTint);
+
+                    // 5. Anti-Double-Darkening Foreground Color (Color Lift + Density Compensation + FG Gain)
+                    let outR = baseR, outG = baseG, outB = baseB;
+
+                    if (colorLift > 0) {
+                        const maxC = Math.max(outR, outG, outB);
+                        const liftCeiling = 104;
+                        if (maxC > 2 && maxC < liftCeiling) {
+                            const liftFactor = (maxC + colorLift * (1.0 - maxC / liftCeiling)) / maxC;
+                            outR *= liftFactor;
+                            outG *= liftFactor;
+                            outB *= liftFactor;
+                        } else if (maxC <= 2 && cellBgTint > 0.01) {
+                            outR = Math.min(48, colorLift);
+                            outG = Math.min(52, colorLift + 2);
+                            outB = Math.min(58, colorLift + 4);
+                        }
+                    }
+
+                    if (sepDensity) {
+                        const normDensity = cIdx / denomChar;
+                        const densityComp = 1.0 + (1.0 - normDensity) * 0.42;
+                        const totalGain = fgGain * densityComp;
+                        outR = clamp255(outR * totalGain);
+                        outG = clamp255(outG * totalGain);
+                        outB = clamp255(outB * totalGain);
+                    } else {
+                        outR = clamp255(outR * fgGain);
+                        outG = clamp255(outG * fgGain);
+                        outB = clamp255(outB * fgGain);
+                    }
+
+                    if (mode === 'matrixRain') {
+                        const drop = state.matrixDrops[x];
+                        const headY = ((drop.phase + t * drop.speed * 0.35) % 1.35) * rows;
+                        const dist = headY - y;
+                        if (dist >= 0 && dist < drop.length) {
+                            const tail = (1 - dist / drop.length) * inten;
+                            if (dist < 1.1) {
+                                const mc = matrixPool[(x + ((t * 20) | 0)) % matrixPool.length];
+                                gIdx = charToIdx.get(mc) || gIdx;
+                                outR = clamp255(outR * 0.3 + 190 * inten);
+                                outG = 255;
+                                outB = clamp255(outB * 0.3 + 215 * inten);
+                            } else if (gIdx === 0 || tail > 0.35) {
+                                if (gIdx === 0) {
+                                    const mc = matrixPool[(x + y + ((t * 10) | 0)) % matrixPool.length];
+                                    gIdx = charToIdx.get(mc) || 1;
+                                }
+                                outG = clamp255(Math.max(outG, 195 * tail));
+                                outR = clamp255(outR * (1 - tail * 0.45));
+                                outB = clamp255(outB * (1 - tail * 0.35));
+                            }
+                        }
+                    }
+
+                    gridRGBA[o4]     = outR;
+                    gridRGBA[o4 + 1] = outG;
+                    gridRGBA[o4 + 2] = outB;
+                    gridRGBA[o4 + 3] = gIdx;
+
+                    gridBgRGBA[o4]     = bgR;
+                    gridBgRGBA[o4 + 1] = bgG;
+                    gridBgRGBA[o4 + 2] = bgB;
+                    gridBgRGBA[o4 + 3] = 255;
+                }
+            }
+
+            // Lớp tuyết rơi nhẹ cho chế độ Sparkle
+            if (mode === 'sparkle') {
+                const snowCharIdx = charToIdx.get('*') || charToIdx.get('+') || 1;
+                const dotCharIdx = charToIdx.get('.') || 1;
+                for (let i = 0; i < state.snowflakes.length; i++) {
+                    const sf = state.snowflakes[i];
+                    const sy = Math.floor((sf.y + t * sf.vy) % rows);
+                    const sx = Math.floor(((sf.x + Math.sin(t * 1.6 + sf.phase) * 2.5 + t * sf.vx) % cols + cols) % cols);
+                    const o4 = (sy * cols + sx) * 4;
+                    gridRGBA[o4] = 235;
+                    gridRGBA[o4 + 1] = 246;
+                    gridRGBA[o4 + 2] = 255;
+                    gridRGBA[o4 + 3] = (i % 3 === 0) ? snowCharIdx : dotCharIdx;
+                }
+            }
+
+            return true;
+        }
+
+        // ============================================================================
+        // 8. DOM TEXT RENDERER & VIEWPORT SYNC
+        // ============================================================================
+        function updateDomTextTransform() {
+            const scaledFont = state.fontSize * state.view.scale;
+            dom.domAsciiPre.style.fontSize = `${scaledFont}px`;
+            dom.domAsciiPre.style.fontWeight = String(state.fontWeight);
+            dom.domAsciiPre.style.lineHeight = '1.05';
+            dom.domAsciiPre.style.transform = `translate3d(${state.view.tx}px, ${state.view.ty}px, 0)`;
+            dom.domAsciiPre.style.textShadow = state.glow > 0.01
+                ? `0 0 ${Math.round(state.glow * 9)}px currentColor`
+                : 'none';
+        }
+
+        function renderDomTextLayer() {
+            const cols = state.gridCols, rows = state.gridRows;
+            const rgba = state.gridRGBA;
+            const bgRgba = state.gridBgRGBA;
+            const hasBg = state.cellBgTint > 0.005;
+            const glyphs = renderer.glyphList;
+            const parts = new Array(rows);
+
+            let idx = 0;
+            for (let y = 0; y < rows; y++) {
+                let line = '';
+                let curStyle = '';
+                let run = '';
+
+                for (let x = 0; x < cols; x++, idx++) {
+                    const o = idx * 4;
+                    const gIdx = rgba[o + 3];
+                    const r = rgba[o] & 0xFC, g = rgba[o + 1] & 0xFC, b = rgba[o + 2] & 0xFC;
+                    const br = bgRgba[o] & 0xFC, bg = bgRgba[o + 1] & 0xFC, bb = bgRgba[o + 2] & 0xFC;
+
+                    if (gIdx === 0 && !hasBg) {
+                        if (run) {
+                            line += `<span style="${curStyle}">${run}</span>`;
+                            run = '';
+                            curStyle = '';
+                        }
+                        line += ' ';
+                    } else {
+                        const styleStr = hasBg
+                            ? `color:rgb(${r},${g},${b});background-color:rgb(${br},${bg},${bb})`
+                            : `color:rgb(${r},${g},${b})`;
+                        const ch = gIdx === 0 ? ' ' : escapeHtml(glyphs[gIdx] || ' ');
+                        if (styleStr === curStyle) {
+                            run += ch;
+                        } else {
+                            if (run) line += `<span style="${curStyle}">${run}</span>`;
+                            curStyle = styleStr;
+                            run = ch;
+                        }
+                    }
+                }
+                if (run) line += `<span style="${curStyle}">${run}</span>`;
+                parts[y] = line;
+            }
+
+            dom.domAsciiPre.innerHTML = parts.join('\n');
+            updateDomTextTransform();
+        }
+
+        function syncCompareOriginalOverlay() {
+            const active = state.compareHold || state.compareSplit;
+            dom.compareLayer.classList.toggle('show', active);
+            dom.compareDivider.classList.toggle('show', state.compareSplit && !state.compareHold);
+            dom.compareTag.classList.toggle('show', active);
+            if (!active) return;
+
+            let src = state.sourceImage;
+            if (state.mediaType === 'video' && dom.hiddenVideo.readyState >= 2) {
+                src = dom.hiddenVideo;
+            } else if (state.mediaType === 'gif' && state.gifFrames.length > 0) {
+                src = (state.gifFrames[state.gifFrameIdx] || state.gifFrames[0]).canvas;
+            }
+            if (!src) return;
+
+            const sw = src.videoWidth || src.naturalWidth || src.width;
+            const sh = src.videoHeight || src.naturalHeight || src.height;
+            if (!sw || !sh) return;
+
+            if (dom.compareCanvas.width !== sw || dom.compareCanvas.height !== sh) {
+                dom.compareCanvas.width = sw;
+                dom.compareCanvas.height = sh;
+            }
+            const cctx = dom.compareCanvas.getContext('2d');
+            cctx.clearRect(0, 0, sw, sh);
+            cctx.drawImage(src, 0, 0, sw, sh);
+
+            const { cellW, cellH } = getBaseCellMetrics();
+            const worldW = state.gridCols * cellW * state.view.scale;
+            const worldH = state.gridRows * cellH * state.view.scale;
+
+            dom.compareCanvas.style.width = `${worldW}px`;
+            dom.compareCanvas.style.height = `${worldH}px`;
+            dom.compareCanvas.style.transform = `translate3d(${state.view.tx}px, ${state.view.ty}px, 0)`;
+
+            if (state.compareHold) {
+                dom.compareLayer.style.clipPath = 'inset(0 0 0 0)';
+                dom.compareTag.textContent = 'ẢNH GỐC (ĐANG GIỮ ĐỐI CHIẾU)';
+            } else {
+                const rightClip = Math.max(0, Math.min(100, 100 - state.compareSplitPct));
+                dom.compareLayer.style.clipPath = `inset(0 ${rightClip}% 0 0)`;
+                dom.compareDivider.style.left = `${state.compareSplitPct}%`;
+                dom.compareTag.textContent = 'TRÁI: ẢNH GỐC  |  PHẢI: ASCII ULTRA HD';
+            }
+        }
+
+        function renderFrame(timeSec) {
+            const t0 = performance.now();
+            const ok = compileGrid(timeSec);
+            if (!ok) return;
+
+            const { cellW, cellH } = getBaseCellMetrics();
+            if (state.renderMode === 'gpu') {
+                renderer.uploadGrid(state.gridCols, state.gridRows, state.gridRGBA, state.gridBgRGBA);
+                renderer.render(
+                    state.gridCols,
+                    state.gridRows,
+                    state.gridRGBA,
+                    state.gridBgRGBA,
+                    cellW,
+                    cellH,
+                    state.view,
+                    state.glow,
+                    state.fontWeight
+                );
+            } else {
+                renderDomTextLayer();
+            }
+
+            if (state.compareHold || state.compareSplit) {
+                syncCompareOriginalOverlay();
+            }
+
+            const ms = performance.now() - t0;
+            const total = state.gridCols * state.gridRows;
+            dom.statMatrix.textContent = `${state.gridCols} × ${state.gridRows} (${total.toLocaleString('vi-VN')} ký tự)`;
+            dom.statRenderMs.textContent = `${ms.toFixed(1)} ms`;
+            dom.hudTime.textContent = `t ${timeSec.toFixed(2)}s`;
+            dom.hudInfo.textContent = `${state.gridCols} × ${state.gridRows} • ${total.toLocaleString('vi-VN')} ký tự • Zoom ${Math.round(state.view.scale * 100)}%`;
+        }
+
+        function redrawCurrentViewOnly() {
+            dom.zoomLabel.textContent = `${Math.round(state.view.scale * 100)}%`;
+            if (state.renderMode === 'gpu') {
+                const { cellW, cellH } = getBaseCellMetrics();
+                renderer.render(
+                    state.gridCols,
+                    state.gridRows,
+                    state.gridRGBA,
+                    state.gridBgRGBA,
+                    cellW,
+                    cellH,
+                    state.view,
+                    state.glow,
+                    state.fontWeight
+                );
+            } else {
+                updateDomTextTransform();
+            }
+            if (state.compareHold || state.compareSplit) {
+                syncCompareOriginalOverlay();
+            }
+            dom.hudInfo.textContent = `${state.gridCols} × ${state.gridRows} • ${(state.gridCols * state.gridRows).toLocaleString('vi-VN')} ký tự • Zoom ${Math.round(state.view.scale * 100)}%`;
+        }
+
+        function resizeGpuCanvas() {
+            const rect = dom.viewport.getBoundingClientRect();
+            const dpr = window.devicePixelRatio || 1;
+            const w = Math.max(1, Math.round(rect.width * dpr));
+            const h = Math.max(1, Math.round(rect.height * dpr));
+            if (dom.gpuCanvas.width !== w || dom.gpuCanvas.height !== h) {
+                dom.gpuCanvas.width = w;
+                dom.gpuCanvas.height = h;
+            }
+            dom.statDpr.textContent = `${dpr.toFixed(dpr % 1 === 0 ? 0 : 2)}x`;
+            if (state.gridCols > 0) redrawCurrentViewOnly();
+        }
+
+        function fitViewport() {
+            if (!state.gridCols || !state.gridRows) return;
+            const rect = dom.viewport.getBoundingClientRect();
+            const { cellW, cellH } = getBaseCellMetrics();
+            const worldW = state.gridCols * cellW;
+            const worldH = state.gridRows * cellH;
+            const pad = 28;
+            const sx = (rect.width - pad) / worldW;
+            const sy = (rect.height - pad) / worldH;
+            const fit = Math.max(0.25, Math.min(4.0, Math.min(sx, sy)));
+
+            state.view.scale = fit;
+            state.view.tx = (rect.width - worldW * fit) * 0.5;
+            state.view.ty = (rect.height - worldH * fit) * 0.5;
+            redrawCurrentViewOnly();
+        }
+
+        function zoomAround(newScale, cx, cy) {
+            const clamped = Math.max(0.25, Math.min(6.0, newScale));
+            const ratio = clamped / state.view.scale;
+            state.view.tx = cx - (cx - state.view.tx) * ratio;
+            state.view.ty = cy - (cy - state.view.ty) * ratio;
+            state.view.scale = clamped;
+            redrawCurrentViewOnly();
+        }
+
+        // ============================================================================
+        // 9. ANIMATION LOOP (60 FPS REAL-TIME)
+        // ============================================================================
+        function animationLoop(nowMs) {
+            requestAnimationFrame(animationLoop);
+            if (state.isExportingGif) return;
+
+            if (!state.lastTickMs) {
+                state.lastTickMs = nowMs;
+                state.lastRenderMs = nowMs;
+                state.fpsLastSampleMs = nowMs;
+            }
+
+            const dtSec = Math.min(0.1, (nowMs - state.lastTickMs) / 1000);
+            state.lastTickMs = nowMs;
+
+            const needsLiveRender = state.isPlaying && (
+                state.animMode !== 'none' ||
+                state.mediaType === 'video' ||
+                (state.mediaType === 'gif' && state.gifFrames.length > 1)
+            );
+
+            if (!needsLiveRender) {
+                dom.hudFps.textContent = state.isPlaying ? 'idle • static HD' : 'paused';
+                return;
+            }
+
+            const minFrameInterval = 1000 / Math.max(5, state.targetFps);
+            if (nowMs - state.lastRenderMs < minFrameInterval) return;
+            state.lastRenderMs = nowMs;
+            state.elapsedSec += dtSec;
+
+            // Advance GIF frame
+            if (state.mediaType === 'gif' && state.gifFrames.length > 1) {
+                const modMs = (state.elapsedSec * 1000 * state.animSpeed) % state.gifTotalDurMs;
+                let idx = 0;
+                for (let i = state.gifFrames.length - 1; i >= 0; i--) {
+                    if (modMs >= state.gifFrames[i].cumMs) {
+                        idx = i;
+                        break;
+                    }
+                }
+                if (idx !== state.gifFrameIdx) {
+                    state.gifFrameIdx = idx;
+                    dom.mediaScrubber.value = idx;
+                    dom.scrubberTime.textContent = `${idx + 1} / ${state.gifFrames.length}`;
+                }
+            } else if (state.mediaType === 'video' && dom.hiddenVideo.duration) {
+                dom.mediaScrubber.value = Math.round(dom.hiddenVideo.currentTime * 100);
+                dom.scrubberTime.textContent = `${dom.hiddenVideo.currentTime.toFixed(1)}s / ${dom.hiddenVideo.duration.toFixed(1)}s`;
+            }
+
+            renderFrame(state.elapsedSec);
+
+            state.fpsFrames++;
+            if (nowMs - state.fpsLastSampleMs >= 500) {
+                state.measuredFps = Math.round((state.fpsFrames * 1000) / (nowMs - state.fpsLastSampleMs));
+                state.fpsFrames = 0;
+                state.fpsLastSampleMs = nowMs;
+                dom.hudFps.textContent = `running • ${state.measuredFps} fps`;
+            }
+        }
+
+        // ============================================================================
+        // 10. EXPORTS: PNG 4K, GIF89a, STANDALONE HTML, ANSI, PLAIN TEXT
+        // ============================================================================
+        function renderCrispVectorCanvas(targetCanvas, fontPx, maxDimPx = 4200) {
+            const cols = state.gridCols;
+            const rows = state.gridRows;
+            const rgba = state.gridRGBA;
+            const bgRgba = state.gridBgRGBA;
+            const hasBg = state.cellBgTint > 0.005;
+            const glyphs = renderer.glyphList;
+
+            let cellH = fontPx * 1.05;
+            let cellW = cellH * CELL_ASPECT;
+            const pad = Math.round(fontPx * 1.1);
+
+            let W = Math.round(cols * cellW + pad * 2);
+            let H = Math.round(rows * cellH + pad * 2);
+
+            if (W > maxDimPx || H > maxDimPx) {
+                const scale = maxDimPx / Math.max(W, H);
+                fontPx *= scale;
+                cellH *= scale;
+                cellW *= scale;
+                W = Math.round(cols * cellW + pad * 2 * scale);
+                H = Math.round(rows * cellH + pad * 2 * scale);
+            }
+
+            targetCanvas.width = W;
+            targetCanvas.height = H;
+            const ctx = targetCanvas.getContext('2d', { alpha: false });
+            ctx.fillStyle = '#05070a';
+            ctx.fillRect(0, 0, W, H);
+
+            ctx.font = `${state.fontWeight} ${fontPx}px ${FONT_FAMILY_STACK}`;
+            ctx.textBaseline = 'middle';
+            ctx.textAlign = 'center';
+
+            const padX = (W - cols * cellW) * 0.5;
+            const padY = (H - rows * cellH) * 0.5;
+
+            if (hasBg) {
+                let idxBg = 0;
+                for (let y = 0; y < rows; y++) {
+                    const py = padY + y * cellH;
+                    for (let x = 0; x < cols; x++, idxBg++) {
+                        const o = idxBg * 4;
+                        ctx.fillStyle = `rgb(${bgRgba[o]},${bgRgba[o + 1]},${bgRgba[o + 2]})`;
+                        ctx.fillRect(padX + x * cellW, py, cellW + 0.6, cellH + 0.6);
+                    }
+                }
+            }
+
+            if (state.glow > 0.01) {
+                ctx.shadowBlur = state.glow * fontPx * 0.65;
+            }
+
+            let idx = 0;
+            for (let y = 0; y < rows; y++) {
+                const cy = padY + (y + 0.52) * cellH;
+                for (let x = 0; x < cols; x++, idx++) {
+                    const o = idx * 4;
+                    const gIdx = rgba[o + 3];
+                    if (gIdx === 0) continue;
+                    const color = `rgb(${rgba[o]},${rgba[o + 1]},${rgba[o + 2]})`;
+                    ctx.fillStyle = color;
+                    if (state.glow > 0.01) ctx.shadowColor = color;
+                    ctx.fillText(glyphs[gIdx], padX + (x + 0.5) * cellW, cy);
+                }
+            }
+            ctx.shadowBlur = 0;
+        }
+
+        function downloadBlob(blob, filename) {
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            setTimeout(() => URL.revokeObjectURL(url), 1500);
+        }
+
+        function exportPng4K() {
+            try {
+                showToast('Đang kết xuất ảnh PNG 4K Vector...', 'ok');
+                const off = document.createElement('canvas');
+                renderCrispVectorCanvas(off, 24, 4200);
+                off.toBlob((blob) => {
+                    if (!blob) {
+                        showToast('Không thể tạo tệp PNG.', 'err');
+                        return;
+                    }
+                    const base = state.fileName.replace(/\.[^/.]+$/, '');
+                    downloadBlob(blob, `${base}_ascii_4k.png`);
+                    showToast(`Đã tải PNG 4K (${off.width} × ${off.height}px)!`);
+                }, 'image/png');
+            } catch (err) {
+                console.error(err);
+                showToast('Lỗi khi xuất PNG 4K.', 'err');
+            }
+        }
+
+        async function exportAnimatedGif() {
+            if (state.isExportingGif) return;
+            state.isExportingGif = true;
+            dom.btnExportGif.disabled = true;
+            dom.gifProgressWrap.classList.add('show');
+
+            try {
+                const durSec = parseFloat(dom.gifDurSlider.value) || 2.0;
+                const fps = parseInt(dom.gifFpsSlider.value, 10) || 12;
+                const scaleFactor = parseFloat(dom.gifScaleSelect.value) || 0.8;
+
+                const totalFrames = Math.max(4, Math.round(durSec * fps));
+                const delayMs = Math.round(1000 / fps);
+                const maxDim = Math.round(1150 * scaleFactor);
+                const fontPx = Math.max(7, Math.round(12 * scaleFactor));
+
+                const off = document.createElement('canvas');
+                compileGrid(state.elapsedSec);
+                renderCrispVectorCanvas(off, fontPx, maxDim);
+
+                const encoder = new PureGifEncoder(off.width, off.height);
+                encoder.start();
+
+                const octx = off.getContext('2d', { willReadFrequently: true });
+                const prevFrameIdx = state.gifFrameIdx;
+
+                for (let f = 0; f < totalFrames; f++) {
+                    const simTime = (f / fps);
+                    if (state.mediaType === 'gif' && state.gifFrames.length > 1) {
+                        const modMs = (simTime * 1000 * state.animSpeed) % state.gifTotalDurMs;
+                        let gIdx = 0;
+                        for (let i = state.gifFrames.length - 1; i >= 0; i--) {
+                            if (modMs >= state.gifFrames[i].cumMs) { gIdx = i; break; }
+                        }
+                        state.gifFrameIdx = gIdx;
+                    }
+
+                    compileGrid(simTime);
+                    renderCrispVectorCanvas(off, fontPx, maxDim);
+                    const pixels = octx.getImageData(0, 0, off.width, off.height).data;
+                    encoder.addFrame(pixels, delayMs);
+
+                    const pct = Math.round(((f + 1) / totalFrames) * 100);
+                    dom.gifProgressFill.style.width = `${pct}%`;
+                    dom.gifProgressPct.textContent = `${pct}%`;
+                    dom.gifProgressText.textContent = `Khung ${f + 1}/${totalFrames} (${off.width}×${off.height})`;
+
+                    // Nhường luồng UI cập nhật mượt
+                    await new Promise(r => setTimeout(r, 0));
+                }
+
+                state.gifFrameIdx = prevFrameIdx;
+                const gifBytes = encoder.finish();
+                const blob = new Blob([gifBytes], { type: 'image/gif' });
+                const base = state.fileName.replace(/\.[^/.]+$/, '');
+                downloadBlob(blob, `${base}_ascii.gif`);
+                showToast(`Đã xuất GIF89a thành công (${(gifBytes.length / 1024).toFixed(0)} KB)!`);
+            } catch (err) {
+                console.error(err);
+                showToast('Lỗi khi mã hóa tệp GIF.', 'err');
+            } finally {
+                state.isExportingGif = false;
+                dom.btnExportGif.disabled = false;
+                setTimeout(() => {
+                    dom.gifProgressWrap.classList.remove('show');
+                    dom.gifProgressFill.style.width = '0%';
+                }, 900);
+                renderFrame(state.elapsedSec);
+            }
+        }
+
+        function exportStandaloneHtml() {
+            try {
+                const cols = state.gridCols, rows = state.gridRows;
+                const rgba = state.gridRGBA, bgRgba = state.gridBgRGBA, glyphs = renderer.glyphList;
+                const hasBg = state.cellBgTint > 0.005;
+                const lines = new Array(rows);
+                let idx = 0;
+
+                for (let y = 0; y < rows; y++) {
+                    let line = '';
+                    let curStyle = '';
+                    let run = '';
+                    for (let x = 0; x < cols; x++, idx++) {
+                        const o = idx * 4;
+                        const gIdx = rgba[o + 3];
+                        const ch = gIdx === 0 ? ' ' : escapeHtml(glyphs[gIdx] || ' ');
+                        if (gIdx === 0 && !hasBg) {
+                            if (run) { line += `<span style="${curStyle}">${run}</span>`; run = ''; curStyle = ''; }
+                            line += ' ';
+                        } else {
+                            const styleStr = hasBg
+                                ? `color:rgb(${rgba[o]},${rgba[o + 1]},${rgba[o + 2]});background:rgb(${bgRgba[o]},${bgRgba[o + 1]},${bgRgba[o + 2]})`
+                                : `color:rgb(${rgba[o]},${rgba[o + 1]},${rgba[o + 2]})`;
+                            if (styleStr === curStyle) {
+                                run += ch;
+                            } else {
+                                if (run) line += `<span style="${curStyle}">${run}</span>`;
+                                curStyle = styleStr;
+                                run = ch;
+                            }
+                        }
+                    }
+                    if (run) line += `<span style="${curStyle}">${run}</span>`;
+                    lines[y] = line;
+                }
+
+                const glowCss = state.glow > 0.01 ? `text-shadow: 0 0 ${Math.round(state.glow * 8)}px currentColor;` : '';
+                const htmlDoc = [
+                    '<!DOCTYPE html>',
+                    '<html lang="vi">',
+                    '<head>',
+                    '<meta charset="UTF-8">',
+                    '<meta name="viewport" content="width=device-width, initial-scale=1.0">',
+                    `<title>${escapeHtml(state.fileName)} - ASCII Art<` + '/title>',
+                    '<style>',
+                    '  html, body {',
+                    '    margin: 0;',
+                    '    padding: 18px;',
+                    '    background: #05070a;',
+                    '    color: #f1f5f9;',
+                    '    display: flex;',
+                    '    justify-content: center;',
+                    '    align-items: flex-start;',
+                    '    min-height: 100vh;',
+                    '    box-sizing: border-box;',
+                    '  }',
+                    '  pre {',
+                    '    margin: 0;',
+                    '    font-family: "Cascadia Mono", "Consolas", "SFMono-Regular", "Liberation Mono", "Courier New", monospace;',
+                    `    font-size: ${state.fontSize}px;`,
+                    `    font-weight: ${state.fontWeight};`,
+                    '    line-height: 1.05;',
+                    '    letter-spacing: 0;',
+                    '    white-space: pre;',
+                    `    ${glowCss}`,
+                    '  }',
+                    '<' + '/style>',
+                    '<' + '/head>',
+                    '<body>',
+                    `<pre>${lines.join('\n')}<` + '/pre>',
+                    '<' + '/body>',
+                    '<' + '/html>'
+                ].join('\n');
+
+                const base = state.fileName.replace(/\.[^/.]+$/, '');
+                downloadBlob(new Blob([htmlDoc], { type: 'text/html;charset=utf-8' }), `${base}_ascii.html`);
+                showToast('Đã tải tệp HTML độc lập (inline CSS, mở trực tiếp offline)!');
+            } catch (err) {
+                console.error(err);
+                showToast('Lỗi khi xuất tệp HTML.', 'err');
+            }
+        }
+
+        function copyTextToClipboard(text, successMsg) {
+            try {
+                const ta = document.createElement('textarea');
+                ta.value = text;
+                ta.style.position = 'fixed';
+                ta.style.left = '-9999px';
+                ta.style.top = '0';
+                document.body.appendChild(ta);
+                ta.focus();
+                ta.select();
+                const ok = document.execCommand('copy');
+                ta.remove();
+                if (ok) {
+                    showToast(successMsg);
+                } else {
+                    showToast('Trình duyệt chặn lệnh sao chép tự động.', 'warn');
+                }
+            } catch (e) {
+                showToast('Không thể sao chép vào khay nhớ tạm.', 'err');
+            }
+        }
+
+        function copyAnsiTrueColor() {
+            const cols = state.gridCols, rows = state.gridRows;
+            const rgba = state.gridRGBA, bgRgba = state.gridBgRGBA, glyphs = renderer.glyphList;
+            const hasBg = state.cellBgTint > 0.005;
+            const out = new Array(rows);
+            let idx = 0;
+
+            for (let y = 0; y < rows; y++) {
+                let lr = -1, lg = -1, lb = -1;
+                let lbr = -1, lbg = -1, lbb = -1;
+                let line = '';
+                for (let x = 0; x < cols; x++, idx++) {
+                    const o = idx * 4;
+                    const gIdx = rgba[o + 3];
+                    const ch = gIdx === 0 ? ' ' : (glyphs[gIdx] || ' ');
+                    if (gIdx === 0 && !hasBg) {
+                        line += ' ';
+                    } else {
+                        const r = rgba[o], g = rgba[o + 1], b = rgba[o + 2];
+                        if (r !== lr || g !== lg || b !== lb) {
+                            line += `\x1b[38;2;${r};${g};${b}m`;
+                            lr = r; lg = g; lb = b;
+                        }
+                        if (hasBg) {
+                            const br = bgRgba[o], bg = bgRgba[o + 1], bb = bgRgba[o + 2];
+                            if (br !== lbr || bg !== lbg || bb !== lbb) {
+                                line += `\x1b[48;2;${br};${bg};${bb}m`;
+                                lbr = br; lbg = bg; lbb = bb;
+                            }
+                        }
+                        line += ch;
+                    }
+                }
+                out[y] = line + '\x1b[0m';
+            }
+            copyTextToClipboard(
+                out.join('\n'),
+                hasBg ? 'Đã sao chép mã màu ANSI TrueColor (Chữ + Nền ô)!' : 'Đã sao chép mã màu ANSI TrueColor cho Terminal!'
+            );
+        }
+
+        function copyPlainText() {
+            const cols = state.gridCols, rows = state.gridRows;
+            const rgba = state.gridRGBA, glyphs = renderer.glyphList;
+            const out = new Array(rows);
+            let idx = 0;
+            for (let y = 0; y < rows; y++) {
+                let line = '';
+                for (let x = 0; x < cols; x++, idx++) {
+                    const gIdx = rgba[idx * 4 + 3];
+                    line += gIdx === 0 ? ' ' : (glyphs[gIdx] || ' ');
+                }
+                out[y] = line;
+            }
+            copyTextToClipboard(out.join('\n'), 'Đã sao chép văn bản ASCII thuần!');
+        }
+
+        // ============================================================================
+        // 11. UI BINDINGS & INTERACTIONS
+        // ============================================================================
+        function updateColPresetUI() {
+            dom.colPresetBtns.forEach(b => b.classList.toggle('active', parseInt(b.dataset.cols, 10) === state.cols));
+        }
+
+        function clearActiveColorProfile() {
+            state.colorProfile = 'custom';
+            dom.colorProfileBtns.forEach(b => b.classList.remove('active'));
+        }
+
+        function applyColorProfile(profileKey, silent = false) {
+            const p = COLOR_PROFILES[profileKey];
+            if (!p) return;
+            state.colorProfile = profileKey;
+            state.gamma = p.gamma;
+            state.fgGain = p.fgGain;
+            state.colorLift = p.colorLift;
+            state.cellBgTint = p.cellBgTint;
+            state.saturation = p.saturation;
+            state.brightness = p.brightness;
+            state.contrast = p.contrast;
+            state.separateColorDensity = p.separateColorDensity;
+            state.colorMode = p.colorMode;
+
+            dom.colorProfileBtns.forEach(b => b.classList.toggle('active', b.dataset.profile === profileKey));
+            dom.colorModeBtns.forEach(b => b.classList.toggle('active', b.dataset.mode === state.colorMode));
+
+            const bgPct = Math.round(state.cellBgTint * 100);
+            dom.cellBgSlider.value = bgPct;
+            dom.cellBgVal.textContent = `${bgPct}%`;
+
+            dom.gammaSlider.value = state.gamma;
+            dom.gammaVal.textContent = state.gamma.toFixed(2);
+
+            const gainPct = Math.round(state.fgGain * 100);
+            dom.fgGainSlider.value = gainPct;
+            dom.fgGainVal.textContent = `${gainPct}%`;
+
+            dom.colorLiftSlider.value = state.colorLift;
+            dom.colorLiftVal.textContent = String(state.colorLift);
+
+            dom.separateDensityToggle.checked = state.separateColorDensity;
+
+            const satPct = Math.round(state.saturation * 100);
+            dom.saturationSlider.value = satPct;
+            dom.saturationVal.textContent = `${satPct}%`;
+
+            dom.brightnessSlider.value = state.brightness;
+            dom.brightnessVal.textContent = state.brightness > 0 ? `+${state.brightness}` : `${state.brightness}`;
+
+            dom.contrastSlider.value = state.contrast;
+            dom.contrastVal.textContent = state.contrast > 0 ? `+${state.contrast}` : `${state.contrast}`;
+
+            renderFrame(state.elapsedSec);
+            if (!silent) {
+                const names = {
+                    natural: 'Giữ Màu Ảnh Gốc (Tự nhiên)',
+                    soft: 'Nền Tối Nhẹ',
+                    terminal: 'Terminal Nền Đen',
+                    vivid: 'Rực Rỡ (Vivid)'
+                };
+                showToast(`Đã áp dụng cấu hình màu: ${names[profileKey]}`);
+            }
+        }
+
+        function setRenderMode(mode) {
+            state.renderMode = mode;
+            const isDom = mode === 'dom';
+            dom.btnModeGpu.classList.toggle('active', !isDom);
+            dom.btnModeDom.classList.toggle('active', isDom);
+            dom.gpuCanvas.classList.toggle('hidden', isDom);
+            dom.domTextLayer.classList.toggle('show', isDom);
+            dom.domSelectToggleWrap.classList.toggle('show', isDom);
+            dom.viewport.classList.toggle('dom-selectable', isDom && state.domAllowSelect);
+            renderFrame(state.elapsedSec);
+        }
+
+        function bindEvents() {
+            // Sidebar toggle
+            dom.btnToggleSidebar.addEventListener('click', () => {
+                dom.sidebar.classList.toggle('collapsed');
+                setTimeout(resizeGpuCanvas, 240);
+            });
+
+            // Mode switcher
+            dom.btnModeGpu.addEventListener('click', () => setRenderMode('gpu'));
+            dom.btnModeDom.addEventListener('click', () => setRenderMode('dom'));
+            dom.domAllowSelect.addEventListener('change', (e) => {
+                state.domAllowSelect = e.target.checked;
+                dom.domAsciiPre.classList.toggle('selectable', state.domAllowSelect);
+                dom.viewport.classList.toggle('dom-selectable', state.renderMode === 'dom' && state.domAllowSelect);
+            });
+
+            // Top bar quick export
+            dom.btnQuickPng.addEventListener('click', exportPng4K);
+            dom.btnQuickAnsi.addEventListener('click', copyAnsiTrueColor);
+
+            // File input & Drag-and-drop
+            dom.dropZone.addEventListener('click', () => dom.fileInput.click());
+            dom.fileInput.addEventListener('change', (e) => {
+                if (e.target.files && e.target.files[0]) handleFileUpload(e.target.files[0]);
+                e.target.value = '';
+            });
+            dom.dropZone.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                dom.dropZone.classList.add('dragover');
+            });
+            dom.dropZone.addEventListener('dragleave', () => dom.dropZone.classList.remove('dragover'));
+            dom.dropZone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                dom.dropZone.classList.remove('dragover');
+                if (e.dataTransfer.files && e.dataTransfer.files[0]) handleFileUpload(e.dataTransfer.files[0]);
+            });
+
+            // Demo scenes
+            dom.btnDemoGarden.addEventListener('click', () => {
+                loadDemoScene('garden');
+                showToast('Đã nạp cảnh Thiên Nhiên Ban Ngày HD!');
+            });
+            dom.btnDemoTree.addEventListener('click', () => {
+                loadDemoScene('tree');
+                showToast('Đã nạp cảnh Cây Thông Noel HD!');
+            });
+
+            // Matrix resolution & font
+            dom.colsSlider.addEventListener('input', (e) => {
+                state.cols = parseInt(e.target.value, 10);
+                dom.colsVal.textContent = `${state.cols} cột`;
+                updateColPresetUI();
+                renderFrame(state.elapsedSec);
+            });
+            dom.colPresetBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    state.cols = parseInt(btn.dataset.cols, 10);
+                    dom.colsSlider.value = state.cols;
+                    dom.colsVal.textContent = `${state.cols} cột`;
+                    updateColPresetUI();
+                    renderFrame(state.elapsedSec);
+                    fitViewport();
+                });
+            });
+            dom.fontSizeSlider.addEventListener('input', (e) => {
+                state.fontSize = parseInt(e.target.value, 10);
+                dom.fontSizeVal.textContent = `${state.fontSize}px`;
+                redrawCurrentViewOnly();
+            });
+            dom.fontWeightBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    state.fontWeight = parseInt(btn.dataset.weight, 10);
+                    dom.fontWeightBtns.forEach(b => b.classList.toggle('active', b === btn));
+                    renderFrame(state.elapsedSec);
+                });
+            });
+            dom.charsetSelect.addEventListener('change', (e) => {
+                state.charsetType = e.target.value;
+                dom.customCharsetInput.classList.toggle('hidden', state.charsetType !== 'custom');
+                renderFrame(state.elapsedSec);
+            });
+            dom.customCharsetInput.addEventListener('input', (e) => {
+                state.customCharset = e.target.value;
+                renderFrame(state.elapsedSec);
+            });
+
+            // Color profiles & Anti-double-darkening controls
+            dom.colorProfileBtns.forEach(btn => {
+                btn.addEventListener('click', () => applyColorProfile(btn.dataset.profile));
+            });
+            dom.colorModeBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    state.colorMode = btn.dataset.mode;
+                    dom.colorModeBtns.forEach(b => b.classList.toggle('active', b === btn));
+                    renderFrame(state.elapsedSec);
+                });
+            });
+            dom.cellBgSlider.addEventListener('input', (e) => {
+                const v = parseInt(e.target.value, 10);
+                state.cellBgTint = v / 100;
+                dom.cellBgVal.textContent = `${v}%`;
+                clearActiveColorProfile();
+                renderFrame(state.elapsedSec);
+            });
+            dom.gammaSlider.addEventListener('input', (e) => {
+                const v = parseFloat(e.target.value);
+                state.gamma = v;
+                dom.gammaVal.textContent = v.toFixed(2);
+                clearActiveColorProfile();
+                renderFrame(state.elapsedSec);
+            });
+            dom.fgGainSlider.addEventListener('input', (e) => {
+                const v = parseInt(e.target.value, 10);
+                state.fgGain = v / 100;
+                dom.fgGainVal.textContent = `${v}%`;
+                clearActiveColorProfile();
+                renderFrame(state.elapsedSec);
+            });
+            dom.colorLiftSlider.addEventListener('input', (e) => {
+                const v = parseInt(e.target.value, 10);
+                state.colorLift = v;
+                dom.colorLiftVal.textContent = String(v);
+                clearActiveColorProfile();
+                renderFrame(state.elapsedSec);
+            });
+            dom.separateDensityToggle.addEventListener('change', (e) => {
+                state.separateColorDensity = e.target.checked;
+                clearActiveColorProfile();
+                renderFrame(state.elapsedSec);
+            });
+            dom.sharpenSlider.addEventListener('input', (e) => {
+                const v = parseInt(e.target.value, 10);
+                state.sharpen = v / 100;
+                dom.sharpenVal.textContent = `${v}%`;
+                renderFrame(state.elapsedSec);
+            });
+            dom.saturationSlider.addEventListener('input', (e) => {
+                const v = parseInt(e.target.value, 10);
+                state.saturation = v / 100;
+                dom.saturationVal.textContent = `${v}%`;
+                clearActiveColorProfile();
+                renderFrame(state.elapsedSec);
+            });
+            dom.brightnessSlider.addEventListener('input', (e) => {
+                state.brightness = parseInt(e.target.value, 10);
+                dom.brightnessVal.textContent = state.brightness > 0 ? `+${state.brightness}` : `${state.brightness}`;
+                clearActiveColorProfile();
+                renderFrame(state.elapsedSec);
+            });
+            dom.contrastSlider.addEventListener('input', (e) => {
+                state.contrast = parseInt(e.target.value, 10);
+                dom.contrastVal.textContent = state.contrast > 0 ? `+${state.contrast}` : `${state.contrast}`;
+                clearActiveColorProfile();
+                renderFrame(state.elapsedSec);
+            });
+            dom.glowSlider.addEventListener('input', (e) => {
+                const v = parseInt(e.target.value, 10);
+                state.glow = v / 100;
+                dom.glowVal.textContent = v === 0 ? '0% (Tắt)' : `${v}%`;
+                redrawCurrentViewOnly();
+            });
+            dom.invertToggle.addEventListener('change', (e) => {
+                state.invert = e.target.checked;
+                renderFrame(state.elapsedSec);
+            });
+            dom.btnResetTune.addEventListener('click', () => {
+                state.sharpen = 0.20;
+                state.glow = 0.0;
+                state.invert = false;
+                dom.sharpenSlider.value = 20; dom.sharpenVal.textContent = '20%';
+                dom.glowSlider.value = 0; dom.glowVal.textContent = '0% (Tắt)';
+                dom.invertToggle.checked = false;
+                applyColorProfile('natural', true);
+                showToast('Đã đặt lại cấu hình Giữ Màu Ảnh Gốc.');
+            });
+
+            // Animation & HUD controls
+            dom.animModeSelect.addEventListener('change', (e) => {
+                state.animMode = e.target.value;
+                renderFrame(state.elapsedSec);
+            });
+            dom.fpsSlider.addEventListener('input', (e) => {
+                state.targetFps = parseInt(e.target.value, 10);
+                dom.fpsVal.textContent = `${state.targetFps} fps`;
+            });
+            dom.animSpeedSlider.addEventListener('input', (e) => {
+                state.animSpeed = parseFloat(e.target.value);
+                dom.animSpeedVal.textContent = `${state.animSpeed.toFixed(1)}x`;
+            });
+            dom.animIntensitySlider.addEventListener('input', (e) => {
+                const v = parseInt(e.target.value, 10);
+                state.animIntensity = v / 100;
+                dom.animIntensityVal.textContent = `${v}%`;
+                renderFrame(state.elapsedSec);
+            });
+
+            const togglePlayState = () => {
+                state.isPlaying = !state.isPlaying;
+                dom.btnPlayPause.textContent = state.isPlaying ? '⏸ Tạm dừng' : '▶ Phát tiếp';
+                dom.btnMediaPlayPause.textContent = state.isPlaying ? '⏸' : '▶';
+                if (state.mediaType === 'video') {
+                    if (state.isPlaying) dom.hiddenVideo.play().catch(() => {});
+                    else dom.hiddenVideo.pause();
+                }
+            };
+            dom.btnPlayPause.addEventListener('click', togglePlayState);
+            dom.btnMediaPlayPause.addEventListener('click', togglePlayState);
+
+            dom.mediaScrubber.addEventListener('input', (e) => {
+                const val = parseInt(e.target.value, 10);
+                if (state.mediaType === 'gif' && state.gifFrames.length > 0) {
+                    state.gifFrameIdx = Math.max(0, Math.min(state.gifFrames.length - 1, val));
+                    dom.scrubberTime.textContent = `${state.gifFrameIdx + 1} / ${state.gifFrames.length}`;
+                    renderFrame(state.elapsedSec);
+                } else if (state.mediaType === 'video' && dom.hiddenVideo.duration) {
+                    dom.hiddenVideo.currentTime = val / 100;
+                    dom.scrubberTime.textContent = `${dom.hiddenVideo.currentTime.toFixed(1)}s / ${dom.hiddenVideo.duration.toFixed(1)}s`;
+                    renderFrame(state.elapsedSec);
+                }
+            });
+
+            dom.hudToggle.addEventListener('change', (e) => {
+                state.showHud = e.target.checked;
+                dom.hudOverlay.classList.toggle('hidden-hud', !state.showHud);
+            });
+
+            // Export buttons
+            dom.btnExportPng.addEventListener('click', exportPng4K);
+            dom.btnExportHtml.addEventListener('click', exportStandaloneHtml);
+            dom.btnCopyAnsi.addEventListener('click', copyAnsiTrueColor);
+            dom.btnCopyText.addEventListener('click', copyPlainText);
+            dom.btnExportGif.addEventListener('click', exportAnimatedGif);
+            dom.gifDurSlider.addEventListener('input', (e) => {
+                dom.gifDurVal.textContent = `${parseFloat(e.target.value).toFixed(1)}s`;
+            });
+            dom.gifFpsSlider.addEventListener('input', (e) => {
+                dom.gifFpsVal.textContent = `${e.target.value} fps`;
+            });
+
+            // Compare original controls
+            const startHold = (e) => {
+                e.preventDefault();
+                state.compareHold = true;
+                dom.btnHoldOriginal.classList.add('btn-compare-active');
+                syncCompareOriginalOverlay();
+            };
+            const endHold = () => {
+                if (!state.compareHold) return;
+                state.compareHold = false;
+                dom.btnHoldOriginal.classList.remove('btn-compare-active');
+                syncCompareOriginalOverlay();
+            };
+            dom.btnHoldOriginal.addEventListener('mousedown', startHold);
+            dom.btnHoldOriginal.addEventListener('touchstart', startHold, { passive: false });
+            window.addEventListener('mouseup', endHold);
+            window.addEventListener('touchend', endHold);
+
+            dom.btnSplitCompare.addEventListener('click', () => {
+                state.compareSplit = !state.compareSplit;
+                dom.btnSplitCompare.classList.toggle('btn-compare-active', state.compareSplit);
+                syncCompareOriginalOverlay();
+            });
+
+            const updateSplitX = (clientX) => {
+                const rect = dom.viewport.getBoundingClientRect();
+                const pct = ((clientX - rect.left) / Math.max(1, rect.width)) * 100;
+                state.compareSplitPct = Math.max(2, Math.min(98, pct));
+                syncCompareOriginalOverlay();
+            };
+            dom.compareDivider.addEventListener('mousedown', (e) => { e.stopPropagation(); state.isDraggingSplit = true; });
+            dom.compareDivider.addEventListener('touchstart', (e) => { e.stopPropagation(); state.isDraggingSplit = true; }, { passive: true });
+            window.addEventListener('mousemove', (e) => { if (state.isDraggingSplit) updateSplitX(e.clientX); });
+            window.addEventListener('touchmove', (e) => {
+                if (state.isDraggingSplit && e.touches.length === 1) updateSplitX(e.touches[0].clientX);
+            }, { passive: true });
+            window.addEventListener('mouseup', () => { state.isDraggingSplit = false; });
+            window.addEventListener('touchend', () => { state.isDraggingSplit = false; });
+
+            // Zoom toolbar buttons
+            dom.btnZoomIn.addEventListener('click', () => {
+                const r = dom.viewport.getBoundingClientRect();
+                zoomAround(state.view.scale * 1.25, r.width * 0.5, r.height * 0.5);
+            });
+            dom.btnZoomOut.addEventListener('click', () => {
+                const r = dom.viewport.getBoundingClientRect();
+                zoomAround(state.view.scale / 1.25, r.width * 0.5, r.height * 0.5);
+            });
+            dom.btnZoom100.addEventListener('click', () => {
+                const r = dom.viewport.getBoundingClientRect();
+                const { cellW, cellH } = getBaseCellMetrics();
+                state.view.scale = 1.0;
+                state.view.tx = (r.width - state.gridCols * cellW) * 0.5;
+                state.view.ty = (r.height - state.gridRows * cellH) * 0.5;
+                redrawCurrentViewOnly();
+            });
+            dom.btnZoomFit.addEventListener('click', fitViewport);
+        }
+
+        function bindViewportInteractions() {
+            // Wheel zoom
+            dom.viewport.addEventListener('wheel', (e) => {
+                e.preventDefault();
+                const rect = dom.viewport.getBoundingClientRect();
+                const cx = e.clientX - rect.left;
+                const cy = e.clientY - rect.top;
+                const factor = e.deltaY < 0 ? 1.12 : 1 / 1.12;
+                zoomAround(state.view.scale * factor, cx, cy);
+            }, { passive: false });
+
+            // Mouse drag pan
+            dom.viewport.addEventListener('mousedown', (e) => {
+                if (e.button !== 0 || state.isDraggingSplit) return;
+                if (state.renderMode === 'dom' && state.domAllowSelect) return;
+                state.isPanning = true;
+                state.panStartX = e.clientX;
+                state.panStartY = e.clientY;
+                state.panOrigTx = state.view.tx;
+                state.panOrigTy = state.view.ty;
+                dom.viewport.classList.add('panning');
+            });
+
+            window.addEventListener('mousemove', (e) => {
+                if (!state.isPanning) return;
+                state.view.tx = state.panOrigTx + (e.clientX - state.panStartX);
+                state.view.ty = state.panOrigTy + (e.clientY - state.panStartY);
+                redrawCurrentViewOnly();
+            });
+
+            window.addEventListener('mouseup', () => {
+                if (!state.isPanning) return;
+                state.isPanning = false;
+                dom.viewport.classList.remove('panning');
+            });
+
+            // Touch pan & pinch zoom
+            dom.viewport.addEventListener('touchstart', (e) => {
+                if (state.isDraggingSplit) return;
+                if (e.touches.length === 1) {
+                    if (state.renderMode === 'dom' && state.domAllowSelect) return;
+                    state.isPanning = true;
+                    state.panStartX = e.touches[0].clientX;
+                    state.panStartY = e.touches[0].clientY;
+                    state.panOrigTx = state.view.tx;
+                    state.panOrigTy = state.view.ty;
+                } else if (e.touches.length === 2) {
+                    state.isPanning = false;
+                    const dx = e.touches[0].clientX - e.touches[1].clientX;
+                    const dy = e.touches[0].clientY - e.touches[1].clientY;
+                    state.pinchDist = Math.hypot(dx, dy);
+                }
+            }, { passive: true });
+
+            dom.viewport.addEventListener('touchmove', (e) => {
+                if (state.isDraggingSplit) return;
+                if (e.touches.length === 1 && state.isPanning) {
+                    state.view.tx = state.panOrigTx + (e.touches[0].clientX - state.panStartX);
+                    state.view.ty = state.panOrigTy + (e.touches[0].clientY - state.panStartY);
+                    redrawCurrentViewOnly();
+                } else if (e.touches.length === 2 && state.pinchDist > 0) {
+                    const dx = e.touches[0].clientX - e.touches[1].clientX;
+                    const dy = e.touches[0].clientY - e.touches[1].clientY;
+                    const dist = Math.hypot(dx, dy);
+                    const rect = dom.viewport.getBoundingClientRect();
+                    const cx = ((e.touches[0].clientX + e.touches[1].clientX) * 0.5) - rect.left;
+                    const cy = ((e.touches[0].clientY + e.touches[1].clientY) * 0.5) - rect.top;
+                    zoomAround(state.view.scale * (dist / state.pinchDist), cx, cy);
+                    state.pinchDist = dist;
+                }
+            }, { passive: true });
+
+            dom.viewport.addEventListener('touchend', () => {
+                state.isPanning = false;
+                state.pinchDist = 0;
+            });
+
+            window.addEventListener('resize', resizeGpuCanvas);
+        }
+
+        // ============================================================================
+        // 12. BOOTSTRAP ON WINDOW LOAD
+        // ============================================================================
+        window.onload = function () {
+            dom.engineBadge.textContent = renderer.isWebGL2 ? 'WebGL2 HiDPI Atlas' : 'HiDPI Canvas 2D';
+            bindEvents();
+            bindViewportInteractions();
+            resizeGpuCanvas();
+            loadDemoScene('garden');
+            requestAnimationFrame(animationLoop);
+        };
+    })();
+    </script>
+</body>
+</html>
